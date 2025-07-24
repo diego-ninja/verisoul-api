@@ -256,7 +256,7 @@ class Verisoul
     /**
      * Configure timeout settings
      */
-    public function setTimeout(int $timeout, int $connectTimeout = null): self
+    public function setTimeout(int $timeout, ?int $connectTimeout = null): self
     {
         $this->timeout = $timeout;
         $this->connectTimeout = $connectTimeout ?? $this->connectTimeout;
