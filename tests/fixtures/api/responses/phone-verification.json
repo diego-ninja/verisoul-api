@@ -1,0 +1,12 @@
+{
+  "project_id": "00000000-0000-0000-0000-000000000001",
+  "request_id": "d6c61d42-9f02-49a5-9773-7413788ea50e",
+  "phone": {
+    "valid": true,
+    "phone_number": "+1234567890",
+    "calling_country_code": "1",
+    "country_code": "US",
+    "carrier_name": "Verizon Wireless",
+    "line_type": "mobile"
+  }
+}

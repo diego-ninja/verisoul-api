@@ -1,0 +1,21 @@
+{
+  "request_id": "abb42d71-f4d4-440f-b1c7-a250ec0eddd7",
+  "lists": [
+    {
+      "name": "allow",
+      "description": "Marks every account in the list as Real."
+    },
+    {
+      "name": "block",
+      "description": "Marks every account in the list as Fake."
+    },
+    {
+      "name": "main_account",
+      "description": "Sets the multiple_accounts score to 0 for every account in the list."
+    },
+    {
+      "name": "us_users",
+      "description": "List of US based users"
+    }
+  ]
+}

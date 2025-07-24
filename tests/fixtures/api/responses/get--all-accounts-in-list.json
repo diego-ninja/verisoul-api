@@ -1,0 +1,11 @@
+{
+  "request_id": "bb152ba5-8311-4192-846f-1670a581becb",
+  "description": "List of US based users",
+  "accounts": [
+    "john-doe",
+    "john-doe-2",
+    "amy-williams",
+    "frank-smith",
+    "mark-johnson"
+  ]
+}

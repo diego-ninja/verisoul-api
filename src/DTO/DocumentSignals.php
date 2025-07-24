@@ -1,0 +1,25 @@
+<?php
+
+namespace Ninja\Verisoul\DTO;
+
+use Ninja\Granite\GraniteDTO;
+use Ninja\Verisoul\Enums\IDBarcodeStatus;
+use Ninja\Verisoul\Enums\IDDigitalSpoof;
+use Ninja\Verisoul\Enums\IDFaceStatus;
+use Ninja\Verisoul\Enums\IDStatus;
+use Ninja\Verisoul\Enums\IDTextStatus;
+use Ninja\Verisoul\Enums\IDValidity;
+
+final readonly class DocumentSignals extends GraniteDTO
+{
+    public function __construct(
+        public int $idAge,
+        public float $idFaceMatchScore,
+        public IDBarcodeStatus $idBarcodeStatus,
+        public IDFaceStatus $idFaceStatus,
+        public IDTextStatus $idTextStatus,
+        public IDDigitalSpoof $isIdDigitalSpoof,
+        public IDStatus $isFullIdCaptured,
+        public IDValidity $idValidity,
+    ) {}
+}

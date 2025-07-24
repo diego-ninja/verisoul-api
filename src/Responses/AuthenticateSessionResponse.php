@@ -1,0 +1,34 @@
+<?php
+
+namespace Ninja\Verisoul\Responses;
+
+use Ninja\Verisoul\Collections\LinkedAccountCollection;
+use Ninja\Verisoul\DTO\Account;
+use Ninja\Verisoul\DTO\Session;
+use Ninja\Verisoul\Enums\VerisoulDecision;
+use Ninja\Verisoul\ValueObjects\Score;
+
+final readonly class AuthenticateSessionResponse extends ApiResponse
+{
+    public function __construct(
+        public string $projectId,
+        public string $sessionId,
+        public string $accountId,
+        public string $requestId,
+        public VerisoulDecision $decision,
+        public Score $accountScore,
+        public float $bot,
+        public float $multipleAccounts,
+        public float $riskSignals,
+        public int $accountsLinked,
+        public array $lists,
+        public Session $session,
+        public Account $account,
+        public ?LinkedAccountCollection $linkedAccounts,
+    ) {}
+
+    public function getRiskSignals(): array
+    {
+        return $this->session->riskSignals->toArray();
+    }
+}

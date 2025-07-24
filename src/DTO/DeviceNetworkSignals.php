@@ -1,0 +1,20 @@
+<?php
+
+namespace Ninja\Verisoul\DTO;
+
+use Ninja\Granite\GraniteDTO;
+
+final readonly class DeviceNetworkSignals extends GraniteDTO
+{
+    public function __construct(
+        public float $deviceRisk,
+        public float $proxy,
+        public float $vpn,
+        public float $datacenter,
+        public float $tor,
+        public float $spoofedIp,
+        public float $recentFraudIp,
+        public float $deviceNetworkMismatch,
+        public float $locationSpoofing,
+    ) {}
+}

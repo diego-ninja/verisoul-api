@@ -1,0 +1,120 @@
+{
+  "project_id": "00000000-0000-0000-0000-000000000001",
+  "session_id": "7fd9d3e5-a5d3-4e47-9c2a-69fd8f0e0bd7",
+  "account_id": "john-doe",
+  "request_id": "055ce1fc-0219-4909-9cb4-091be9d374d6",
+  "decision": "Real",
+  "account_score": 0.17,
+  "bot": 0,
+  "multiple_accounts": 0,
+  "risk_signals": 0.17,
+  "accounts_linked": 0,
+  "lists": [
+    "us_users"
+  ],
+  "session": {
+    "start_time": "2025-06-10T16:35:22.184Z",
+    "true_country_code": "US",
+    "network": {
+      "ip_address": "107.209.253.92",
+      "service_provider": "AT&T Internet",
+      "connection_type": "isp"
+    },
+    "location": {
+      "continent": "NA",
+      "country_code": "US",
+      "state": "Texas",
+      "city": "Austin",
+      "zip_code": "78729",
+      "timezone": "America/Chicago",
+      "latitude": 30.3773,
+      "longitude": -97.71
+    },
+    "browser": {
+      "type": "Chrome",
+      "version": "137.0.0.0",
+      "language": "en-US",
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+      "timezone": "America/Chicago"
+    },
+    "device": {
+      "category": "desktop",
+      "type": "Mac",
+      "os": "macOS 10.15.7",
+      "cpu_cores": 16,
+      "memory": 8,
+      "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)",
+      "screen_height": 1329,
+      "screen_width": 2056
+    },
+    "bot": {
+      "mouse_num_events": 0,
+      "click_num_events": 0,
+      "keyboard_num_events": 0,
+      "touch_num_events": 0,
+      "clipboard_num_events": 0
+    },
+    "risk_signals": {
+      "device_risk": false,
+      "proxy": false,
+      "vpn": false,
+      "tor": false,
+      "spoofed_ip": false,
+      "datacenter": false,
+      "recent_fraud_ip": false,
+      "impossible_travel": false,
+      "device_network_mismatch": false
+    },
+    "risk_signal_scores": {
+      "device_risk": 0.1431,
+      "proxy": 0,
+      "vpn": 0,
+      "tor": 0,
+      "datacenter": 0,
+      "recent_fraud_ip": 0,
+      "impossible_travel": 0,
+      "device_network_mismatch": 0.0001
+    }
+  },
+  "account": {
+    "account": {
+      "id": "john-doe",
+      "email": "john.doe@example.com",
+      "metadata": {},
+      "group": ""
+    },
+    "num_sessions": 3,
+    "first_seen": "2025-06-10T16:35:22.184Z",
+    "last_seen": "2025-06-10T16:35:52.018Z",
+    "last_session": "7fd9d3e5-a5d3-4e47-9c2a-69fd8f0e0bd7",
+    "country": "US",
+    "countries": [
+      "US"
+    ],
+    "unique_devices": {
+      "1_day": 1,
+      "7_day": 1
+    },
+    "unique_networks": {
+      "1_day": 1,
+      "7_day": 1
+    },
+    "email": {
+      "email": "john.doe@example.com",
+      "disposable": false,
+      "personal": false,
+      "valid": true
+    },
+    "risk_signal_average": {
+      "device_risk": 0.2266,
+      "proxy": 0,
+      "vpn": 0,
+      "tor": 0,
+      "spoofed_ip": 0,
+      "datacenter": 0,
+      "recent_fraud_ip": 0,
+      "impossible_travel": 0,
+      "device_network_mismatch": 0.0001
+    }
+  }
+}
