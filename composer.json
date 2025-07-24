@@ -12,11 +12,11 @@
     "require": {
         "php": "^8.3",
         "diego-ninja/granite": "^1",
-        "guzzlehttp/guzzle": "^7.8",
-        "illuminate/collections": "^12.21",
-        "nesbot/carbon": "^3.10",
-        "psr/log": "^3.0",
-        "psr/simple-cache": "^3.0"
+        "guzzlehttp/guzzle": "^7",
+        "illuminate/collections": "^12",
+        "nesbot/carbon": "^3",
+        "psr/log": "^3",
+        "psr/simple-cache": "^3"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "*",
