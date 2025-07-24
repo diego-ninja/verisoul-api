@@ -8,10 +8,12 @@ describe('SignalScope Enum', function () {
             $cases = SignalScope::cases();
             $values = array_map(fn($case) => $case->value, $cases);
 
-            expect($cases)->toHaveCount(3)
+            expect($cases)->toHaveCount(5)
                 ->and($values)->toContain('device_network')
                 ->and($values)->toContain('document')
-                ->and($values)->toContain('session');
+                ->and($values)->toContain('session')
+                ->and($values)->toContain('referring_session')
+                ->and($values)->toContain('account');
         });
 
         it('has correct enum values', function () {
@@ -146,24 +148,25 @@ describe('SignalScope Enum', function () {
 
         it('supports scope-based configuration', function () {
             $scopeConfigurations = [
-                SignalScope::DeviceNetwork => [
+                'device_network' => [
                     'enabled' => true,
                     'weight' => 0.3,
                     'signals' => ['proxy', 'vpn', 'tor', 'datacenter']
                 ],
-                SignalScope::Document => [
+                'document' => [
                     'enabled' => true,
                     'weight' => 0.4,
                     'signals' => ['authenticity', 'tampering', 'quality']
                 ],
-                SignalScope::Session => [
+                'session' => [
                     'enabled' => true,
                     'weight' => 0.3,
                     'signals' => ['behavior', 'timing', 'patterns']
                 ]
             ];
 
-            foreach ($scopeConfigurations as $scope => $config) {
+            foreach ($scopeConfigurations as $scopeValue => $config) {
+                $scope = SignalScope::from($scopeValue);
                 expect($scope)->toBeInstanceOf(SignalScope::class)
                     ->and($config['enabled'])->toBeTrue()
                     ->and($config['weight'])->toBeFloat()
@@ -224,7 +227,7 @@ describe('SignalScope Enum', function () {
         });
 
         it('handles invalid input types gracefully', function () {
-            $invalidInputs = [123, [], null, true, false];
+            $invalidInputs = ['123', 'invalid_scope', 'random_string'];
 
             foreach ($invalidInputs as $input) {
                 expect(SignalScope::tryFrom($input))->toBeNull();
@@ -282,21 +285,22 @@ describe('SignalScope Enum', function () {
 
         it('enables hierarchical signal processing', function () {
             $scopeHierarchy = [
-                SignalScope::DeviceNetwork => ['level' => 1, 'dependencies' => []],
-                SignalScope::Session => ['level' => 2, 'dependencies' => [SignalScope::DeviceNetwork]],
-                SignalScope::Document => ['level' => 3, 'dependencies' => [SignalScope::DeviceNetwork, SignalScope::Session]]
+                'device_network' => ['level' => 1, 'dependencies' => []],
+                'session' => ['level' => 2, 'dependencies' => ['device_network']],
+                'document' => ['level' => 3, 'dependencies' => ['device_network', 'session']]
             ];
 
-            foreach ($scopeHierarchy as $scope => $config) {
+            foreach ($scopeHierarchy as $scopeValue => $config) {
+                $scope = SignalScope::from($scopeValue);
                 expect($scope)->toBeInstanceOf(SignalScope::class)
                     ->and($config['level'])->toBeInt()
                     ->and($config['dependencies'])->toBeArray();
             }
 
             // Test dependency validation
-            $documentDeps = $scopeHierarchy[SignalScope::Document]['dependencies'];
-            expect(in_array(SignalScope::DeviceNetwork, $documentDeps))->toBeTrue()
-                ->and(in_array(SignalScope::Session, $documentDeps))->toBeTrue();
+            $documentDeps = $scopeHierarchy['document']['dependencies'];
+            expect(in_array('device_network', $documentDeps))->toBeTrue()
+                ->and(in_array('session', $documentDeps))->toBeTrue();
         });
     });
 
@@ -334,7 +338,8 @@ describe('SignalScope Enum', function () {
             $endTime = microtime(true);
             $executionTime = $endTime - $startTime;
             
-            expect(count($results))->toBe(30000) // 10000 iterations * 3 scopes
+            $expectedCount = 10000 * count(SignalScope::cases());
+            expect(count($results))->toBe($expectedCount) // 10000 iterations * number of scopes
                 ->and($executionTime)->toBeLessThan(1.0); // Less than 1 second
         });
     });

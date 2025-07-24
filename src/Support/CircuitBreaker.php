@@ -4,6 +4,7 @@ namespace Ninja\Verisoul\Support;
 
 use Exception;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
+use Ninja\Verisoul\Exceptions\CircuitBreakerOpenException;
 use Psr\SimpleCache\CacheInterface;
 
 final readonly class CircuitBreaker
@@ -36,9 +37,9 @@ final readonly class CircuitBreaker
 
                     return $this->executeCall($callback);
                 }
-                throw new VerisoulApiException(
-                    message: "Circuit breaker is OPEN for service: {$this->service}",
-                    statusCode: 503
+                throw new CircuitBreakerOpenException(
+                    "Circuit breaker is OPEN for service: {$this->service}",
+                    503
                 );
 
             case self::STATE_HALF_OPEN:
@@ -98,49 +99,76 @@ final readonly class CircuitBreaker
 
     private function getState(): string
     {
-        return $this->cache->get($this->getStateKey(), self::STATE_CLOSED);
+        try {
+            return $this->cache->get($this->getStateKey(), self::STATE_CLOSED);
+        } catch (\Exception $e) {
+            return self::STATE_CLOSED;
+        }
     }
 
     private function setState(string $state): void
     {
-        $this->cache->set($this->getStateKey(), $state, $this->recoveryTime);
+        try {
+            $this->cache->set($this->getStateKey(), $state, $this->recoveryTime);
+        } catch (\Exception $e) {
+            // Silently ignore cache failures
+        }
     }
 
     private function getFailureCount(): int
     {
-        return $this->cache->get($this->getFailureCountKey(), 0);
+        try {
+            return (int) $this->cache->get($this->getFailureCountKey(), 0);
+        } catch (\Exception $e) {
+            return 0;
+        }
     }
 
     private function recordFailure(): void
     {
-        $count = $this->getFailureCount() + 1;
-        $this->cache->set($this->getFailureCountKey(), $count, 600); // 10 minutes
-        $this->cache->set($this->getLastFailureKey(), time(), 600);
+        try {
+            $count = $this->getFailureCount() + 1;
+            $this->cache->set($this->getFailureCountKey(), $count, 600); // 10 minutes
+            $this->cache->set($this->getLastFailureKey(), time(), 600);
+        } catch (\Exception $e) {
+            // Silently ignore cache failures
+        }
     }
 
     private function recordSuccess(): void
     {
-        // Optionally reduce failure count on success
-        $count = max(0, $this->getFailureCount() - 1);
-        if ($count > 0) {
-            $this->cache->set($this->getFailureCountKey(), $count, 600); // 10 minutes
-        } else {
-            $this->cache->delete($this->getFailureCountKey());
+        try {
+            // Optionally reduce failure count on success
+            $count = max(0, $this->getFailureCount() - 1);
+            if ($count > 0) {
+                $this->cache->set($this->getFailureCountKey(), $count, 600); // 10 minutes
+            } else {
+                $this->cache->delete($this->getFailureCountKey());
+            }
+        } catch (\Exception $e) {
+            // Silently ignore cache failures
         }
     }
 
     private function resetFailureCount(): void
     {
-        $this->cache->delete($this->getFailureCountKey());
-        $this->cache->delete($this->getLastFailureKey());
+        try {
+            $this->cache->delete($this->getFailureCountKey());
+            $this->cache->delete($this->getLastFailureKey());
+        } catch (\Exception $e) {
+            // Silently ignore cache failures
+        }
     }
 
     private function shouldAttemptRecovery(): bool
     {
-        $lastFailure = $this->cache->get($this->getLastFailureKey());
-
-        return $lastFailure === null ||
-            (time() - $lastFailure) >= $this->recoveryTime;
+        try {
+            $lastFailure = $this->cache->get($this->getLastFailureKey());
+            return $lastFailure === null ||
+                (time() - (int) $lastFailure) >= $this->recoveryTime;
+        } catch (\Exception $e) {
+            return true; // Allow recovery if cache fails
+        }
     }
 
     private function getStateKey(): string

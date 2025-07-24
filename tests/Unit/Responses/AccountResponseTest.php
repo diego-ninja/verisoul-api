@@ -74,7 +74,7 @@ describe('AccountResponse', function () {
             
             // Since we don't know the exact internal structure,
             // we verify it's a valid response object
-            expect($response->toArray())->toBeArray();
+            expect($response->array())->toBeArray();
         });
 
         it('handles nested account metadata correctly', function () {
@@ -104,7 +104,7 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
             
             // Verify the data structure is maintained
-            $responseArray = $response->toArray();
+            $responseArray = $response->array();
             expect($responseArray)->toBeArray();
         });
     });
@@ -176,11 +176,11 @@ describe('AccountResponse', function () {
             ]);
 
             $response = AccountResponse::from($originalData);
-            $serializedData = $response->toArray();
+            $serializedData = $response->array();
             $recreatedResponse = AccountResponse::from($serializedData);
 
             expect($recreatedResponse)->toBeInstanceOf(AccountResponse::class);
-            expect($recreatedResponse->toArray())->toBeArray();
+            expect($recreatedResponse->array())->toBeArray();
         });
 
         it('handles complex nested structures correctly', function () {
@@ -228,7 +228,7 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
             
             // Verify complex data structure is preserved
-            $responseArray = $response->toArray();
+            $responseArray = $response->array();
             expect($responseArray)->toBeArray();
         });
     });

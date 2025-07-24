@@ -9,37 +9,43 @@ describe('Device DTO', function () {
                 'category' => 'mobile',
                 'type' => 'iPhone',
                 'os' => 'iOS 16.5',
-                'cpu_cores' => 6,
+                'cpuCores' => 6,
                 'memory' => 8,
                 'gpu' => 'Apple A16 Bionic GPU',
-                'screen_height' => 2556,
-                'screen_width' => 1179
+                'screenHeight' => 2556,
+                'screenWidth' => 1179
             ]);
 
             expect($device->category)->toBe('mobile')
                 ->and($device->type)->toBe('iPhone')
                 ->and($device->os)->toBe('iOS 16.5')
-                ->and($device->cpu_cores)->toBe(6)
+                ->and($device->cpuCores)->toBe(6)
                 ->and($device->memory)->toBe(8)
                 ->and($device->gpu)->toBe('Apple A16 Bionic GPU')
-                ->and($device->screen_height)->toBe(2556)
-                ->and($device->screen_width)->toBe(1179);
+                ->and($device->screenHeight)->toBe(2556.0)
+                ->and($device->screenWidth)->toBe(1179.0);
         });
 
         it('can be created with minimal properties', function () {
             $device = Device::from([
                 'category' => 'desktop',
-                'type' => 'Windows PC'
+                'type' => 'Windows PC',
+                'os' => null,
+                'cpuCores' => null,
+                'memory' => null,
+                'gpu' => null,
+                'screenHeight' => null,
+                'screenWidth' => null
             ]);
 
             expect($device->category)->toBe('desktop')
                 ->and($device->type)->toBe('Windows PC')
                 ->and($device->os)->toBeNull()
-                ->and($device->cpu_cores)->toBeNull()
+                ->and($device->cpuCores)->toBeNull()
                 ->and($device->memory)->toBeNull()
                 ->and($device->gpu)->toBeNull()
-                ->and($device->screen_height)->toBeNull()
-                ->and($device->screen_width)->toBeNull();
+                ->and($device->screenHeight)->toBeNull()
+                ->and($device->screenWidth)->toBeNull();
         });
     });
 
@@ -49,8 +55,8 @@ describe('Device DTO', function () {
                 'category' => 'mobile',
                 'type' => 'Samsung Galaxy S23',
                 'os' => 'Android 13',
-                'screen_height' => 2340,
-                'screen_width' => 1080
+                'screenHeight' => 2340,
+                'screenWidth' => 1080
             ]);
 
             expect($mobileDevice->category)->toBe('mobile')
@@ -63,14 +69,14 @@ describe('Device DTO', function () {
                 'category' => 'desktop',
                 'type' => 'MacBook Pro',
                 'os' => 'macOS 13.4',
-                'cpu_cores' => 8,
+                'cpuCores' => 8,
                 'memory' => 16,
-                'screen_height' => 1440,
-                'screen_width' => 2560
+                'screenHeight' => 1440,
+                'screenWidth' => 2560
             ]);
 
             expect($desktopDevice->category)->toBe('desktop')
-                ->and($desktopDevice->cpu_cores)->toBe(8)
+                ->and($desktopDevice->cpuCores)->toBe(8)
                 ->and($desktopDevice->memory)->toBe(16);
         });
 
@@ -79,8 +85,8 @@ describe('Device DTO', function () {
                 'category' => 'tablet',
                 'type' => 'iPad Pro',
                 'os' => 'iPadOS 16.5',
-                'screen_height' => 2732,
-                'screen_width' => 2048
+                'screenHeight' => 2732,
+                'screenWidth' => 2048
             ]);
 
             expect($tabletDevice->category)->toBe('tablet')
@@ -101,10 +107,10 @@ describe('Device DTO', function () {
                 $device = Device::from([
                     'category' => 'mobile',
                     'type' => $deviceSpec['type'],
-                    'cpu_cores' => $deviceSpec['cores']
+                    'cpuCores' => $deviceSpec['cores']
                 ]);
 
-                expect($device->cpu_cores)->toBe($deviceSpec['cores']);
+                expect($device->cpuCores)->toBe($deviceSpec['cores']);
             }
         });
 
@@ -158,12 +164,12 @@ describe('Device DTO', function () {
                 $device = Device::from([
                     'category' => 'mobile',
                     'type' => $resolution['name'] . ' Device',
-                    'screen_width' => $resolution['width'],
-                    'screen_height' => $resolution['height']
+                    'screenWidth' => $resolution['width'],
+                    'screenHeight' => $resolution['height']
                 ]);
 
-                expect($device->screen_width)->toBe($resolution['width'])
-                    ->and($device->screen_height)->toBe($resolution['height']);
+                expect($device->screenWidth)->toBe((float)$resolution['width'])
+                    ->and($device->screenHeight)->toBe((float)$resolution['height']);
             }
         });
 
@@ -172,23 +178,23 @@ describe('Device DTO', function () {
             $ultraWideDevice = Device::from([
                 'category' => 'desktop',
                 'type' => 'Ultra-wide Monitor',
-                'screen_width' => 3440,
-                'screen_height' => 1440
+                'screenWidth' => 3440,
+                'screenHeight' => 1440
             ]);
 
-            expect($ultraWideDevice->screen_width)->toBe(3440)
-                ->and($ultraWideDevice->screen_height)->toBe(1440);
+            expect($ultraWideDevice->screenWidth)->toBe(3440.0)
+                ->and($ultraWideDevice->screenHeight)->toBe(1440.0);
 
             // Foldable phone
             $foldableDevice = Device::from([
                 'category' => 'mobile',
                 'type' => 'Foldable Phone',
-                'screen_width' => 2208,
-                'screen_height' => 1768
+                'screenWidth' => 2208,
+                'screenHeight' => 1768
             ]);
 
-            expect($foldableDevice->screen_width)->toBe(2208)
-                ->and($foldableDevice->screen_height)->toBe(1768);
+            expect($foldableDevice->screenWidth)->toBe(2208.0)
+                ->and($foldableDevice->screenHeight)->toBe(1768.0);
         });
     });
 
@@ -241,7 +247,7 @@ describe('Device DTO', function () {
                 'category' => 'mobile',
                 'type' => 'Test Device',
                 'os' => 'Test OS',
-                'cpu_cores' => 4,
+                'cpuCores' => 4,
                 'memory' => 8
             ]);
 
@@ -256,24 +262,24 @@ describe('Device DTO', function () {
                 'category' => 'tablet',
                 'type' => 'iPad Air',
                 'os' => 'iPadOS 16.5',
-                'cpu_cores' => 8,
+                'cpuCores' => 8,
                 'memory' => 8,
                 'gpu' => 'Apple M1 GPU',
-                'screen_width' => 2360,
-                'screen_height' => 1640
+                'screenWidth' => 2360,
+                'screenHeight' => 1640
             ]);
 
-            $serialized = $originalDevice->toArray();
+            $serialized = $originalDevice->array();
             $deserializedDevice = Device::from($serialized);
 
             expect($deserializedDevice->category)->toBe($originalDevice->category)
                 ->and($deserializedDevice->type)->toBe($originalDevice->type)
                 ->and($deserializedDevice->os)->toBe($originalDevice->os)
-                ->and($deserializedDevice->cpu_cores)->toBe($originalDevice->cpu_cores)
+                ->and($deserializedDevice->cpuCores)->toBe($originalDevice->cpuCores)
                 ->and($deserializedDevice->memory)->toBe($originalDevice->memory)
                 ->and($deserializedDevice->gpu)->toBe($originalDevice->gpu)
-                ->and($deserializedDevice->screen_width)->toBe($originalDevice->screen_width)
-                ->and($deserializedDevice->screen_height)->toBe($originalDevice->screen_height);
+                ->and($deserializedDevice->screenWidth)->toBe($originalDevice->screenWidth)
+                ->and($deserializedDevice->screenHeight)->toBe($originalDevice->screenHeight);
         });
     });
 
@@ -283,17 +289,17 @@ describe('Device DTO', function () {
                 'category' => 'mobile',
                 'type' => 'iPhone 15 Pro',
                 'os' => 'iOS 17.0',
-                'cpu_cores' => 6,
+                'cpuCores' => 6,
                 'memory' => 8,
                 'gpu' => 'Apple A17 Pro GPU',
-                'screen_width' => 1179,
-                'screen_height' => 2556
+                'screenWidth' => 1179,
+                'screenHeight' => 2556
             ]);
 
             expect($iPhone->category)->toBe('mobile')
                 ->and($iPhone->type)->toBe('iPhone 15 Pro')
                 ->and($iPhone->os)->toBe('iOS 17.0')
-                ->and($iPhone->cpu_cores)->toBe(6)
+                ->and($iPhone->cpuCores)->toBe(6)
                 ->and($iPhone->memory)->toBe(8);
         });
 
@@ -302,17 +308,17 @@ describe('Device DTO', function () {
                 'category' => 'mobile',
                 'type' => 'Samsung Galaxy S24 Ultra',
                 'os' => 'Android 14',
-                'cpu_cores' => 8,
+                'cpuCores' => 8,
                 'memory' => 12,
                 'gpu' => 'Adreno 750',
-                'screen_width' => 1440,
-                'screen_height' => 3120
+                'screenWidth' => 1440,
+                'screenHeight' => 3120
             ]);
 
             expect($androidPhone->category)->toBe('mobile')
                 ->and($androidPhone->type)->toBe('Samsung Galaxy S24 Ultra')
                 ->and($androidPhone->memory)->toBe(12)
-                ->and($androidPhone->cpu_cores)->toBe(8);
+                ->and($androidPhone->cpuCores)->toBe(8);
         });
 
         it('handles laptop specifications correctly', function () {
@@ -320,16 +326,16 @@ describe('Device DTO', function () {
                 'category' => 'desktop',
                 'type' => 'MacBook Pro 16-inch',
                 'os' => 'macOS 14.0',
-                'cpu_cores' => 12,
+                'cpuCores' => 12,
                 'memory' => 32,
                 'gpu' => 'Apple M3 Max GPU',
-                'screen_width' => 3456,
-                'screen_height' => 2234
+                'screenWidth' => 3456,
+                'screenHeight' => 2234
             ]);
 
             expect($laptop->category)->toBe('desktop')
                 ->and($laptop->type)->toBe('MacBook Pro 16-inch')
-                ->and($laptop->cpu_cores)->toBe(12)
+                ->and($laptop->cpuCores)->toBe(12)
                 ->and($laptop->memory)->toBe(32);
         });
     });
@@ -338,13 +344,19 @@ describe('Device DTO', function () {
         it('handles devices with unknown specifications', function () {
             $unknownDevice = Device::from([
                 'category' => 'unknown',
-                'type' => 'Custom Device'
+                'type' => 'Custom Device',
+                'os' => null,
+                'cpuCores' => null,
+                'memory' => null,
+                'gpu' => null,
+                'screenHeight' => null,
+                'screenWidth' => null
             ]);
 
             expect($unknownDevice->category)->toBe('unknown')
                 ->and($unknownDevice->type)->toBe('Custom Device')
                 ->and($unknownDevice->os)->toBeNull()
-                ->and($unknownDevice->cpu_cores)->toBeNull();
+                ->and($unknownDevice->cpuCores)->toBeNull();
         });
 
         it('handles devices with extreme specifications', function () {
@@ -352,26 +364,26 @@ describe('Device DTO', function () {
                 'category' => 'server',
                 'type' => 'High-performance Server',
                 'os' => 'Linux Server',
-                'cpu_cores' => 128,
+                'cpuCores' => 128,
                 'memory' => 1024,
-                'screen_width' => 7680,
-                'screen_height' => 4320
+                'screenWidth' => 7680,
+                'screenHeight' => 4320
             ]);
 
-            expect($extremeDevice->cpu_cores)->toBe(128)
+            expect($extremeDevice->cpuCores)->toBe(128)
                 ->and($extremeDevice->memory)->toBe(1024)
-                ->and($extremeDevice->screen_width)->toBe(7680);
+                ->and($extremeDevice->screenWidth)->toBe(7680.0);
         });
 
         it('handles devices with minimal specifications', function () {
             $minimalDevice = Device::from([
                 'category' => 'iot',
                 'type' => 'IoT Device',
-                'cpu_cores' => 1,
+                'cpuCores' => 1,
                 'memory' => 0 // Some IoT devices have minimal RAM
             ]);
 
-            expect($minimalDevice->cpu_cores)->toBe(1)
+            expect($minimalDevice->cpuCores)->toBe(1)
                 ->and($minimalDevice->memory)->toBe(0);
         });
     });

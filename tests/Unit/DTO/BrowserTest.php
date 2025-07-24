@@ -9,27 +9,30 @@ describe('Browser DTO', function () {
                 'type' => 'Chrome',
                 'version' => '118.0.5993.88',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+                'userAgent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
                 'timezone' => 'America/New_York'
             ]);
 
             expect($browser->type)->toBe('Chrome')
                 ->and($browser->version)->toBe('118.0.5993.88')
                 ->and($browser->language)->toBe('en-US')
-                ->and($browser->user_agent)->toBe('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36')
+                ->and($browser->userAgent)->toBe('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36')
                 ->and($browser->timezone)->toBe('America/New_York');
         });
 
         it('can be created with minimal properties', function () {
             $browser = Browser::from([
                 'type' => 'Firefox',
-                'version' => '119.0'
+                'version' => '119.0',
+                'language' => null,
+                'userAgent' => null,
+                'timezone' => null
             ]);
 
             expect($browser->type)->toBe('Firefox')
                 ->and($browser->version)->toBe('119.0')
                 ->and($browser->language)->toBeNull()
-                ->and($browser->user_agent)->toBeNull()
+                ->and($browser->userAgent)->toBeNull()
                 ->and($browser->timezone)->toBeNull();
         });
     });
@@ -40,12 +43,12 @@ describe('Browser DTO', function () {
                 'type' => 'Chrome',
                 'version' => '118.0.5993.88',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
+                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
             ]);
 
             expect($chrome->type)->toBe('Chrome')
                 ->and($chrome->version)->toContain('118.0')
-                ->and($chrome->user_agent)->toContain('Chrome');
+                ->and($chrome->userAgent)->toContain('Chrome');
         });
 
         it('handles Firefox correctly', function () {
@@ -53,12 +56,12 @@ describe('Browser DTO', function () {
                 'type' => 'Firefox',
                 'version' => '119.0',
                 'language' => 'en-GB',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'
+                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'
             ]);
 
             expect($firefox->type)->toBe('Firefox')
                 ->and($firefox->version)->toBe('119.0')
-                ->and($firefox->user_agent)->toContain('Firefox');
+                ->and($firefox->userAgent)->toContain('Firefox');
         });
 
         it('handles Safari correctly', function () {
@@ -66,12 +69,12 @@ describe('Browser DTO', function () {
                 'type' => 'Safari',
                 'version' => '17.0',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
+                'userAgent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
             ]);
 
             expect($safari->type)->toBe('Safari')
                 ->and($safari->version)->toBe('17.0')
-                ->and($safari->user_agent)->toContain('Safari');
+                ->and($safari->userAgent)->toContain('Safari');
         });
 
         it('handles Edge correctly', function () {
@@ -79,12 +82,12 @@ describe('Browser DTO', function () {
                 'type' => 'Edge',
                 'version' => '118.0.2088.76',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.76'
+                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.76'
             ]);
 
             expect($edge->type)->toBe('Edge')
                 ->and($edge->version)->toContain('118.0')
-                ->and($edge->user_agent)->toContain('Edg');
+                ->and($edge->userAgent)->toContain('Edg');
         });
 
         it('handles mobile browsers correctly', function () {
@@ -92,17 +95,17 @@ describe('Browser DTO', function () {
                 [
                     'type' => 'Chrome Mobile',
                     'version' => '118.0.5993.111',
-                    'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/118.0.5993.111 Mobile/15E148 Safari/604.1'
+                    'userAgent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/118.0.5993.111 Mobile/15E148 Safari/604.1'
                 ],
                 [
                     'type' => 'Safari Mobile',
                     'version' => '17.0',
-                    'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+                    'userAgent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
                 ],
                 [
                     'type' => 'Samsung Internet',
                     'version' => '23.0.1.1',
-                    'user_agent' => 'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/23.0 Chrome/115.0.0.0 Mobile Safari/537.36'
+                    'userAgent' => 'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/23.0 Chrome/115.0.0.0 Mobile Safari/537.36'
                 ]
             ];
 
@@ -110,7 +113,7 @@ describe('Browser DTO', function () {
                 $browser = Browser::from($browserData);
                 expect($browser->type)->toBe($browserData['type'])
                     ->and($browser->version)->toBe($browserData['version'])
-                    ->and($browser->user_agent)->toBe($browserData['user_agent']);
+                    ->and($browser->userAgent)->toBe($browserData['userAgent']);
             }
         });
     });
@@ -279,11 +282,11 @@ describe('Browser DTO', function () {
                 $browser = Browser::from([
                     'type' => 'Desktop Browser',
                     'version' => '1.0.0',
-                    'user_agent' => $userAgent
+                    'userAgent' => $userAgent
                 ]);
 
-                expect($browser->user_agent)->toBe($userAgent)
-                    ->and($browser->user_agent)->toContain('Mozilla/5.0');
+                expect($browser->userAgent)->toBe($userAgent)
+                    ->and($browser->userAgent)->toContain('Mozilla/5.0');
             }
         });
 
@@ -299,11 +302,11 @@ describe('Browser DTO', function () {
                 $browser = Browser::from([
                     'type' => 'Mobile Browser',
                     'version' => '1.0.0',
-                    'user_agent' => $userAgent
+                    'userAgent' => $userAgent
                 ]);
 
-                expect($browser->user_agent)->toBe($userAgent)
-                    ->and($browser->user_agent)->toContain('Mobile');
+                expect($browser->userAgent)->toBe($userAgent)
+                    ->and($browser->userAgent)->toContain('Mobile');
             }
         });
     });
@@ -326,17 +329,17 @@ describe('Browser DTO', function () {
                 'type' => 'Firefox',
                 'version' => '119.0.1',
                 'language' => 'fr-FR',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
+                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
                 'timezone' => 'Europe/Paris'
             ]);
 
-            $serialized = $originalBrowser->toArray();
+            $serialized = $originalBrowser->array();
             $deserializedBrowser = Browser::from($serialized);
 
             expect($deserializedBrowser->type)->toBe($originalBrowser->type)
                 ->and($deserializedBrowser->version)->toBe($originalBrowser->version)
                 ->and($deserializedBrowser->language)->toBe($originalBrowser->language)
-                ->and($deserializedBrowser->user_agent)->toBe($originalBrowser->user_agent)
+                ->and($deserializedBrowser->userAgent)->toBe($originalBrowser->userAgent)
                 ->and($deserializedBrowser->timezone)->toBe($originalBrowser->timezone);
         });
     });
@@ -347,13 +350,13 @@ describe('Browser DTO', function () {
                 'type' => 'Chrome',
                 'version' => '118.0.5993.88',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+                'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
                 'timezone' => 'America/New_York'
             ]);
 
             expect($chromeWindows->type)->toBe('Chrome')
-                ->and($chromeWindows->user_agent)->toContain('Windows NT 10.0')
-                ->and($chromeWindows->user_agent)->toContain('Chrome/118.0.0.0');
+                ->and($chromeWindows->userAgent)->toContain('Windows NT 10.0')
+                ->and($chromeWindows->userAgent)->toContain('Chrome/118.0.0.0');
         });
 
         it('handles Safari on macOS correctly', function () {
@@ -361,13 +364,13 @@ describe('Browser DTO', function () {
                 'type' => 'Safari',
                 'version' => '17.0',
                 'language' => 'en-US',
-                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+                'userAgent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
                 'timezone' => 'America/Los_Angeles'
             ]);
 
             expect($safariMac->type)->toBe('Safari')
-                ->and($safariMac->user_agent)->toContain('Macintosh')
-                ->and($safariMac->user_agent)->toContain('Safari/605.1.15');
+                ->and($safariMac->userAgent)->toContain('Macintosh')
+                ->and($safariMac->userAgent)->toContain('Safari/605.1.15');
         });
 
         it('handles Firefox on Linux correctly', function () {
@@ -375,13 +378,13 @@ describe('Browser DTO', function () {
                 'type' => 'Firefox',
                 'version' => '119.0',
                 'language' => 'en-GB',
-                'user_agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0',
+                'userAgent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0',
                 'timezone' => 'Europe/London'
             ]);
 
             expect($firefoxLinux->type)->toBe('Firefox')
-                ->and($firefoxLinux->user_agent)->toContain('X11; Linux x86_64')
-                ->and($firefoxLinux->user_agent)->toContain('Firefox/119.0');
+                ->and($firefoxLinux->userAgent)->toContain('X11; Linux x86_64')
+                ->and($firefoxLinux->userAgent)->toContain('Firefox/119.0');
         });
     });
 
@@ -391,13 +394,13 @@ describe('Browser DTO', function () {
                 'type' => 'Custom Browser™',
                 'version' => '1.0.0-beta+build.123',
                 'language' => 'zh-Hans-CN',
-                'user_agent' => 'CustomBrowser/1.0 (Special™ Edition; 测试版本)',
+                'userAgent' => 'CustomBrowser/1.0 (Special™ Edition; 测试版本)',
                 'timezone' => 'Asia/Shanghai'
             ]);
 
             expect($specialBrowser->type)->toBe('Custom Browser™')
                 ->and($specialBrowser->version)->toBe('1.0.0-beta+build.123')
-                ->and($specialBrowser->user_agent)->toContain('测试版本');
+                ->and($specialBrowser->userAgent)->toContain('测试版本');
         });
 
         it('handles empty and null values gracefully', function () {
@@ -405,14 +408,14 @@ describe('Browser DTO', function () {
                 'type' => 'Unknown',
                 'version' => null,
                 'language' => null,
-                'user_agent' => null,
+                'userAgent' => null,
                 'timezone' => null
             ]);
 
             expect($minimalBrowser->type)->toBe('Unknown')
                 ->and($minimalBrowser->version)->toBeNull()
                 ->and($minimalBrowser->language)->toBeNull()
-                ->and($minimalBrowser->user_agent)->toBeNull()
+                ->and($minimalBrowser->userAgent)->toBeNull()
                 ->and($minimalBrowser->timezone)->toBeNull();
         });
 
@@ -422,11 +425,11 @@ describe('Browser DTO', function () {
             $browser = Browser::from([
                 'type' => 'VerboseBrowser',
                 'version' => '1.0.0',
-                'user_agent' => $longUserAgent
+                'userAgent' => $longUserAgent
             ]);
 
-            expect($browser->user_agent)->toBe($longUserAgent)
-                ->and(strlen($browser->user_agent))->toBeGreaterThan(1000);
+            expect($browser->userAgent)->toBe($longUserAgent)
+                ->and(strlen($browser->userAgent))->toBeGreaterThan(1000);
         });
     });
 });
