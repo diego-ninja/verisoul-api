@@ -18,10 +18,4 @@ enum VerificationType: string
             self::Identity->value,
         ];
     }
-
-    public function getExpirationPeriod(): ?int
-    {
-        $configKey = sprintf('larasoul.verification.expirations.%s', $this->value);
-        return config($configKey);
-    }
 }

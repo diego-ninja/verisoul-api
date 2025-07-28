@@ -63,19 +63,6 @@ describe('RiskLevel Enum', function () {
     });
 
     describe('withScore method', function () {
-        beforeEach(function () {
-            // Mock the config function since it won't be available in tests
-            if (!function_exists('config')) {
-                function config($key) {
-                    $configs = [
-                        'larasoul.verification.risk_thresholds.critical' => 0.9,
-                        'larasoul.verification.risk_thresholds.high' => 0.7,
-                        'larasoul.verification.risk_thresholds.medium' => 0.4,
-                    ];
-                    return $configs[$key] ?? null;
-                }
-            }
-        });
 
         it('returns Critical for scores above critical threshold', function () {
             expect(RiskLevel::withScore(0.95))->toBe(RiskLevel::Critical)

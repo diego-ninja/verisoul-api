@@ -23,11 +23,11 @@ enum RiskLevel: string
 
     public static function withScore(float $score): RiskLevel
     {
-        if ($score >= config('larasoul.verification.risk_thresholds.critical')) {
+        if ($score >= 0.9) {
             return self::Critical;
-        } elseif ($score >= config('larasoul.verification.risk_thresholds.high')) {
+        } elseif ($score >= 0.7) {
             return self::High;
-        } elseif ($score >= config('larasoul.verification.risk_thresholds.medium')) {
+        } elseif ($score >= 0.4) {
             return self::Medium;
         } elseif ($score > 0) {
             return self::Low;
