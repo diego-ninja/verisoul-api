@@ -3,6 +3,8 @@
 namespace Ninja\Verisoul\Responses;
 
 use Carbon\Carbon;
+use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
+use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 use Ninja\Verisoul\Collections\RiskSignalCollection;
 use Ninja\Verisoul\DTO\Email;
 use Ninja\Verisoul\DTO\UniqueValues;
@@ -10,6 +12,7 @@ use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulDecision;
 use Ninja\Verisoul\ValueObjects\Score;
 
+#[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class AccountResponse extends ApiResponse
 {
     public function __construct(

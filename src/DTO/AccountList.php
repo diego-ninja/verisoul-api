@@ -3,8 +3,11 @@
 namespace Ninja\Verisoul\DTO;
 
 use Ninja\Granite\GraniteDTO;
+use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
+use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 use Ninja\Verisoul\Collections\AccountListCollection;
 
+#[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class AccountList extends GraniteDTO
 {
     public function __construct(

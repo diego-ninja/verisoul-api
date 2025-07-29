@@ -3,6 +3,8 @@
 namespace Ninja\Verisoul\Responses;
 
 use Illuminate\Support\Collection;
+use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
+use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 use Ninja\Verisoul\Collections\RiskSignalCollection;
 use Ninja\Verisoul\DTO\DeviceNetworkSignals;
 use Ninja\Verisoul\DTO\Matches;
@@ -15,6 +17,7 @@ use Ninja\Verisoul\Enums\RiskLevel;
 use Ninja\Verisoul\Enums\VerisoulDecision;
 use Ninja\Verisoul\ValueObjects\Score;
 
+#[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class VerifyFaceResponse extends ApiResponse
 {
     /**

@@ -2,8 +2,11 @@
 
 namespace Ninja\Verisoul\Responses;
 
+use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
+use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 
+#[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class LivenessSessionResponse extends ApiResponse
 {
     public function __construct(

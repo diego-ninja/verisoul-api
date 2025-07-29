@@ -4,7 +4,10 @@ namespace Ninja\Verisoul\DTO;
 
 use Ninja\Granite\GraniteDTO;
 use Carbon\Carbon;
+use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
+use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 
+#[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class UserData extends GraniteDTO
 {
     public function __construct(
