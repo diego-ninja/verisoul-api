@@ -2,7 +2,6 @@
 
 namespace Ninja\Verisoul\Clients\Liveness;
 
-use Illuminate\Contracts\Auth\Authenticatable;
 use Ninja\Verisoul\Responses\LivenessSessionResponse;
 use Ninja\Verisoul\Responses\VerifyFaceResponse;
 use Ninja\Verisoul\Responses\VerifyIdentityResponse;
@@ -46,11 +45,11 @@ final class FaceMatchClient extends LivenessApiClient implements FaceMatchInterf
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function verifyIdentity(string $sessionId, Authenticatable $user): VerifyIdentityResponse
+    public function verifyIdentity(string $sessionId, string $accountId): VerifyIdentityResponse
     {
         $response = $this->call(
             endpoint: VerisoulApiEndpoint::VerifyIdentity,
-            data: ['session_id' => $sessionId, 'account_id' => $user->getAuthIdentifier()],
+            data: ['session_id' => $sessionId, 'account_id' => $accountId],
         );
 
         return VerifyIdentityResponse::from($response);

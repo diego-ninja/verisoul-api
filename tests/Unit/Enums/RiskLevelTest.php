@@ -208,7 +208,7 @@ describe('RiskLevel Enum', function () {
         });
 
         it('can be cast to string', function () {
-            expect((string) RiskLevel::Critical->value)->toBe('critical');
+            expect(RiskLevel::Critical->value)->toBe('critical');
         });
     });
 });

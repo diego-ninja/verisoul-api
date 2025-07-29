@@ -22,7 +22,7 @@ use InvalidArgumentException;
 use Ninja\Verisoul\Support\InMemoryCache;
 use Psr\SimpleCache\CacheInterface;
 
-class Verisoul
+final class Verisoul
 {
     private string $apiKey;
     private VerisoulEnvironment $environment;

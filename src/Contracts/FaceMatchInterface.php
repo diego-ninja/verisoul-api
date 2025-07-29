@@ -2,7 +2,6 @@
 
 namespace Ninja\Verisoul\Contracts;
 
-use Illuminate\Contracts\Auth\Authenticatable;
 use Ninja\Verisoul\Responses\VerifyFaceResponse;
 use Ninja\Verisoul\Responses\VerifyIdentityResponse;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
@@ -20,5 +19,5 @@ interface FaceMatchInterface extends BiometricInterface
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function verifyIdentity(string $sessionId, Authenticatable $user): VerifyIdentityResponse;
+    public function verifyIdentity(string $sessionId, string $accountId): VerifyIdentityResponse;
 }

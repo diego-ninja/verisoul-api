@@ -235,11 +235,6 @@ describe('FaceMatchClient', function () {
     });
 
     describe('verifyIdentity method', function () {
-        beforeEach(function () {
-            $this->mockUser = Mockery::mock(Authenticatable::class);
-            $this->mockUser->shouldReceive('getAuthIdentifier')->andReturn('user_identity_123');
-        });
-
         it('creates VerifyIdentityResponse object', function () {
             $mockHttpClient = MockFactory::createSuccessfulHttpClient([
                 'post' => [
@@ -254,7 +249,7 @@ describe('FaceMatchClient', function () {
 
             $client = new FaceMatchClient('test_api_key', httpClient: $mockHttpClient);
             
-            $response = $client->verifyIdentity('identity_session_123', $this->mockUser);
+            $response = $client->verifyIdentity('identity_session_123', 'user_identity_123');
 
             expect($response)->toBeInstanceOf(VerifyIdentityResponse::class);
         });
@@ -284,7 +279,7 @@ describe('FaceMatchClient', function () {
                 ]);
 
             $client = new FaceMatchClient('test_key', httpClient: $mockHttpClient);
-            $response = $client->verifyIdentity($sessionId, $this->mockUser);
+            $response = $client->verifyIdentity($sessionId, $userId);
 
             expect($response)->toBeInstanceOf(VerifyIdentityResponse::class);
         });
@@ -311,7 +306,7 @@ describe('FaceMatchClient', function () {
                 ]);
                 
                 $client = new FaceMatchClient('test_key', httpClient: $mockHttpClient);
-                $response = $client->verifyIdentity('test_session', $mockUser);
+                $response = $client->verifyIdentity('test_session', 'user_identity_123');
                 
                 expect($response)->toBeInstanceOf(VerifyIdentityResponse::class);
             }
@@ -321,7 +316,7 @@ describe('FaceMatchClient', function () {
             $failingClient = MockFactory::createFailingHttpClient(VerisoulConnectionException::class);
             $client = createTestClient(FaceMatchClient::class, ['httpClient' => $failingClient]);
 
-            expect(fn() => $client->verifyIdentity('session_123', $this->mockUser))
+            expect(fn() => $client->verifyIdentity('session_123', 'user_identity_123'))
                 ->toThrow(VerisoulConnectionException::class);
         });
 
@@ -329,7 +324,7 @@ describe('FaceMatchClient', function () {
             $failingClient = MockFactory::createFailingHttpClient(VerisoulApiException::class);
             $client = createTestClient(FaceMatchClient::class, ['httpClient' => $failingClient]);
 
-            expect(fn() => $client->verifyIdentity('invalid_session', $this->mockUser))
+            expect(fn() => $client->verifyIdentity('invalid_session', 'user_identity_123'))
                 ->toThrow(VerisoulApiException::class);
         });
     });
