@@ -130,14 +130,14 @@ describe('Location DTO', function () {
 
             expect($array)->toBeArray()
                 ->and($array)->toHaveKeys([
-                    'continent', 'countryCode', 'state', 'city', 
-                    'zipCode', 'timezone', 'latitude', 'longitude'
+                    'continent', 'country_code', 'state', 'city',
+                    'zip_code', 'timezone', 'latitude', 'longitude'
                 ])
                 ->and($array['continent'])->toBe('Australia')
-                ->and($array['countryCode'])->toBe('AU')
+                ->and($array['country_code'])->toBe('AU')
                 ->and($array['state'])->toBe('New South Wales')
                 ->and($array['city'])->toBe('Sydney')
-                ->and($array['zipCode'])->toBe('2000')
+                ->and($array['zip_code'])->toBe('2000')
                 ->and($array['timezone'])->toBe('Australia/Sydney')
                 ->and($array['latitude'])->toBe(-33.8688)
                 ->and($array['longitude'])->toBe(151.2093);
@@ -221,10 +221,10 @@ describe('Location DTO', function () {
             $array = $location->array();
 
             expect($array['continent'])->toBe('Asia')
-                ->and($array['countryCode'])->toBe('IN')
+                ->and($array['country_code'])->toBe('IN')
                 ->and($array['state'])->toBeNull()
                 ->and($array['city'])->toBe('Mumbai')
-                ->and($array['zipCode'])->toBeNull()
+                ->and($array['zip_code'])->toBeNull()
                 ->and($array['timezone'])->toBe('Asia/Kolkata')
                 ->and($array['latitude'])->toBe(19.0760)
                 ->and($array['longitude'])->toBe(72.8777);

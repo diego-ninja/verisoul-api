@@ -283,10 +283,10 @@ describe('Address DTO', function () {
             $array = $address->array();
 
             expect($array)->toBeArray()
-                ->and($array)->toHaveKeys(['city', 'country', 'postalCode', 'state', 'street'])
+                ->and($array)->toHaveKeys(['city', 'country', 'postal_code', 'state', 'street'])
                 ->and($array['city'])->toBe('Portland')
                 ->and($array['country'])->toBe('US')
-                ->and($array['postalCode'])->toBe('97201')
+                ->and($array['postal_code'])->toBe('97201')
                 ->and($array['state'])->toBe('OR')
                 ->and($array['street'])->toBe('1234 NW Everett St');
         });
@@ -342,7 +342,7 @@ describe('Address DTO', function () {
 
             expect($array['city'])->toBe('Seattle')
                 ->and($array['country'])->toBe('US')
-                ->and($array['postalCode'])->toBeNull()
+                ->and($array['postal_code'])->toBeNull()
                 ->and($array['state'])->toBe('WA')
                 ->and($array['street'])->toBe('500 Pine St');
         });

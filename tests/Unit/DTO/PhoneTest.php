@@ -135,15 +135,15 @@ describe('Phone DTO', function () {
 
             expect($array)->toBeArray()
                 ->and($array)->toHaveKeys([
-                    'valid', 'phoneNumber', 'callingCountryCode', 
-                    'countryCode', 'carrierName', 'lineType'
+                    'valid', 'phone_number', 'calling_country_code',
+                    'country_code', 'carrier_name', 'line_type'
                 ])
                 ->and($array['valid'])->toBeTrue()
-                ->and($array['phoneNumber'])->toBe('+14155552671')
-                ->and($array['callingCountryCode'])->toBe('1')
-                ->and($array['countryCode'])->toBe('US')
-                ->and($array['carrierName'])->toBe('Verizon')
-                ->and($array['lineType'])->toBe('mobile');
+                ->and($array['phone_number'])->toBe('+14155552671')
+                ->and($array['calling_country_code'])->toBe('1')
+                ->and($array['country_code'])->toBe('US')
+                ->and($array['carrier_name'])->toBe('Verizon')
+                ->and($array['line_type'])->toBe('mobile');
         });
 
         it('can be created from array', function () {

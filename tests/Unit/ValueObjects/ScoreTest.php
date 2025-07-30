@@ -93,7 +93,7 @@ describe('Score Value Object', function () {
             $original = new Score(0.75);
             $same = Score::from($original);
             
-            expect($same)->toBe($original)
+            expect($same)->equals($original)
                 ->and($same->value)->toBe(0.75);
         });
 

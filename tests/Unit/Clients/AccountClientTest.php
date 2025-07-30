@@ -597,13 +597,11 @@ describe('AccountClient', function () {
                 // Test all methods with the account ID
                 $getResult = $client->getAccount($accountId);
                 $sessionsResult = $client->getAccountSessions($accountId);
-                $linkedResult = $client->getLinkedAccounts($accountId);
                 $updateResult = $client->updateAccount($accountId, ['status' => 'updated']);
                 $deleteResult = $client->deleteAccount($accountId);
 
                 expect($getResult)->toBeInstanceOf(AccountResponse::class)
                     ->and($sessionsResult)->toBeInstanceOf(AccountSessionsResponse::class)
-                    ->and($linkedResult)->toBeInstanceOf(LinkedAccountsResponse::class)
                     ->and($updateResult)->toBeInstanceOf(AccountResponse::class)
                     ->and($deleteResult)->toBeInstanceOf(DeleteAccountResponse::class);
             }

@@ -3,6 +3,7 @@
 namespace Ninja\Verisoul\Collections;
 
 use Illuminate\Support\Collection;
+use Ninja\Granite\Contracts\GraniteObject;
 use Ninja\Verisoul\DTO\DeviceNetworkSignals;
 use Ninja\Verisoul\DTO\DocumentSignals;
 use Ninja\Verisoul\DTO\ReferringSessionSignals;
@@ -16,31 +17,31 @@ use Ninja\Verisoul\ValueObjects\Score;
  * This collection replaces the individual RiskSignals and RiskSignalScore DTOs
  * providing a more flexible and structured approach to handling risk signals.
  */
-final class RiskSignalCollection extends Collection
+final class RiskSignalCollection extends Collection implements GraniteObject
 {
     /**
      * Create collection from array of signal data
      */
-    public static function from(array $data): self
+    public static function from(mixed ...$args): static
     {
         $collection = new self;
+        $signals = $args[0] ?? [];
 
-        foreach ($data as $signalData) {
-            if (is_array($signalData)) {
-                if ($signalData['score'] > 0) {
-                    $collection->addSignal(
-                        name: $signalData['name'] ?? 'unknown',
-                        score: $signalData['score'],
-                        scope: isset($signalData['scope'])
-                            ? SignalScope::from($signalData['scope'])
-                            : SignalScope::DeviceNetwork,
-                    );
-                }
-            } elseif ($signalData instanceof RiskSignal) {
-                if ($signalData->score->value() > 0) {
-                    // Only add signals with a positive score
-                    $collection->add($signalData);
-                }
+        foreach ($signals as $signal => $data) {
+            if (is_array($data)) {
+                $collection->addSignal(
+                    name: $data['name'],
+                    score: $data['score'],
+                    scope: SignalScope::tryFrom($data['scope']) ?? SignalScope::getScopeForSignal($data['name'])
+                );
+            }
+
+            if (is_float($data) && $data > 0) {
+                $collection->addSignal(
+                    name: $signal,
+                    score: Score::from($data),
+                    scope: SignalScope::getScopeForSignal($signal)
+                );
             }
         }
 
@@ -162,7 +163,7 @@ final class RiskSignalCollection extends Collection
     /**
      * Convert to array for JSON serialization
      */
-    public function toArray(): array
+    public function array(): array
     {
         return $this->map(fn (RiskSignal $signal) => $signal->array())->toArray();
     }
@@ -321,5 +322,13 @@ final class RiskSignalCollection extends Collection
         }
 
         return $collection;
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function json(): string
+    {
+        return json_encode($this->array(), JSON_THROW_ON_ERROR);
     }
 }
