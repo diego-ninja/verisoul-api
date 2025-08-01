@@ -2,19 +2,19 @@
 
 use Ninja\Verisoul\Clients\AccountClient;
 use Ninja\Verisoul\Clients\SessionClient;
+use Ninja\Verisoul\Contracts\HttpClientInterface;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
-use Ninja\Verisoul\Contracts\HttpClientInterface;
 
-describe('Rate Limiting Integration Tests', function () {
-    beforeEach(function () {
+describe('Rate Limiting Integration Tests', function (): void {
+    beforeEach(function (): void {
         $this->testApiKey = 'rate_limit_test_key';
         $this->sandboxEnv = VerisoulEnvironment::Sandbox;
     });
 
-    describe('API rate limit handling', function () {
-        it('handles 429 rate limit responses with backoff', function () {
+    describe('API rate limit handling', function (): void {
+        it('handles 429 rate limit responses with backoff', function (): void {
             $rateLimitClient = Mockery::mock(HttpClientInterface::class);
             $rateLimitClient->shouldReceive('setTimeout')->andReturnSelf();
             $rateLimitClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -25,14 +25,14 @@ describe('Rate Limiting Integration Tests', function () {
             // First call returns 429, second succeeds
             $rateLimitClient->shouldReceive('get')
                 ->once()
-                ->andReturnUsing(function() use (&$attemptCount) {
+                ->andReturnUsing(function () use (&$attemptCount): void {
                     $attemptCount++;
                     throw new VerisoulApiException('Rate limit exceeded', 429);
                 });
 
             $rateLimitClient->shouldReceive('get')
                 ->once()
-                ->andReturnUsing(function() use (&$attemptCount) {
+                ->andReturnUsing(function () use (&$attemptCount) {
                     $attemptCount++;
                     return MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'rate_limit_success']]);
                 });
@@ -42,16 +42,16 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 2,
                 retryDelay: 100,
-                httpClient: $rateLimitClient
+                httpClient: $rateLimitClient,
             );
 
             $response = $client->getAccount('rate_limit_test');
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class)
                 ->and($attemptCount)->toBe(2);
         });
 
-        it('respects Retry-After header from API', function () {
+        it('respects Retry-After header from API', function (): void {
             $retryAfterClient = Mockery::mock(HttpClientInterface::class);
             $retryAfterClient->shouldReceive('setTimeout')->andReturnSelf();
             $retryAfterClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -63,7 +63,7 @@ describe('Rate Limiting Integration Tests', function () {
             // First call returns 429 with Retry-After header
             $retryAfterClient->shouldReceive('get')
                 ->once()
-                ->andReturnUsing(function() use (&$callTimes) {
+                ->andReturnUsing(function () use (&$callTimes): void {
                     $callTimes[] = microtime(true);
                     $exception = new VerisoulApiException('Rate limit exceeded', 429);
                     // Simulate Retry-After header (this would be handled by HTTP client)
@@ -73,7 +73,7 @@ describe('Rate Limiting Integration Tests', function () {
             // Second call succeeds
             $retryAfterClient->shouldReceive('get')
                 ->once()
-                ->andReturnUsing(function() use (&$callTimes) {
+                ->andReturnUsing(function () use (&$callTimes) {
                     $callTimes[] = microtime(true);
                     return MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'retry_after_success']]);
                 });
@@ -83,12 +83,12 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 2,
                 retryDelay: 200, // 200ms base delay
-                httpClient: $retryAfterClient
+                httpClient: $retryAfterClient,
             );
 
             $response = $client->getAccount('retry_after_test');
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class)
                 ->and(count($callTimes))->toBe(2);
 
             // Verify there was a delay between calls
@@ -98,7 +98,7 @@ describe('Rate Limiting Integration Tests', function () {
             }
         });
 
-        it('handles burst rate limits correctly', function () {
+        it('handles burst rate limits correctly', function (): void {
             $burstClient = Mockery::mock(HttpClientInterface::class);
             $burstClient->shouldReceive('setTimeout')->andReturnSelf();
             $burstClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -109,17 +109,17 @@ describe('Rate Limiting Integration Tests', function () {
 
             // Setup pattern: rate limit on calls 6 and 7 to cause permanent failures
             $burstClient->shouldReceive('get')
-                ->andReturnUsing(function() use (&$callCount, &$rateLimitHits) {
+                ->andReturnUsing(function () use (&$callCount, &$rateLimitHits) {
                     $callCount++;
-                    
+
                     // Simulate persistent rate limit on calls 6 and 7
                     if ($callCount >= 6 && $callCount <= 8) {
                         $rateLimitHits++;
                         throw new VerisoulApiException('Burst rate limit exceeded', 429);
                     }
-                    
+
                     return MockFactory::createAccountResponseFromFixture([
-                        'account' => ['id' => "burst_test_{$callCount}"]
+                        'account' => ['id' => "burst_test_{$callCount}"],
                     ]);
                 });
 
@@ -128,7 +128,7 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 1, // Reduce retries to ensure some failures
                 retryDelay: 10,
-                httpClient: $burstClient
+                httpClient: $burstClient,
             );
 
             $results = [];
@@ -150,8 +150,8 @@ describe('Rate Limiting Integration Tests', function () {
         });
     });
 
-    describe('Client-side rate limiting', function () {
-        it('implements client-side request throttling', function () {
+    describe('Client-side rate limiting', function (): void {
+        it('implements client-side request throttling', function (): void {
             $throttleClient = Mockery::mock(HttpClientInterface::class);
             $throttleClient->shouldReceive('setTimeout')->andReturnSelf();
             $throttleClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -161,17 +161,17 @@ describe('Rate Limiting Integration Tests', function () {
 
             $throttleClient->shouldReceive('get')
                 ->times(5)
-                ->andReturnUsing(function() use (&$callTimes) {
+                ->andReturnUsing(function () use (&$callTimes) {
                     $callTimes[] = microtime(true);
                     return MockFactory::createAccountResponseFromFixture([
-                        'account' => ['id' => 'throttle_test_' . count($callTimes)]
+                        'account' => ['id' => 'throttle_test_' . count($callTimes)],
                     ]);
                 });
 
             $client = new AccountClient(
                 $this->testApiKey,
                 $this->sandboxEnv,
-                httpClient: $throttleClient
+                httpClient: $throttleClient,
             );
 
             $startTime = microtime(true);
@@ -179,8 +179,8 @@ describe('Rate Limiting Integration Tests', function () {
             // Make 5 rapid requests
             for ($i = 1; $i <= 5; $i++) {
                 $response = $client->getAccount("throttle_test_{$i}");
-                expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class);
-                
+                expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class);
+
                 // Add small delay to simulate throttling
                 if ($i < 5) {
                     usleep(10000); // 10ms between requests
@@ -194,7 +194,7 @@ describe('Rate Limiting Integration Tests', function () {
                 ->and($totalTime)->toBeGreaterThan(40); // Should take at least 40ms with delays
         });
 
-        it('adapts request rate based on server responses', function () {
+        it('adapts request rate based on server responses', function (): void {
             $adaptiveClient = Mockery::mock(HttpClientInterface::class);
             $adaptiveClient->shouldReceive('setTimeout')->andReturnSelf();
             $adaptiveClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -204,18 +204,18 @@ describe('Rate Limiting Integration Tests', function () {
             $rateLimitCount = 0;
 
             $adaptiveClient->shouldReceive('post')
-                ->andReturnUsing(function() use (&$requestTimes, &$rateLimitCount) {
+                ->andReturnUsing(function () use (&$requestTimes, &$rateLimitCount) {
                     $requestTimes[] = microtime(true);
                     $requestNum = count($requestTimes);
-                    
+
                     // Simulate rate limiting on every 3rd request
-                    if ($requestNum % 3 === 0 && $rateLimitCount < 2) {
+                    if (0 === $requestNum % 3 && $rateLimitCount < 2) {
                         $rateLimitCount++;
                         throw new VerisoulApiException('Adaptive rate limit', 429);
                     }
-                    
+
                     return MockFactory::createAuthenticateSessionResponseFromFixture([
-                        'session_id' => "adaptive_session_{$requestNum}"
+                        'session_id' => "adaptive_session_{$requestNum}",
                     ]);
                 });
 
@@ -224,10 +224,10 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 2,
                 retryDelay: 100,
-                httpClient: $adaptiveClient
+                httpClient: $adaptiveClient,
             );
 
-            $userAccount = \Ninja\Verisoul\DTO\UserAccount::from(['id' => 'adaptive_user']);
+            $userAccount = Ninja\Verisoul\DTO\UserAccount::from(['id' => 'adaptive_user']);
             $successCount = 0;
 
             // Make 8 requests with adaptive rate limiting
@@ -247,8 +247,8 @@ describe('Rate Limiting Integration Tests', function () {
         });
     });
 
-    describe('Concurrent request handling', function () {
-        it('manages concurrent requests under rate limits', function () {
+    describe('Concurrent request handling', function (): void {
+        it('manages concurrent requests under rate limits', function (): void {
             $concurrentClient = Mockery::mock(HttpClientInterface::class);
             $concurrentClient->shouldReceive('setTimeout')->andReturnSelf();
             $concurrentClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -259,18 +259,18 @@ describe('Rate Limiting Integration Tests', function () {
             $currentConcurrent = 0;
 
             $concurrentClient->shouldReceive('get')
-                ->andReturnUsing(function() use (&$concurrentRequests, &$maxConcurrent, &$currentConcurrent) {
+                ->andReturnUsing(function () use (&$concurrentRequests, &$maxConcurrent, &$currentConcurrent) {
                     $currentConcurrent++;
                     $concurrentRequests++;
                     $maxConcurrent = max($maxConcurrent, $currentConcurrent);
-                    
+
                     // Simulate processing time
                     usleep(50000); // 50ms
-                    
+
                     $result = MockFactory::createAccountResponseFromFixture([
-                        'account' => ['id' => "concurrent_{$concurrentRequests}"]
+                        'account' => ['id' => "concurrent_{$concurrentRequests}"],
                     ]);
-                    
+
                     $currentConcurrent--;
                     return $result;
                 });
@@ -278,7 +278,7 @@ describe('Rate Limiting Integration Tests', function () {
             $client = new AccountClient(
                 $this->testApiKey,
                 $this->sandboxEnv,
-                httpClient: $concurrentClient
+                httpClient: $concurrentClient,
             );
 
             $promises = [];
@@ -286,11 +286,11 @@ describe('Rate Limiting Integration Tests', function () {
 
             // Simulate 5 concurrent requests
             for ($i = 1; $i <= 5; $i++) {
-                $promises[] = function() use ($client, $i, &$results) {
+                $promises[] = function () use ($client, $i, &$results): void {
                     try {
                         $response = $client->getAccount("concurrent_{$i}");
                         $results[] = $response;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // Handle any failures
                     }
                 };
@@ -305,7 +305,7 @@ describe('Rate Limiting Integration Tests', function () {
                 ->and($concurrentRequests)->toBe(5);
         });
 
-        it('handles rate limit recovery for concurrent requests', function () {
+        it('handles rate limit recovery for concurrent requests', function (): void {
             $recoveryClient = Mockery::mock(HttpClientInterface::class);
             $recoveryClient->shouldReceive('setTimeout')->andReturnSelf();
             $recoveryClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -315,17 +315,17 @@ describe('Rate Limiting Integration Tests', function () {
             $rateLimitHits = 0;
 
             $recoveryClient->shouldReceive('post')
-                ->andReturnUsing(function() use (&$totalRequests, &$rateLimitHits) {
+                ->andReturnUsing(function () use (&$totalRequests, &$rateLimitHits) {
                     $totalRequests++;
-                    
+
                     // First 3 requests hit rate limit
                     if ($totalRequests <= 3) {
                         $rateLimitHits++;
                         throw new VerisoulApiException('Concurrent rate limit', 429);
                     }
-                    
+
                     return MockFactory::createSessionResponseFromFixture([
-                        'session_id' => "recovery_session_{$totalRequests}"
+                        'session_id' => "recovery_session_{$totalRequests}",
                     ]);
                 });
 
@@ -334,7 +334,7 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 3,
                 retryDelay: 200,
-                httpClient: $recoveryClient
+                httpClient: $recoveryClient,
             );
 
             $operations = [];
@@ -343,11 +343,11 @@ describe('Rate Limiting Integration Tests', function () {
 
             // Create 6 concurrent operations
             for ($i = 1; $i <= 6; $i++) {
-                $operations[] = function() use ($sessionClient, $i, &$results, &$failures) {
+                $operations[] = function () use ($sessionClient, $i, &$results, &$failures): void {
                     try {
                         $response = $sessionClient->unauthenticated("recovery_session_{$i}");
                         $results[] = $response;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $failures[] = $e;
                     }
                 };
@@ -363,8 +363,8 @@ describe('Rate Limiting Integration Tests', function () {
         });
     });
 
-    describe('Rate limit monitoring and metrics', function () {
-        it('tracks rate limit encounters for monitoring', function () {
+    describe('Rate limit monitoring and metrics', function (): void {
+        it('tracks rate limit encounters for monitoring', function (): void {
             $monitoringClient = Mockery::mock(HttpClientInterface::class);
             $monitoringClient->shouldReceive('setTimeout')->andReturnSelf();
             $monitoringClient->shouldReceive('setConnectTimeout')->andReturnSelf();
@@ -375,22 +375,22 @@ describe('Rate Limiting Integration Tests', function () {
             $requestCounter = 0;
             $monitoringClient->shouldReceive('get')
                 ->times(10)
-                ->andReturnUsing(function() use (&$rateLimitEvents, &$requestCounter) {
+                ->andReturnUsing(function () use (&$rateLimitEvents, &$requestCounter) {
                     $requestCounter++;
                     $requestNum = $requestCounter;
-                    
+
                     // Every 4th request hits rate limit
-                    if ($requestNum % 4 === 0) {
+                    if (0 === $requestNum % 4) {
                         $rateLimitEvents[] = [
                             'timestamp' => microtime(true),
                             'request_num' => $requestNum,
-                            'type' => 'rate_limit_hit'
+                            'type' => 'rate_limit_hit',
                         ];
                         throw new VerisoulApiException('Monitoring rate limit', 429);
                     }
-                    
+
                     return MockFactory::createAccountResponseFromFixture([
-                        'account' => ['id' => "monitoring_test_{$requestNum}"]
+                        'account' => ['id' => "monitoring_test_{$requestNum}"],
                     ]);
                 });
 
@@ -398,7 +398,7 @@ describe('Rate Limiting Integration Tests', function () {
                 $this->testApiKey,
                 $this->sandboxEnv,
                 retryAttempts: 1, // Don't retry for this test
-                httpClient: $monitoringClient
+                httpClient: $monitoringClient,
             );
 
             $successCount = 0;
@@ -414,7 +414,7 @@ describe('Rate Limiting Integration Tests', function () {
                 }
             }
 
-            expect($successCount)->toBeGreaterThan(5) // Most should succeed  
+            expect($successCount)->toBeGreaterThan(5) // Most should succeed
                 ->and($failureCount)->toBeGreaterThan(0) // Some should fail
                 ->and(count($rateLimitEvents))->toBeGreaterThan(0);
 

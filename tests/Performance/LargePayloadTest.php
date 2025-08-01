@@ -2,22 +2,24 @@
 
 use Ninja\Verisoul\Clients\AccountClient;
 use Ninja\Verisoul\Clients\SessionClient;
+use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
-use Ninja\Verisoul\DTO\UserAccount;
 
-describe('Large Payload Performance Tests', function () {
-    beforeEach(function () {
+describe('Large Payload Performance Tests', function (): void {
+    beforeEach(function (): void {
         $this->testApiKey = 'large_payload_test_key';
         $this->sandboxEnv = VerisoulEnvironment::Sandbox;
     });
 
-    describe('Large request payload handling', function () {
-        it('efficiently processes large UserAccount objects with extensive metadata', function () {
-            $largePayloadClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+    describe('Large request payload handling', function (): void {
+        it('efficiently processes large UserAccount objects with extensive metadata', function (): void {
+            $largePayloadClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'large_payload_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'large_payload_test']),
+                ]),
             );
 
             // Create UserAccount with ~1MB of metadata
@@ -27,18 +29,18 @@ describe('Large Payload Performance Tests', function () {
                         'field' => 'value',
                         'data' => str_repeat('x', 100),
                         'timestamp' => microtime(true),
-                        'nested' => array_fill(0, 10, 'nested_value')
-                    ])
+                        'nested' => array_fill(0, 10, 'nested_value'),
+                    ]),
                 ],
                 'preferences' => array_fill(0, 500, [
                     'category' => 'test_category',
-                    'settings' => array_fill(0, 20, ['key' => 'value', 'data' => str_repeat('y', 50)])
+                    'settings' => array_fill(0, 20, ['key' => 'value', 'data' => str_repeat('y', 50)]),
                 ]),
                 'history' => array_fill(0, 200, [
                     'event' => 'user_action',
                     'timestamp' => time(),
                     'details' => str_repeat('z', 500),
-                    'context' => array_fill(0, 5, ['context_key' => 'context_value'])
+                    'context' => array_fill(0, 5, ['context_key' => 'context_value']),
                 ]),
                 'analytics' => [
                     'sessions' => array_fill(0, 100, [
@@ -46,16 +48,16 @@ describe('Large Payload Performance Tests', function () {
                         'duration' => random_int(60, 3600),
                         'events' => array_fill(0, 50, [
                             'type' => 'click',
-                            'data' => str_repeat('a', 100)
-                        ])
-                    ])
-                ]
+                            'data' => str_repeat('a', 100),
+                        ]),
+                    ]),
+                ],
             ];
 
             $largeUserAccount = UserAccount::from([
                 'id' => 'large_payload_user',
                 'email' => 'large.payload@example.com',
-                'metadata' => $largeMetadata
+                'metadata' => $largeMetadata,
             ]);
 
             $startTime = microtime(true);
@@ -69,16 +71,18 @@ describe('Large Payload Performance Tests', function () {
             $processingTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
             $memoryUsed = $endMemory - $startMemory;
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
                 ->and($processingTime)->toBeLessThan(1000) // Should process within 1 second
                 ->and($memoryUsed)->toBeLessThan(10 * 1024 * 1024); // Should use less than 10MB
         });
 
-        it('handles multiple large payloads sequentially without performance degradation', function () {
-            $sequentialClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('handles multiple large payloads sequentially without performance degradation', function (): void {
+            $sequentialClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'sequential_large'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'sequential_large']),
+                ]),
             );
 
             $processingTimes = [];
@@ -88,7 +92,7 @@ describe('Large Payload Performance Tests', function () {
             for ($i = 1; $i <= 10; $i++) {
                 // Create unique large payload for each iteration
                 $largeBinaryData = str_repeat(chr(random_int(65, 90)), 100000); // 100KB of random data
-                
+
                 $largeUserAccount = UserAccount::from([
                     'id' => "sequential_user_{$i}",
                     'email' => "sequential_{$i}@example.com",
@@ -99,11 +103,11 @@ describe('Large Payload Performance Tests', function () {
                         'complex_structure' => [
                             'level1' => array_fill(0, 100, [
                                 'level2' => array_fill(0, 10, [
-                                    'level3' => str_repeat("nested_{$i}", 50)
-                                ])
-                            ])
-                        ]
-                    ]
+                                    'level3' => str_repeat("nested_{$i}", 50),
+                                ]),
+                            ]),
+                        ],
+                    ],
                 ]);
 
                 $startTime = microtime(true);
@@ -144,8 +148,8 @@ describe('Large Payload Performance Tests', function () {
         });
     });
 
-    describe('Large response payload handling', function () {
-        it('efficiently processes large API responses', function () {
+    describe('Large response payload handling', function (): void {
+        it('efficiently processes large API responses', function (): void {
             // Create mock response with large amount of data
             $largeAccountData = [
                 'account' => [
@@ -155,7 +159,7 @@ describe('Large Payload Performance Tests', function () {
                         'key' => 'metadata_key',
                         'value' => str_repeat('response_data', 100),
                         'timestamp' => time(),
-                        'nested' => array_fill(0, 20, 'nested_response_data')
+                        'nested' => array_fill(0, 20, 'nested_response_data'),
                     ]),
                     'sessions' => array_fill(0, 1000, [
                         'session_id' => 'large_session_' . uniqid(),
@@ -163,23 +167,25 @@ describe('Large Payload Performance Tests', function () {
                         'data' => str_repeat('session_data', 200),
                         'events' => array_fill(0, 100, [
                             'type' => 'event_type',
-                            'payload' => str_repeat('event_payload', 50)
-                        ])
+                            'payload' => str_repeat('event_payload', 50),
+                        ]),
                     ]),
                     'analytics' => [
                         'metrics' => array_fill(0, 500, [
                             'name' => 'metric_name',
                             'value' => random_int(1, 1000),
-                            'history' => array_fill(0, 100, random_int(1, 100))
-                        ])
-                    ]
-                ]
+                            'history' => array_fill(0, 100, random_int(1, 100)),
+                        ]),
+                    ],
+                ],
             ];
 
-            $largeResponseClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+            $largeResponseClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture($largeAccountData)
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture($largeAccountData),
+                ]),
             );
 
             $startTime = microtime(true);
@@ -193,16 +199,18 @@ describe('Large Payload Performance Tests', function () {
             $processingTime = ($endTime - $startTime) * 1000;
             $memoryUsed = $endMemory - $startMemory;
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class)
                 ->and($processingTime)->toBeLessThan(2000) // Should process within 2 seconds
                 ->and($memoryUsed)->toBeLessThan(20 * 1024 * 1024); // Should use less than 20MB
 
             // Test that response object is fully functional
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class);
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class);
         });
 
-        it('handles streaming of very large responses efficiently', function () {
-            $streamingClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+        it('handles streaming of very large responses efficiently', function (): void {
+            $streamingClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
                     'get' => MockFactory::createAccountResponseFromFixture([
                         'account' => [
@@ -210,11 +218,11 @@ describe('Large Payload Performance Tests', function () {
                             'large_dataset' => array_fill(0, 5000, [
                                 'record_id' => uniqid(),
                                 'data' => str_repeat('streaming_data', 500),
-                                'metadata' => array_fill(0, 50, 'streaming_metadata')
-                            ])
-                        ]
-                    ])
-                ])
+                                'metadata' => array_fill(0, 50, 'streaming_metadata'),
+                            ]),
+                        ],
+                    ]),
+                ]),
             );
 
             $memoryReadings = [];
@@ -253,28 +261,30 @@ describe('Large Payload Performance Tests', function () {
         });
     });
 
-    describe('Payload compression and optimization', function () {
-        it('handles compressed payloads efficiently', function () {
+    describe('Payload compression and optimization', function (): void {
+        it('handles compressed payloads efficiently', function (): void {
             $compressionTestData = [
                 'repetitive_data' => str_repeat('compress_me', 10000), // Highly compressible
                 'random_data' => str_repeat(chr(random_int(0, 255)), 50000), // Less compressible
                 'structured_data' => array_fill(0, 1000, [
                     'id' => uniqid(),
                     'repeated_field' => 'repeated_value',
-                    'unique_field' => random_int(1, 1000000)
-                ])
+                    'unique_field' => random_int(1, 1000000),
+                ]),
             ];
 
-            $compressionClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+            $compressionClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'compression_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'compression_test']),
+                ]),
             );
 
             $userAccount = UserAccount::from([
                 'id' => 'compression_user',
                 'email' => 'compression@example.com',
-                'metadata' => $compressionTestData
+                'metadata' => $compressionTestData,
             ]);
 
             $startTime = microtime(true);
@@ -289,16 +299,18 @@ describe('Large Payload Performance Tests', function () {
             $memoryUsed = $endMemory - $startMemory;
 
             // Test that compression-friendly data is handled efficiently
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
                 ->and($processingTime)->toBeLessThan(1500) // Should process within 1.5 seconds
                 ->and($memoryUsed)->toBeLessThan(12 * 1024 * 1024); // Should use less than 12MB
         });
 
-        it('optimizes payload serialization for large objects', function () {
-            $serializationClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('optimizes payload serialization for large objects', function (): void {
+            $serializationClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'serialization_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'serialization_test']),
+                ]),
             );
 
             // Create object with various data types that test serialization efficiency
@@ -306,21 +318,21 @@ describe('Large Payload Performance Tests', function () {
                 'integers' => range(1, 10000),
                 'floats' => array_map(fn($i) => $i / 3.14159, range(1, 5000)),
                 'strings' => array_map(fn($i) => "string_value_{$i}", range(1, 3000)),
-                'booleans' => array_map(fn($i) => $i % 2 === 0, range(1, 2000)),
+                'booleans' => array_map(fn($i) => 0 === $i % 2, range(1, 2000)),
                 'nulls' => array_fill(0, 1000, null),
                 'mixed_arrays' => array_fill(0, 500, [
                     'int' => random_int(1, 1000),
                     'string' => uniqid(),
-                    'bool' => (bool)random_int(0, 1),
+                    'bool' => (bool) random_int(0, 1),
                     'null' => null,
-                    'nested' => ['deep' => ['deeper' => 'value']]
-                ])
+                    'nested' => ['deep' => ['deeper' => 'value']],
+                ]),
             ];
 
             $userAccount = UserAccount::from([
                 'id' => 'serialization_user',
                 'email' => 'serialization@example.com',
-                'metadata' => $complexSerializationData
+                'metadata' => $complexSerializationData,
             ]);
 
             $serializationTimes = [];
@@ -358,12 +370,14 @@ describe('Large Payload Performance Tests', function () {
         });
     });
 
-    describe('Edge cases with extreme payloads', function () {
-        it('handles maximum payload sizes gracefully', function () {
-            $maxPayloadClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+    describe('Edge cases with extreme payloads', function (): void {
+        it('handles maximum payload sizes gracefully', function (): void {
+            $maxPayloadClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'put' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'max_payload_test']])
-                ])
+                    'put' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'max_payload_test']]),
+                ]),
             );
 
             // Create maximum reasonable payload (~5MB)
@@ -371,9 +385,9 @@ describe('Large Payload Performance Tests', function () {
                 'section1' => array_fill(0, 10000, str_repeat('x', 100)),
                 'section2' => array_fill(0, 5000, [
                     'field1' => str_repeat('y', 200),
-                    'field2' => array_fill(0, 20, 'nested_data')
+                    'field2' => array_fill(0, 20, 'nested_data'),
                 ]),
-                'section3' => str_repeat('z', 1000000) // 1MB string
+                'section3' => str_repeat('z', 1000000), // 1MB string
             ];
 
             $startTime = microtime(true);
@@ -381,28 +395,30 @@ describe('Large Payload Performance Tests', function () {
 
             try {
                 $response = $maxPayloadClient->updateAccount('max_payload_test', $maxPayloadData);
-                
+
                 $endTime = microtime(true);
                 $endMemory = memory_get_usage(true);
 
                 $processingTime = ($endTime - $startTime) * 1000;
                 $memoryUsed = $endMemory - $startMemory;
 
-                expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class)
+                expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class)
                     ->and($processingTime)->toBeLessThan(5000) // Should process within 5 seconds
                     ->and($memoryUsed)->toBeLessThan(50 * 1024 * 1024); // Should use less than 50MB
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // If payload is too large, ensure graceful handling
-                expect($e)->toBeInstanceOf(\Ninja\Verisoul\Exceptions\VerisoulApiException::class);
+                expect($e)->toBeInstanceOf(Ninja\Verisoul\Exceptions\VerisoulApiException::class);
             }
         });
 
-        it('handles deeply nested structures efficiently', function () {
-            $deepNestingClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('handles deeply nested structures efficiently', function (): void {
+            $deepNestingClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'deep_nesting_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'deep_nesting_test']),
+                ]),
             );
 
             // Create deeply nested structure (50 levels deep)
@@ -410,7 +426,7 @@ describe('Large Payload Performance Tests', function () {
             for ($level = 1; $level <= 50; $level++) {
                 $deepStructure = [
                     "level_{$level}" => $deepStructure,
-                    "level_{$level}_data" => array_fill(0, 10, "data_at_level_{$level}")
+                    "level_{$level}_data" => array_fill(0, 10, "data_at_level_{$level}"),
                 ];
             }
 
@@ -419,8 +435,8 @@ describe('Large Payload Performance Tests', function () {
                 'email' => 'deep.nesting@example.com',
                 'metadata' => [
                     'deep_structure' => $deepStructure,
-                    'flat_data' => array_fill(0, 1000, 'flat_value') // Mix with flat data
-                ]
+                    'flat_data' => array_fill(0, 1000, 'flat_value'), // Mix with flat data
+                ],
             ]);
 
             $startTime = microtime(true);
@@ -434,16 +450,18 @@ describe('Large Payload Performance Tests', function () {
             $processingTime = ($endTime - $startTime) * 1000;
             $memoryUsed = $endMemory - $startMemory;
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
                 ->and($processingTime)->toBeLessThan(2000) // Should handle deep nesting within 2 seconds
                 ->and($memoryUsed)->toBeLessThan(25 * 1024 * 1024); // Should use less than 25MB
         });
 
-        it('handles payloads with special characters and encoding', function () {
-            $encodingClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('handles payloads with special characters and encoding', function (): void {
+            $encodingClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'encoding_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'encoding_test']),
+                ]),
             );
 
             // Create payload with various encodings and special characters
@@ -453,24 +471,24 @@ describe('Large Payload Performance Tests', function () {
                     'chinese' => str_repeat('你好世界', 2000),
                     'arabic' => str_repeat('مرحبا بالعالم', 1500),
                     'japanese' => str_repeat('こんにちは世界', 1800),
-                    'russian' => str_repeat('Привет мир', 2200)
+                    'russian' => str_repeat('Привет мир', 2200),
                 ],
                 'special_chars' => [
                     'quotes' => str_repeat('"\'`', 3000),
                     'slashes' => str_repeat('\\//', 2500),
                     'control_chars' => str_repeat("\n\r\t", 2000),
-                    'high_ascii' => str_repeat(chr(200) . chr(220) . chr(240), 1000)
+                    'high_ascii' => str_repeat(chr(200) . chr(220) . chr(240), 1000),
                 ],
                 'binary_data' => base64_encode(random_bytes(50000)),
                 'json_strings' => array_fill(0, 500, json_encode([
-                    'nested' => ['special' => '{"key": "value with \\"quotes\\""}']
-                ]))
+                    'nested' => ['special' => '{"key": "value with \\"quotes\\""}'],
+                ])),
             ];
 
             $userAccount = UserAccount::from([
                 'id' => 'encoding_user',
                 'email' => 'encoding@example.com',
-                'metadata' => $specialCharData
+                'metadata' => $specialCharData,
             ]);
 
             $startTime = microtime(true);
@@ -484,7 +502,7 @@ describe('Large Payload Performance Tests', function () {
             $processingTime = ($endTime - $startTime) * 1000;
             $memoryUsed = $endMemory - $startMemory;
 
-            expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
+            expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AuthenticateSessionResponse::class)
                 ->and($processingTime)->toBeLessThan(3000) // Should handle encoding within 3 seconds
                 ->and($memoryUsed)->toBeLessThan(30 * 1024 * 1024); // Should use less than 30MB
         });

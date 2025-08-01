@@ -15,7 +15,7 @@ final class InMemoryCache implements CacheInterface
     {
         $this->cleanExpired();
 
-        if (!$this->has($key)) {
+        if ( ! $this->has($key)) {
             return $default;
         }
 
@@ -26,7 +26,7 @@ final class InMemoryCache implements CacheInterface
     {
         $this->cache[$key] = $value;
 
-        if ($ttl !== null) {
+        if (null !== $ttl) {
             $expiresAt = $this->calculateExpiration($ttl);
             $this->expiration[$key] = $expiresAt;
         } else {
@@ -61,7 +61,7 @@ final class InMemoryCache implements CacheInterface
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
-            if (!$this->set($key, $value, $ttl)) {
+            if ( ! $this->set($key, $value, $ttl)) {
                 return false;
             }
         }
@@ -88,7 +88,7 @@ final class InMemoryCache implements CacheInterface
     private function cleanExpired(): void
     {
         $now = time();
-        
+
         foreach ($this->expiration as $key => $expiresAt) {
             if ($expiresAt <= $now) {
                 unset($this->cache[$key], $this->expiration[$key]);

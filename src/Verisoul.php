@@ -2,13 +2,14 @@
 
 namespace Ninja\Verisoul;
 
+use Exception;
+use InvalidArgumentException;
 use Ninja\Verisoul\Clients\AccountClient;
 use Ninja\Verisoul\Clients\ListClient;
-use Ninja\Verisoul\Clients\PhoneClient;
-use Ninja\Verisoul\Clients\SessionClient;
 use Ninja\Verisoul\Clients\Liveness\FaceMatchClient;
 use Ninja\Verisoul\Clients\Liveness\IDCheckClient;
-use Ninja\Verisoul\Clients\Liveness\LivenessApiClient;
+use Ninja\Verisoul\Clients\PhoneClient;
+use Ninja\Verisoul\Clients\SessionClient;
 use Ninja\Verisoul\Contracts\AccountInterface;
 use Ninja\Verisoul\Contracts\FaceMatchInterface;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
@@ -17,8 +18,6 @@ use Ninja\Verisoul\Contracts\ListInterface;
 use Ninja\Verisoul\Contracts\PhoneInterface;
 use Ninja\Verisoul\Contracts\SessionInterface;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
-use Ninja\Verisoul\Http\GuzzleHttpClient;
-use InvalidArgumentException;
 use Ninja\Verisoul\Support\InMemoryCache;
 use Psr\SimpleCache\CacheInterface;
 
@@ -49,7 +48,7 @@ final class Verisoul
         int $retryAttempts = 3,
         int $retryDelay = 1000,
         ?HttpClientInterface $httpClient = null,
-        ?CacheInterface $cache = null
+        ?CacheInterface $cache = null,
     ) {
         if (empty($apiKey)) {
             throw new InvalidArgumentException('API key is required');
@@ -70,7 +69,7 @@ final class Verisoul
      */
     public static function create(
         string $apiKey,
-        VerisoulEnvironment $environment = VerisoulEnvironment::Sandbox
+        VerisoulEnvironment $environment = VerisoulEnvironment::Sandbox,
     ): self {
         return new self($apiKey, $environment);
     }
@@ -80,7 +79,7 @@ final class Verisoul
      */
     public function phone(): PhoneInterface
     {
-        if ($this->phoneClient === null) {
+        if (null === $this->phoneClient) {
             $this->phoneClient = new PhoneClient(
                 $this->apiKey,
                 $this->environment,
@@ -89,7 +88,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -101,7 +100,7 @@ final class Verisoul
      */
     public function sessions(): SessionInterface
     {
-        if ($this->sessionClient === null) {
+        if (null === $this->sessionClient) {
             $this->sessionClient = new SessionClient(
                 $this->apiKey,
                 $this->environment,
@@ -110,7 +109,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -122,7 +121,7 @@ final class Verisoul
      */
     public function accounts(): AccountInterface
     {
-        if ($this->accountClient === null) {
+        if (null === $this->accountClient) {
             $this->accountClient = new AccountClient(
                 $this->apiKey,
                 $this->environment,
@@ -131,7 +130,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -143,7 +142,7 @@ final class Verisoul
      */
     public function lists(): ListInterface
     {
-        if ($this->listClient === null) {
+        if (null === $this->listClient) {
             $this->listClient = new ListClient(
                 $this->apiKey,
                 $this->environment,
@@ -152,7 +151,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -165,7 +164,7 @@ final class Verisoul
      */
     public function idCheck(): IDCheckInterface
     {
-        if ($this->idCheckClient === null) {
+        if (null === $this->idCheckClient) {
             $this->idCheckClient = new IDCheckClient(
                 $this->apiKey,
                 $this->environment,
@@ -174,7 +173,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -186,7 +185,7 @@ final class Verisoul
      */
     public function faceMatch(): FaceMatchInterface
     {
-        if ($this->faceMatchClient === null) {
+        if (null === $this->faceMatchClient) {
             $this->faceMatchClient = new FaceMatchClient(
                 $this->apiKey,
                 $this->environment,
@@ -195,7 +194,7 @@ final class Verisoul
                 $this->retryAttempts,
                 $this->retryDelay,
                 $this->httpClient,
-                $this->cache
+                $this->cache,
             );
         }
 
@@ -216,10 +215,10 @@ final class Verisoul
     public function setEnvironment(VerisoulEnvironment $environment): self
     {
         $this->environment = $environment;
-        
+
         // Reset all clients to pick up new environment
         $this->resetClients();
-        
+
         return $this;
     }
 
@@ -233,10 +232,10 @@ final class Verisoul
         }
 
         $this->apiKey = $apiKey;
-        
+
         // Reset all clients to pick up new API key
         $this->resetClients();
-        
+
         return $this;
     }
 
@@ -246,10 +245,10 @@ final class Verisoul
     public function setHttpClient(HttpClientInterface $httpClient): self
     {
         $this->httpClient = $httpClient;
-        
+
         // Reset all clients to pick up new HTTP client
         $this->resetClients();
-        
+
         return $this;
     }
 
@@ -260,10 +259,10 @@ final class Verisoul
     {
         $this->timeout = $timeout;
         $this->connectTimeout = $connectTimeout ?? $this->connectTimeout;
-        
+
         // Reset all clients to pick up new timeout settings
         $this->resetClients();
-        
+
         return $this;
     }
 
@@ -274,24 +273,11 @@ final class Verisoul
     {
         $this->retryAttempts = $attempts;
         $this->retryDelay = $delayMs;
-        
+
         // Reset all clients to pick up new retry settings
         $this->resetClients();
-        
-        return $this;
-    }
 
-    /**
-     * Reset all lazy-loaded clients (forces recreation with new settings)
-     */
-    private function resetClients(): void
-    {
-        $this->phoneClient = null;
-        $this->sessionClient = null;
-        $this->accountClient = null;
-        $this->listClient = null;
-        $this->idCheckClient = null;
-        $this->faceMatchClient = null;
+        return $this;
     }
 
 
@@ -304,7 +290,7 @@ final class Verisoul
             // Use a simple operation to test connectivity
             $this->sessions();
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -322,7 +308,7 @@ final class Verisoul
      */
     public function isProduction(): bool
     {
-        return $this->environment === VerisoulEnvironment::Production;
+        return VerisoulEnvironment::Production === $this->environment;
     }
 
     /**
@@ -330,6 +316,19 @@ final class Verisoul
      */
     public function isSandbox(): bool
     {
-        return $this->environment === VerisoulEnvironment::Sandbox;
+        return VerisoulEnvironment::Sandbox === $this->environment;
+    }
+
+    /**
+     * Reset all lazy-loaded clients (forces recreation with new settings)
+     */
+    private function resetClients(): void
+    {
+        $this->phoneClient = null;
+        $this->sessionClient = null;
+        $this->accountClient = null;
+        $this->listClient = null;
+        $this->idCheckClient = null;
+        $this->faceMatchClient = null;
     }
 }

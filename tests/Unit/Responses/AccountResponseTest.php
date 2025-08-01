@@ -3,15 +3,15 @@
 use Ninja\Verisoul\Responses\AccountResponse;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
 
-describe('AccountResponse', function () {
-    describe('construction and basic functionality', function () {
-        it('can be created from fixture data', function () {
+describe('AccountResponse', function (): void {
+    describe('construction and basic functionality', function (): void {
+        it('can be created from fixture data', function (): void {
             $fixtureData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'test_account_123',
                     'email' => 'test@example.com',
-                    'status' => 'active'
-                ]
+                    'status' => 'active',
+                ],
             ]);
 
             $response = AccountResponse::from($fixtureData);
@@ -19,11 +19,11 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('can be created with minimal account data', function () {
+        it('can be created with minimal account data', function (): void {
             $minimalData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
-                    'id' => 'minimal_account'
-                ]
+                    'id' => 'minimal_account',
+                ],
             ]);
 
             $response = AccountResponse::from($minimalData);
@@ -31,7 +31,7 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('can be created with comprehensive account data', function () {
+        it('can be created with comprehensive account data', function (): void {
             $comprehensiveData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'comprehensive_account_456',
@@ -45,10 +45,10 @@ describe('AccountResponse', function () {
                         'campaign' => 'spring_2024',
                         'preferences' => [
                             'notifications' => true,
-                            'marketing' => false
-                        ]
-                    ]
-                ]
+                            'marketing' => false,
+                        ],
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($comprehensiveData);
@@ -57,27 +57,27 @@ describe('AccountResponse', function () {
         });
     });
 
-    describe('account data access', function () {
-        it('provides access to account information through methods', function () {
+    describe('account data access', function (): void {
+        it('provides access to account information through methods', function (): void {
             $accountData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'access_test_789',
                     'email' => 'access@example.com',
-                    'status' => 'active'
-                ]
+                    'status' => 'active',
+                ],
             ]);
 
             $response = AccountResponse::from($accountData);
 
             // Test that response has the expected structure
             expect($response)->toBeInstanceOf(AccountResponse::class);
-            
+
             // Since we don't know the exact internal structure,
             // we verify it's a valid response object
             expect($response->array())->toBeArray();
         });
 
-        it('handles nested account metadata correctly', function () {
+        it('handles nested account metadata correctly', function (): void {
             $nestedData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'nested_test_321',
@@ -88,34 +88,34 @@ describe('AccountResponse', function () {
                             'last_name' => 'Doe',
                             'preferences' => [
                                 'theme' => 'dark',
-                                'language' => 'en-US'
-                            ]
+                                'language' => 'en-US',
+                            ],
                         ],
                         'analytics' => [
                             'signup_source' => 'organic',
-                            'last_login' => '2024-01-15T12:00:00Z'
-                        ]
-                    ]
-                ]
+                            'last_login' => '2024-01-15T12:00:00Z',
+                        ],
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($nestedData);
 
             expect($response)->toBeInstanceOf(AccountResponse::class);
-            
+
             // Verify the data structure is maintained
             $responseArray = $response->array();
             expect($responseArray)->toBeArray();
         });
     });
 
-    describe('response validation and error handling', function () {
-        it('handles responses with missing optional fields', function () {
+    describe('response validation and error handling', function (): void {
+        it('handles responses with missing optional fields', function (): void {
             $partialData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'partial_account_654',
                     // Missing email, phone, status, etc.
-                ]
+                ],
             ]);
 
             $response = AccountResponse::from($partialData);
@@ -123,15 +123,15 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('handles responses with null values', function () {
+        it('handles responses with null values', function (): void {
             $nullValueData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'null_test_987',
                     'email' => null,
                     'phone' => null,
                     'status' => 'active',
-                    'metadata' => null
-                ]
+                    'metadata' => null,
+                ],
             ]);
 
             $response = AccountResponse::from($nullValueData);
@@ -139,15 +139,15 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('handles responses with empty arrays and objects', function () {
+        it('handles responses with empty arrays and objects', function (): void {
             $emptyData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'empty_test_147',
                     'email' => 'empty@example.com',
                     'metadata' => [],
                     'tags' => [],
-                    'permissions' => []
-                ]
+                    'permissions' => [],
+                ],
             ]);
 
             $response = AccountResponse::from($emptyData);
@@ -156,8 +156,8 @@ describe('AccountResponse', function () {
         });
     });
 
-    describe('serialization and data integrity', function () {
-        it('maintains data integrity through serialization', function () {
+    describe('serialization and data integrity', function (): void {
+        it('maintains data integrity through serialization', function (): void {
             $originalData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'integrity_test_258',
@@ -169,10 +169,10 @@ describe('AccountResponse', function () {
                         'verification_method' => 'email_link',
                         'preferences' => [
                             'newsletter' => true,
-                            'sms_notifications' => false
-                        ]
-                    ]
-                ]
+                            'sms_notifications' => false,
+                        ],
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($originalData);
@@ -183,7 +183,7 @@ describe('AccountResponse', function () {
             expect($recreatedResponse->array())->toBeArray();
         });
 
-        it('handles complex nested structures correctly', function () {
+        it('handles complex nested structures correctly', function (): void {
             $complexData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'complex_test_369',
@@ -199,42 +199,42 @@ describe('AccountResponse', function () {
                                     'city' => 'San Francisco',
                                     'state' => 'CA',
                                     'zip' => '94105',
-                                    'country' => 'US'
-                                ]
+                                    'country' => 'US',
+                                ],
                             ],
                             'professional' => [
                                 'title' => 'Software Engineer',
                                 'company' => 'Tech Corp',
-                                'experience_years' => 5
-                            ]
+                                'experience_years' => 5,
+                            ],
                         ],
                         'settings' => [
                             'privacy' => [
                                 'profile_visible' => false,
-                                'contact_visible' => true
+                                'contact_visible' => true,
                             ],
                             'notifications' => [
                                 'email' => true,
                                 'push' => false,
-                                'sms' => true
-                            ]
-                        ]
-                    ]
-                ]
+                                'sms' => true,
+                            ],
+                        ],
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($complexData);
 
             expect($response)->toBeInstanceOf(AccountResponse::class);
-            
+
             // Verify complex data structure is preserved
             $responseArray = $response->array();
             expect($responseArray)->toBeArray();
         });
     });
 
-    describe('account status and state handling', function () {
-        it('handles various account statuses', function () {
+    describe('account status and state handling', function (): void {
+        it('handles various account statuses', function (): void {
             $statuses = ['active', 'inactive', 'pending', 'suspended', 'verified', 'unverified'];
 
             foreach ($statuses as $status) {
@@ -242,8 +242,8 @@ describe('AccountResponse', function () {
                     'account' => [
                         'id' => "status_test_{$status}",
                         'email' => "status_{$status}@example.com",
-                        'status' => $status
-                    ]
+                        'status' => $status,
+                    ],
                 ]);
 
                 $response = AccountResponse::from($statusData);
@@ -252,7 +252,7 @@ describe('AccountResponse', function () {
             }
         });
 
-        it('handles account with verification details', function () {
+        it('handles account with verification details', function (): void {
             $verificationData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'verification_test_789',
@@ -263,9 +263,9 @@ describe('AccountResponse', function () {
                         'phone_verified' => false,
                         'identity_verified' => true,
                         'verification_date' => '2024-01-15T14:30:00Z',
-                        'verification_method' => 'document_upload'
-                    ]
-                ]
+                        'verification_method' => 'document_upload',
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($verificationData);
@@ -274,14 +274,14 @@ describe('AccountResponse', function () {
         });
     });
 
-    describe('timestamp and date handling', function () {
-        it('handles various timestamp formats', function () {
+    describe('timestamp and date handling', function (): void {
+        it('handles various timestamp formats', function (): void {
             $timestampFormats = [
                 '2024-01-15T10:30:00Z',
                 '2024-01-15T10:30:00.123Z',
                 '2024-01-15T10:30:00+00:00',
                 '2024-01-15T10:30:00-08:00',
-                '2024-01-15 10:30:00'
+                '2024-01-15 10:30:00',
             ];
 
             foreach ($timestampFormats as $index => $timestamp) {
@@ -290,8 +290,8 @@ describe('AccountResponse', function () {
                         'id' => "timestamp_test_{$index}",
                         'email' => "timestamp_{$index}@example.com",
                         'created_at' => $timestamp,
-                        'updated_at' => $timestamp
-                    ]
+                        'updated_at' => $timestamp,
+                    ],
                 ]);
 
                 $response = AccountResponse::from($timestampData);
@@ -300,15 +300,15 @@ describe('AccountResponse', function () {
             }
         });
 
-        it('handles null timestamps gracefully', function () {
+        it('handles null timestamps gracefully', function (): void {
             $nullTimestampData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'null_timestamp_test',
                     'email' => 'null_timestamp@example.com',
                     'created_at' => null,
                     'updated_at' => null,
-                    'last_login' => null
-                ]
+                    'last_login' => null,
+                ],
             ]);
 
             $response = AccountResponse::from($nullTimestampData);
@@ -317,8 +317,8 @@ describe('AccountResponse', function () {
         });
     });
 
-    describe('error scenarios and edge cases', function () {
-        it('handles accounts with special characters', function () {
+    describe('error scenarios and edge cases', function (): void {
+        it('handles accounts with special characters', function (): void {
             $specialCharData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'special_char_test_123',
@@ -326,9 +326,9 @@ describe('AccountResponse', function () {
                     'metadata' => [
                         'name' => 'José María González-Smith',
                         'company' => 'Café & Co. Ltd.',
-                        'notes' => 'Special chars: áéíóú ñ ¡¿ « » " " \' \''
-                    ]
-                ]
+                        'notes' => 'Special chars: áéíóú ñ ¡¿ « » " " \' \'',
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($specialCharData);
@@ -336,23 +336,23 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('handles accounts with very large metadata', function () {
+        it('handles accounts with very large metadata', function (): void {
             $largeMetadata = [
                 'large_array' => array_fill(0, 1000, 'data_item'),
                 'large_string' => str_repeat('large_data_chunk', 100),
                 'nested_large' => [
                     'level1' => array_fill(0, 100, [
-                        'level2' => array_fill(0, 10, 'nested_data')
-                    ])
-                ]
+                        'level2' => array_fill(0, 10, 'nested_data'),
+                    ]),
+                ],
             ];
 
             $largeData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'large_metadata_test',
                     'email' => 'large@example.com',
-                    'metadata' => $largeMetadata
-                ]
+                    'metadata' => $largeMetadata,
+                ],
             ]);
 
             $response = AccountResponse::from($largeData);
@@ -360,7 +360,7 @@ describe('AccountResponse', function () {
             expect($response)->toBeInstanceOf(AccountResponse::class);
         });
 
-        it('handles accounts with numeric and boolean values', function () {
+        it('handles accounts with numeric and boolean values', function (): void {
             $mixedTypeData = MockFactory::createAccountResponseFromFixture([
                 'account' => [
                     'id' => 'mixed_types_test',
@@ -375,9 +375,9 @@ describe('AccountResponse', function () {
                         'float_field' => 3.14159,
                         'boolean_field' => true,
                         'zero_value' => 0,
-                        'negative_value' => -10
-                    ]
-                ]
+                        'negative_value' => -10,
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($mixedTypeData);
@@ -386,8 +386,8 @@ describe('AccountResponse', function () {
         });
     });
 
-    describe('performance and memory usage', function () {
-        it('handles multiple account response creation efficiently', function () {
+    describe('performance and memory usage', function (): void {
+        it('handles multiple account response creation efficiently', function (): void {
             $startTime = microtime(true);
             $responses = [];
 
@@ -399,9 +399,9 @@ describe('AccountResponse', function () {
                         'status' => 'active',
                         'metadata' => [
                             'iteration' => $i,
-                            'data' => str_repeat("data_{$i}", 10)
-                        ]
-                    ]
+                            'data' => str_repeat("data_{$i}", 10),
+                        ],
+                    ],
                 ]);
 
                 $responses[] = AccountResponse::from($data);
@@ -419,7 +419,7 @@ describe('AccountResponse', function () {
             }
         });
 
-        it('maintains reasonable memory usage with large responses', function () {
+        it('maintains reasonable memory usage with large responses', function (): void {
             $initialMemory = memory_get_usage();
 
             $largeAccountData = MockFactory::createAccountResponseFromFixture([
@@ -430,10 +430,10 @@ describe('AccountResponse', function () {
                         'large_dataset' => array_fill(0, 1000, [
                             'record_id' => uniqid(),
                             'data' => str_repeat('memory_test_data', 50),
-                            'nested' => array_fill(0, 20, 'nested_memory_data')
-                        ])
-                    ]
-                ]
+                            'nested' => array_fill(0, 20, 'nested_memory_data'),
+                        ]),
+                    ],
+                ],
             ]);
 
             $response = AccountResponse::from($largeAccountData);

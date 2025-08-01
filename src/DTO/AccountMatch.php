@@ -69,7 +69,7 @@ final readonly class AccountMatch extends GraniteDTO
     {
         $highConfidenceTypes = ['face', 'id', 'document'];
 
-        return array_any($this->matchTypes, fn ($type) => in_array($type, $highConfidenceTypes));
+        return array_any($this->matchTypes, fn($type) => in_array($type, $highConfidenceTypes));
     }
 
     /**

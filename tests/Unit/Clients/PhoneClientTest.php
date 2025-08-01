@@ -1,79 +1,77 @@
 <?php
 
 use Ninja\Verisoul\Clients\PhoneClient;
+use Ninja\Verisoul\Contracts\HttpClientInterface;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
 use Ninja\Verisoul\Responses\VerifyPhoneResponse;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
-use Ninja\Verisoul\Contracts\HttpClientInterface;
 
-describe('PhoneClient', function () {
-    describe('construction', function () {
-        it('can be created with default parameters', function () {
+describe('PhoneClient', function (): void {
+    describe('construction', function (): void {
+        it('can be created with default parameters', function (): void {
             $client = new PhoneClient('test_api_key');
-            
+
             expect($client)->toBeInstanceOf(PhoneClient::class)
                 ->and($client->getEnvironment())->toBe(VerisoulEnvironment::Sandbox);
         });
 
-        it('can be created with custom environment', function () {
+        it('can be created with custom environment', function (): void {
             $client = new PhoneClient('prod_key', VerisoulEnvironment::Production);
-            
+
             expect($client->getEnvironment())->toBe(VerisoulEnvironment::Production);
         });
 
-        it('inherits from Client base class', function () {
+        it('inherits from Client base class', function (): void {
             $client = new PhoneClient('test_api_key');
-            
-            expect($client)->toBeInstanceOf(\Ninja\Verisoul\Clients\Client::class);
+
+            expect($client)->toBeInstanceOf(Ninja\Verisoul\Clients\Client::class);
         });
 
-        it('implements PhoneInterface', function () {
+        it('implements PhoneInterface', function (): void {
             $client = new PhoneClient('test_api_key');
-            
-            expect($client)->toBeInstanceOf(\Ninja\Verisoul\Contracts\PhoneInterface::class);
+
+            expect($client)->toBeInstanceOf(Ninja\Verisoul\Contracts\PhoneInterface::class);
         });
     });
 
-    describe('verifyPhone method', function () {
-        it('creates VerifyPhoneResponse object', function () {
+    describe('verifyPhone method', function (): void {
+        it('creates VerifyPhoneResponse object', function (): void {
             $mockHttpClient = MockFactory::createSuccessfulHttpClient([
                 'post' => [
                     'phone_number' => '+1234567890',
                     'is_valid' => true,
                     'carrier' => 'Verizon',
                     'line_type' => 'mobile',
-                    'country_code' => 'US'
-                ]
+                    'country_code' => 'US',
+                ],
             ]);
 
             $client = new PhoneClient('test_api_key', httpClient: $mockHttpClient);
-            
+
             $response = $client->verifyPhone('+1234567890');
 
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('passes phone number correctly in request data', function () {
+        it('passes phone number correctly in request data', function (): void {
             $phoneNumber = '+15551234567';
 
             $mockHttpClient = Mockery::mock(HttpClientInterface::class);
             $mockHttpClient->shouldReceive('setTimeout')->andReturnSelf();
             $mockHttpClient->shouldReceive('setConnectTimeout')->andReturnSelf();
             $mockHttpClient->shouldReceive('setHeaders')->andReturnSelf();
-            
+
             $mockHttpClient->shouldReceive('post')
                 ->once()
-                ->withArgs(function ($url, $data) use ($phoneNumber) {
-                    return str_contains($url, '/phone') &&
+                ->withArgs(fn($url, $data) => str_contains($url, '/phone') &&
                            isset($data['phone_number']) &&
-                           $data['phone_number'] === $phoneNumber;
-                })
+                           $data['phone_number'] === $phoneNumber)
                 ->andReturn([
                     'phone_number' => $phoneNumber,
                     'is_valid' => true,
-                    'carrier' => 'AT&T'
+                    'carrier' => 'AT&T',
                 ]);
 
             $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
@@ -82,14 +80,14 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles US phone numbers', function () {
+        it('handles US phone numbers', function (): void {
             $usPhoneNumbers = [
                 '+1234567890',
                 '+15551234567',
                 '+1800555HELP',
                 '+12125551234',  // NYC
                 '+14151234567',  // San Francisco
-                '+13105551234'   // Los Angeles
+                '+13105551234',   // Los Angeles
             ];
 
             foreach ($usPhoneNumbers as $phoneNumber) {
@@ -98,18 +96,18 @@ describe('PhoneClient', function () {
                         'phone_number' => $phoneNumber,
                         'is_valid' => true,
                         'country_code' => 'US',
-                        'carrier' => 'Test Carrier'
-                    ]
+                        'carrier' => 'Test Carrier',
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles international phone numbers', function () {
+        it('handles international phone numbers', function (): void {
             $internationalNumbers = [
                 '+44207123456',     // UK London
                 '+33142345678',     // France Paris
@@ -118,7 +116,7 @@ describe('PhoneClient', function () {
                 '+861012345678',    // China Beijing
                 '+5511987654321',   // Brazil São Paulo
                 '+61287654321',     // Australia Sydney
-                '+917012345678'     // India Mumbai
+                '+917012345678',     // India Mumbai
             ];
 
             foreach ($internationalNumbers as $phoneNumber) {
@@ -126,25 +124,25 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => true,
-                        'carrier' => 'International Carrier'
-                    ]
+                        'carrier' => 'International Carrier',
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles invalid phone number formats', function () {
+        it('handles invalid phone number formats', function (): void {
             $invalidNumbers = [
                 '123-456-7890',     // US format without country code
                 '(555) 123-4567',   // US format with parentheses
                 '555.123.4567',     // US format with dots
                 '1234567890',       // No country code or symbols
                 '+1-555-123-4567',  // Hyphens in international format
-                'invalid_phone'     // Non-numeric content
+                'invalid_phone',     // Non-numeric content
             ];
 
             foreach ($invalidNumbers as $phoneNumber) {
@@ -152,18 +150,18 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => false,
-                        'error' => 'Invalid phone number format'
-                    ]
+                        'error' => 'Invalid phone number format',
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles empty and null phone numbers', function () {
+        it('handles empty and null phone numbers', function (): void {
             $edgeCaseNumbers = ['', '   ', '+'];
 
             foreach ($edgeCaseNumbers as $phoneNumber) {
@@ -171,18 +169,18 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => false,
-                        'error' => 'Phone number is required'
-                    ]
+                        'error' => 'Phone number is required',
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('throws VerisoulConnectionException on connection failure', function () {
+        it('throws VerisoulConnectionException on connection failure', function (): void {
             $failingClient = MockFactory::createFailingHttpClient(VerisoulConnectionException::class);
             $client = createTestClient(PhoneClient::class, ['httpClient' => $failingClient]);
 
@@ -190,7 +188,7 @@ describe('PhoneClient', function () {
                 ->toThrow(VerisoulConnectionException::class);
         });
 
-        it('throws VerisoulApiException on API error', function () {
+        it('throws VerisoulApiException on API error', function (): void {
             $failingClient = MockFactory::createFailingHttpClient(VerisoulApiException::class);
             $client = createTestClient(PhoneClient::class, ['httpClient' => $failingClient]);
 
@@ -199,47 +197,45 @@ describe('PhoneClient', function () {
         });
     });
 
-    describe('environment integration', function () {
-        it('uses sandbox URLs in sandbox environment', function () {
+    describe('environment integration', function (): void {
+        it('uses sandbox URLs in sandbox environment', function (): void {
             $client = new PhoneClient('sandbox_key', VerisoulEnvironment::Sandbox);
-            
+
             expect($client->getBaseUrl())->toBe('https://api.sandbox.verisoul.ai');
         });
 
-        it('uses production URLs in production environment', function () {
+        it('uses production URLs in production environment', function (): void {
             $client = new PhoneClient('prod_key', VerisoulEnvironment::Production);
-            
+
             expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
         });
 
-        it('makes requests to correct environment', function () {
+        it('makes requests to correct environment', function (): void {
             $mockHttpClient = Mockery::mock(HttpClientInterface::class);
             $mockHttpClient->shouldReceive('setTimeout')->andReturnSelf();
             $mockHttpClient->shouldReceive('setConnectTimeout')->andReturnSelf();
             $mockHttpClient->shouldReceive('setHeaders')->andReturnSelf();
-            
+
             $mockHttpClient->shouldReceive('post')
                 ->once()
-                ->withArgs(function ($url, $data) {
-                    return str_contains($url, 'https://api.verisoul.ai');
-                })
+                ->withArgs(fn($url, $data) => str_contains($url, 'https://api.verisoul.ai'))
                 ->andReturn([
                     'phone_number' => '+1234567890',
-                    'is_valid' => true
+                    'is_valid' => true,
                 ]);
 
             $prodClient = new PhoneClient(
-                'prod_key', 
-                VerisoulEnvironment::Production, 
-                httpClient: $mockHttpClient
+                'prod_key',
+                VerisoulEnvironment::Production,
+                httpClient: $mockHttpClient,
             );
-            
+
             $prodClient->verifyPhone('+1234567890');
         });
     });
 
-    describe('response object handling', function () {
-        it('correctly creates VerifyPhoneResponse from API response', function () {
+    describe('response object handling', function (): void {
+        it('correctly creates VerifyPhoneResponse from API response', function (): void {
             $apiResponse = [
                 'phone_number' => '+15551234567',
                 'is_valid' => true,
@@ -251,7 +247,7 @@ describe('PhoneClient', function () {
                 'risk_score' => 0.15,
                 'carrier_risk' => 'low',
                 'line_type_confidence' => 0.95,
-                'roaming_status' => 'domestic'
+                'roaming_status' => 'domestic',
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $apiResponse]);
@@ -262,7 +258,7 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles comprehensive phone verification response', function () {
+        it('handles comprehensive phone verification response', function (): void {
             $comprehensiveResponse = [
                 'phone_number' => '+447891234567',
                 'is_valid' => true,
@@ -285,8 +281,8 @@ describe('PhoneClient', function () {
                 'validation_errors' => [],
                 'additional_info' => [
                     'number_type' => 'geographic',
-                    'usage_type' => 'personal'
-                ]
+                    'usage_type' => 'personal',
+                ],
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $comprehensiveResponse]);
@@ -297,7 +293,7 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles invalid phone response', function () {
+        it('handles invalid phone response', function (): void {
             $invalidResponse = [
                 'phone_number' => 'invalid_phone',
                 'is_valid' => false,
@@ -309,8 +305,8 @@ describe('PhoneClient', function () {
                 'risk_score' => 1.0,
                 'validation_errors' => [
                     'format' => 'Phone number must start with country code',
-                    'length' => 'Phone number length is invalid'
-                ]
+                    'length' => 'Phone number length is invalid',
+                ],
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $invalidResponse]);
@@ -322,8 +318,8 @@ describe('PhoneClient', function () {
         });
     });
 
-    describe('real-world usage scenarios', function () {
-        it('handles user registration phone verification', function () {
+    describe('real-world usage scenarios', function (): void {
+        it('handles user registration phone verification', function (): void {
             $registrationResponse = [
                 'phone_number' => '+12345551234',
                 'is_valid' => true,
@@ -334,7 +330,7 @@ describe('PhoneClient', function () {
                 'carrier_risk' => 'low',
                 'reachability' => 'reachable',
                 'do_not_call_registered' => false,
-                'verification_recommendation' => 'sms_ok'
+                'verification_recommendation' => 'sms_ok',
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $registrationResponse]);
@@ -345,7 +341,7 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles fraud detection phone check', function () {
+        it('handles fraud detection phone check', function (): void {
             $fraudCheckResponse = [
                 'phone_number' => '+15551234567',
                 'is_valid' => true,
@@ -360,9 +356,9 @@ describe('PhoneClient', function () {
                 'fraud_indicators' => [
                     'recently_ported',
                     'voip_service',
-                    'high_risk_carrier'
+                    'high_risk_carrier',
                 ],
-                'verification_recommendation' => 'manual_review'
+                'verification_recommendation' => 'manual_review',
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $fraudCheckResponse]);
@@ -373,7 +369,7 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles international business verification', function () {
+        it('handles international business verification', function (): void {
             $businessResponse = [
                 'phone_number' => '+442071234567',
                 'is_valid' => true,
@@ -389,7 +385,7 @@ describe('PhoneClient', function () {
                 'number_type' => 'geographic',
                 'usage_type' => 'business',
                 'business_verified' => true,
-                'verification_recommendation' => 'voice_call_ok'
+                'verification_recommendation' => 'voice_call_ok',
             ];
 
             $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $businessResponse]);
@@ -400,13 +396,13 @@ describe('PhoneClient', function () {
             expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
         });
 
-        it('handles bulk phone verification workflow', function () {
+        it('handles bulk phone verification workflow', function (): void {
             $bulkPhones = [
                 '+12125551234',  // NYC landline
                 '+14151234567',  // SF mobile
                 '+13105556789',  // LA mobile
                 '+18005551234',  // Toll-free
-                '+15551234567'   // Generic mobile
+                '+15551234567',   // Generic mobile
             ];
 
             foreach ($bulkPhones as $phone) {
@@ -415,7 +411,7 @@ describe('PhoneClient', function () {
                     'is_valid' => true,
                     'carrier' => 'Test Carrier',
                     'country_code' => 'US',
-                    'processed_at' => date('c')
+                    'processed_at' => date('c'),
                 ];
 
                 $mockHttpClient = MockFactory::createSuccessfulHttpClient(['post' => $response]);
@@ -427,8 +423,8 @@ describe('PhoneClient', function () {
         });
     });
 
-    describe('phone number format scenarios', function () {
-        it('handles various valid international formats', function () {
+    describe('phone number format scenarios', function (): void {
+        it('handles various valid international formats', function (): void {
             $validFormats = [
                 '+1234567890' => 'US standard',
                 '+441234567890' => 'UK mobile',
@@ -437,7 +433,7 @@ describe('PhoneClient', function () {
                 '+81901234567' => 'Japan mobile',
                 '+86138000000' => 'China mobile',
                 '+5511987654321' => 'Brazil mobile',
-                '+919876543210' => 'India mobile'
+                '+919876543210' => 'India mobile',
             ];
 
             foreach ($validFormats as $phoneNumber => $description) {
@@ -445,18 +441,18 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => true,
-                        'description' => $description
-                    ]
+                        'description' => $description,
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles various invalid formats gracefully', function () {
+        it('handles various invalid formats gracefully', function (): void {
             $invalidFormats = [
                 '123-456-7890' => 'Missing country code',
                 '(555) 123-4567' => 'US domestic format',
@@ -465,7 +461,7 @@ describe('PhoneClient', function () {
                 'abc-def-ghij' => 'Non-numeric',
                 '+' => 'Just plus sign',
                 '++1234567890' => 'Double plus',
-                '+1 (555) 123-4567 ext 123' => 'With extension'
+                '+1 (555) 123-4567 ext 123' => 'With extension',
             ];
 
             foreach ($invalidFormats as $phoneNumber => $reason) {
@@ -473,25 +469,25 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => false,
-                        'error_reason' => $reason
-                    ]
+                        'error_reason' => $reason,
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles edge case phone numbers', function () {
+        it('handles edge case phone numbers', function (): void {
             $edgeCases = [
                 '+15555555555' => 'Repeating digits',
                 '+11234567890' => 'Starting with 1',
                 '+0123456789' => 'Starting with 0',
                 '+999999999999999' => 'Very long number',
                 '+1' => 'Too short',
-                '+123' => 'Minimal digits'
+                '+123' => 'Minimal digits',
             ];
 
             foreach ($edgeCases as $phoneNumber => $description) {
@@ -499,20 +495,20 @@ describe('PhoneClient', function () {
                     'post' => [
                         'phone_number' => $phoneNumber,
                         'is_valid' => str_starts_with($phoneNumber, '+1') && strlen($phoneNumber) >= 10,
-                        'edge_case' => $description
-                    ]
+                        'edge_case' => $description,
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($phoneNumber);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
     });
 
-    describe('carrier and line type scenarios', function () {
-        it('handles different carrier types', function () {
+    describe('carrier and line type scenarios', function (): void {
+        it('handles different carrier types', function (): void {
             $carrierScenarios = [
                 ['phone' => '+15551111111', 'carrier' => 'Verizon', 'type' => 'major'],
                 ['phone' => '+15552222222', 'carrier' => 'AT&T', 'type' => 'major'],
@@ -520,7 +516,7 @@ describe('PhoneClient', function () {
                 ['phone' => '+15554444444', 'carrier' => 'Sprint', 'type' => 'major'],
                 ['phone' => '+15555555555', 'carrier' => 'Google Voice', 'type' => 'voip'],
                 ['phone' => '+15556666666', 'carrier' => 'Skype', 'type' => 'voip'],
-                ['phone' => '+15557777777', 'carrier' => 'Regional Carrier', 'type' => 'regional']
+                ['phone' => '+15557777777', 'carrier' => 'Regional Carrier', 'type' => 'regional'],
             ];
 
             foreach ($carrierScenarios as $scenario) {
@@ -530,25 +526,25 @@ describe('PhoneClient', function () {
                         'is_valid' => true,
                         'carrier' => $scenario['carrier'],
                         'carrier_type' => $scenario['type'],
-                        'line_type' => $scenario['type'] === 'voip' ? 'voip' : 'mobile'
-                    ]
+                        'line_type' => 'voip' === $scenario['type'] ? 'voip' : 'mobile',
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($scenario['phone']);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });
 
-        it('handles different line types', function () {
+        it('handles different line types', function (): void {
             $lineTypeScenarios = [
                 ['phone' => '+15551111111', 'line_type' => 'mobile', 'description' => 'Standard mobile'],
                 ['phone' => '+15552222222', 'line_type' => 'landline', 'description' => 'Traditional landline'],
                 ['phone' => '+15553333333', 'line_type' => 'voip', 'description' => 'Voice over IP'],
                 ['phone' => '+18005555555', 'line_type' => 'toll_free', 'description' => 'Toll-free number'],
                 ['phone' => '+19005555555', 'line_type' => 'premium', 'description' => 'Premium rate'],
-                ['phone' => '+15554444444', 'line_type' => 'unknown', 'description' => 'Unknown type']
+                ['phone' => '+15554444444', 'line_type' => 'unknown', 'description' => 'Unknown type'],
             ];
 
             foreach ($lineTypeScenarios as $scenario) {
@@ -557,13 +553,13 @@ describe('PhoneClient', function () {
                         'phone_number' => $scenario['phone'],
                         'is_valid' => true,
                         'line_type' => $scenario['line_type'],
-                        'line_description' => $scenario['description']
-                    ]
+                        'line_description' => $scenario['description'],
+                    ],
                 ]);
-                
+
                 $client = new PhoneClient('test_key', httpClient: $mockHttpClient);
                 $response = $client->verifyPhone($scenario['phone']);
-                
+
                 expect($response)->toBeInstanceOf(VerifyPhoneResponse::class);
             }
         });

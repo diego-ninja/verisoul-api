@@ -20,10 +20,14 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "*",
-        "mockery/mockery": "^1.4.4",
+        "laravel/pint": "^1",
+        "mockery/mockery": "^1",
         "pestphp/pest": "^3",
         "phpstan/phpstan": "^2",
-        "phpunit/phpunit": "^11.0"
+        "phpunit/phpunit": "^11",
+        "rector/rector": "^2.0",
+        "squizlabs/php_codesniffer": "^3.7"
+
     },
     "minimum-stability": "stable",
     "autoload": {

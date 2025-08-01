@@ -6,33 +6,33 @@ use Exception;
 use InvalidArgumentException;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
 use Ninja\Verisoul\Contracts\VerisoulApi;
+use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
+use Ninja\Verisoul\Enums\VerisoulEnvironment;
+use Ninja\Verisoul\Exceptions\VerisoulApiException;
+use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Exceptions\VerisoulValidationException;
 use Ninja\Verisoul\Http\GuzzleHttpClient;
 use Ninja\Verisoul\Support\CircuitBreaker;
 use Ninja\Verisoul\Support\InMemoryCache;
 use Ninja\Verisoul\Support\Logger;
 use Ninja\Verisoul\Support\RetryStrategy;
 use Psr\SimpleCache\CacheInterface;
-use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
-use Ninja\Verisoul\Enums\VerisoulEnvironment;
-use Ninja\Verisoul\Exceptions\VerisoulApiException;
-use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
-use Ninja\Verisoul\Exceptions\VerisoulValidationException;
 
 abstract class Client implements VerisoulApi
 {
     protected string $apiKey;
 
-    private VerisoulEnvironment $environment;
-
     protected int $timeout;
 
     protected int $connectTimeout;
 
+    protected array $headers;
+
+    private VerisoulEnvironment $environment;
+
     private RetryStrategy $retryStrategy;
 
     private CircuitBreaker $circuitBreaker;
-
-    protected array $headers;
 
     private HttpClientInterface $httpClient;
 
@@ -55,21 +55,21 @@ abstract class Client implements VerisoulApi
 
         $this->retryStrategy = new RetryStrategy(
             maxAttempts: $retryAttempts,
-            baseDelayMs: $retryDelay
+            baseDelayMs: $retryDelay,
         );
 
-        $cache = $cache ?? new InMemoryCache();
-        
+        $cache ??= new InMemoryCache();
+
         $this->circuitBreaker = new CircuitBreaker(
             service: static::class,
             cache: $cache,
             failureThreshold: 5,
             timeoutSeconds: $timeout,
-            recoveryTime: 300
+            recoveryTime: 300,
         );
 
         $this->headers = $this->buildDefaultHeaders();
-        
+
         $this->httpClient = $httpClient ?? new GuzzleHttpClient();
         $this->httpClient
             ->setTimeout($timeout)
@@ -172,7 +172,7 @@ abstract class Client implements VerisoulApi
         $operation = function () use ($method, $endpointPath, $data) {
             return $this->retryStrategy->execute(function () use ($method, $endpointPath, $data) {
                 $url = $this->getBaseUrl() . $endpointPath;
-                
+
                 return match (strtoupper($method)) {
                     'GET' => $this->httpClient->get($url, $data),
                     'POST' => $this->httpClient->post($url, $data),
@@ -221,7 +221,7 @@ abstract class Client implements VerisoulApi
                 throw new VerisoulValidationException(
                     message: "Missing required parameter: {$param}",
                     field: $param,
-                    value: null
+                    value: null,
                 );
             }
         }

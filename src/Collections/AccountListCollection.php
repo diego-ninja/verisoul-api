@@ -4,6 +4,7 @@ namespace Ninja\Verisoul\Collections;
 
 use DateMalformedStringException;
 use Illuminate\Support\Collection;
+use JsonException;
 use Ninja\Granite\Contracts\GraniteObject;
 use Ninja\Granite\Exceptions\ReflectionException;
 use Ninja\Verisoul\DTO\AccountList;
@@ -35,7 +36,7 @@ final class AccountListCollection extends Collection implements GraniteObject
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function json(): string
     {

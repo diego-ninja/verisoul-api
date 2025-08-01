@@ -1,36 +1,42 @@
 <?php
 
 use Ninja\Verisoul\Clients\AccountClient;
-use Ninja\Verisoul\Clients\SessionClient;
 use Ninja\Verisoul\Clients\PhoneClient;
+use Ninja\Verisoul\Clients\SessionClient;
+use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
-use Ninja\Verisoul\DTO\UserAccount;
 
-describe('Concurrent Requests Performance Tests', function () {
-    beforeEach(function () {
+describe('Concurrent Requests Performance Tests', function (): void {
+    beforeEach(function (): void {
         $this->testApiKey = 'performance_test_key';
         $this->sandboxEnv = VerisoulEnvironment::Sandbox;
     });
 
-    describe('Multiple client concurrent operations', function () {
-        it('handles concurrent requests across different clients efficiently', function () {
-            $accountClient = new AccountClient($this->testApiKey, $this->sandboxEnv, 
+    describe('Multiple client concurrent operations', function (): void {
+        it('handles concurrent requests across different clients efficiently', function (): void {
+            $accountClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'concurrent_acc']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'concurrent_acc']]),
+                ]),
             );
 
-            $sessionClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+            $sessionClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'concurrent_session'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'concurrent_session']),
+                ]),
             );
 
-            $phoneClient = new PhoneClient($this->testApiKey, $this->sandboxEnv,
+            $phoneClient = new PhoneClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => ['phone_number' => '+1234567890', 'is_valid' => true, 'carrier' => 'Test Carrier']
-                ])
+                    'post' => ['phone_number' => '+1234567890', 'is_valid' => true, 'carrier' => 'Test Carrier'],
+                ]),
             );
 
             $startTime = microtime(true);
@@ -39,18 +45,18 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Prepare 15 concurrent operations across different clients
             for ($i = 1; $i <= 5; $i++) {
-                $operations[] = function() use ($accountClient, $i, &$results) {
+                $operations[] = function () use ($accountClient, $i, &$results): void {
                     $response = $accountClient->getAccount("concurrent_acc_{$i}");
                     $results[] = ['type' => 'account', 'id' => $i, 'response' => $response];
                 };
 
-                $operations[] = function() use ($sessionClient, $i, &$results) {
+                $operations[] = function () use ($sessionClient, $i, &$results): void {
                     $userAccount = UserAccount::from(['id' => "concurrent_user_{$i}"]);
                     $response = $sessionClient->authenticate($userAccount, "concurrent_session_{$i}");
                     $results[] = ['type' => 'session', 'id' => $i, 'response' => $response];
                 };
 
-                $operations[] = function() use ($phoneClient, $i, &$results) {
+                $operations[] = function () use ($phoneClient, $i, &$results): void {
                     $response = $phoneClient->verifyPhone("+123456789{$i}");
                     $results[] = ['type' => 'phone', 'id' => $i, 'response' => $response];
                 };
@@ -68,20 +74,22 @@ describe('Concurrent Requests Performance Tests', function () {
                 ->and($totalTime)->toBeLessThan(1000); // Should complete within 1 second
 
             // Verify all response types
-            $accountResponses = array_filter($results, fn($r) => $r['type'] === 'account');
-            $sessionResponses = array_filter($results, fn($r) => $r['type'] === 'session');
-            $phoneResponses = array_filter($results, fn($r) => $r['type'] === 'phone');
+            $accountResponses = array_filter($results, fn($r) => 'account' === $r['type']);
+            $sessionResponses = array_filter($results, fn($r) => 'session' === $r['type']);
+            $phoneResponses = array_filter($results, fn($r) => 'phone' === $r['type']);
 
             expect(count($accountResponses))->toBe(5)
                 ->and(count($sessionResponses))->toBe(5)
                 ->and(count($phoneResponses))->toBe(5);
         });
 
-        it('maintains response quality under high concurrency load', function () {
-            $highLoadClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+        it('maintains response quality under high concurrency load', function (): void {
+            $highLoadClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'high_load_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'high_load_test']]),
+                ]),
             );
 
             $concurrentLevel = 50;
@@ -91,11 +99,11 @@ describe('Concurrent Requests Performance Tests', function () {
 
             $operations = [];
             for ($i = 1; $i <= $concurrentLevel; $i++) {
-                $operations[] = function() use ($highLoadClient, $i, &$results, &$errors) {
+                $operations[] = function () use ($highLoadClient, $i, &$results, &$errors): void {
                     try {
                         $response = $highLoadClient->getAccount("high_load_{$i}");
                         $results[] = $response;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $errors[] = $e;
                     }
                 };
@@ -115,15 +123,15 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Verify all responses are valid
             foreach ($results as $response) {
-                expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class);
+                expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class);
             }
         });
     });
 
-    describe('Resource contention and synchronization', function () {
-        it('handles shared resource access correctly', function () {
+    describe('Resource contention and synchronization', function (): void {
+        it('handles shared resource access correctly', function (): void {
             $sharedHttpClient = MockFactory::createSuccessfulHttpClient([
-                'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'shared_resource']])
+                'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'shared_resource']]),
             ]);
 
             // Multiple clients sharing the same HTTP client
@@ -136,7 +144,7 @@ describe('Concurrent Requests Performance Tests', function () {
             $operations = [];
 
             foreach ($clients as $index => $client) {
-                $operations[] = function() use ($client, $index, &$results) {
+                $operations[] = function () use ($client, $index, &$results): void {
                     $response = $client->getAccount("shared_resource_{$index}");
                     $results[] = ['client_index' => $index, 'response' => $response];
                 };
@@ -157,26 +165,26 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Verify each client got a valid response
             foreach ($results as $result) {
-                expect($result['response'])->toBeInstanceOf(\Ninja\Verisoul\Responses\AccountResponse::class);
+                expect($result['response'])->toBeInstanceOf(Ninja\Verisoul\Responses\AccountResponse::class);
             }
         });
 
-        it('prevents race conditions in retry mechanism', function () {
-            $retryClient = Mockery::mock(\Ninja\Verisoul\Contracts\HttpClientInterface::class);
+        it('prevents race conditions in retry mechanism', function (): void {
+            $retryClient = Mockery::mock(Ninja\Verisoul\Contracts\HttpClientInterface::class);
             $retryClient->shouldReceive('setTimeout')->andReturnSelf();
             $retryClient->shouldReceive('setConnectTimeout')->andReturnSelf();
             $retryClient->shouldReceive('setHeaders')->andReturnSelf();
 
             $callCount = 0;
             $retryClient->shouldReceive('get')
-                ->andReturnUsing(function() use (&$callCount) {
+                ->andReturnUsing(function () use (&$callCount) {
                     $callCount++;
-                    
+
                     // First call of each batch fails, second succeeds
-                    if ($callCount % 2 === 1) {
-                        throw new \Ninja\Verisoul\Exceptions\VerisoulConnectionException("Race condition test failure");
+                    if (1 === $callCount % 2) {
+                        throw new Ninja\Verisoul\Exceptions\VerisoulConnectionException("Race condition test failure");
                     }
-                    
+
                     return MockFactory::createAccountResponseFromFixture(['account' => ['id' => "race_test_{$callCount}"]]);
                 });
 
@@ -185,7 +193,7 @@ describe('Concurrent Requests Performance Tests', function () {
                 $this->sandboxEnv,
                 retryAttempts: 2,
                 retryDelay: 50,
-                httpClient: $retryClient
+                httpClient: $retryClient,
             );
 
             $operations = [];
@@ -193,11 +201,11 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Create 10 concurrent operations that will trigger retries
             for ($i = 1; $i <= 10; $i++) {
-                $operations[] = function() use ($client, $i, &$results) {
+                $operations[] = function () use ($client, $i, &$results): void {
                     try {
                         $response = $client->getAccount("race_test_{$i}");
                         $results[] = $response;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // Some may fail
                     }
                 };
@@ -212,12 +220,14 @@ describe('Concurrent Requests Performance Tests', function () {
         });
     });
 
-    describe('Memory and CPU efficiency under load', function () {
-        it('maintains low memory usage during concurrent operations', function () {
-            $memoryEfficientClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+    describe('Memory and CPU efficiency under load', function (): void {
+        it('maintains low memory usage during concurrent operations', function (): void {
+            $memoryEfficientClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'memory_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'memory_test']]),
+                ]),
             );
 
             $initialMemory = memory_get_usage();
@@ -225,7 +235,7 @@ describe('Concurrent Requests Performance Tests', function () {
 
             $operations = [];
             for ($i = 1; $i <= 100; $i++) {
-                $operations[] = function() use ($memoryEfficientClient, $i, &$peakMemory) {
+                $operations[] = function () use ($memoryEfficientClient, $i, &$peakMemory) {
                     $response = $memoryEfficientClient->getAccount("memory_test_{$i}");
                     $currentMemory = memory_get_usage();
                     $peakMemory = max($peakMemory, $currentMemory);
@@ -246,11 +256,13 @@ describe('Concurrent Requests Performance Tests', function () {
                 ->and($peakIncrease)->toBeLessThan(10 * 1024 * 1024);
         });
 
-        it('handles CPU-intensive concurrent operations efficiently', function () {
-            $cpuIntensiveClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('handles CPU-intensive concurrent operations efficiently', function (): void {
+            $cpuIntensiveClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'cpu_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'cpu_test']),
+                ]),
             );
 
             $startTime = microtime(true);
@@ -259,7 +271,7 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Create 30 CPU-intensive operations
             for ($i = 1; $i <= 30; $i++) {
-                $operations[] = function() use ($cpuIntensiveClient, $i, &$results) {
+                $operations[] = function () use ($cpuIntensiveClient, $i, &$results): void {
                     // Create complex UserAccount to simulate CPU work
                     $userAccount = UserAccount::from([
                         'id' => "cpu_intensive_user_{$i}",
@@ -268,8 +280,8 @@ describe('Concurrent Requests Performance Tests', function () {
                             'source' => 'performance_test',
                             'iteration' => $i,
                             'complex_data' => array_fill(0, 100, "data_item_{$i}"),
-                            'timestamp' => microtime(true)
-                        ]
+                            'timestamp' => microtime(true),
+                        ],
                     ]);
 
                     $response = $cpuIntensiveClient->authenticate($userAccount, "cpu_session_{$i}");
@@ -289,29 +301,35 @@ describe('Concurrent Requests Performance Tests', function () {
 
             // Verify all responses are valid
             foreach ($results as $response) {
-                expect($response)->toBeInstanceOf(\Ninja\Verisoul\Responses\AuthenticateSessionResponse::class);
+                expect($response)->toBeInstanceOf(Ninja\Verisoul\Responses\AuthenticateSessionResponse::class);
             }
         });
     });
 
-    describe('Throughput and latency benchmarks', function () {
-        it('achieves target throughput for mixed workloads', function () {
+    describe('Throughput and latency benchmarks', function (): void {
+        it('achieves target throughput for mixed workloads', function (): void {
             $throughputClients = [
-                'account' => new AccountClient($this->testApiKey, $this->sandboxEnv,
+                'account' => new AccountClient(
+                    $this->testApiKey,
+                    $this->sandboxEnv,
                     httpClient: MockFactory::createSuccessfulHttpClient([
-                        'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'throughput_test']])
-                    ])
+                        'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'throughput_test']]),
+                    ]),
                 ),
-                'session' => new SessionClient($this->testApiKey, $this->sandboxEnv,
+                'session' => new SessionClient(
+                    $this->testApiKey,
+                    $this->sandboxEnv,
                     httpClient: MockFactory::createSuccessfulHttpClient([
-                        'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'throughput_session'])
-                    ])
+                        'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'throughput_session']),
+                    ]),
                 ),
-                'phone' => new PhoneClient($this->testApiKey, $this->sandboxEnv,
+                'phone' => new PhoneClient(
+                    $this->testApiKey,
+                    $this->sandboxEnv,
                     httpClient: MockFactory::createSuccessfulHttpClient([
-                        'post' => ['phone_number' => '+1234567890', 'is_valid' => true]
-                    ])
-                )
+                        'post' => ['phone_number' => '+1234567890', 'is_valid' => true],
+                    ]),
+                ),
             ];
 
             $operations = [];
@@ -321,7 +339,7 @@ describe('Concurrent Requests Performance Tests', function () {
             // Create mixed workload: 20 operations per client type
             foreach ($throughputClients as $clientType => $client) {
                 for ($i = 1; $i <= 20; $i++) {
-                    $operations[] = function() use ($client, $clientType, $i, &$results, &$latencies) {
+                    $operations[] = function () use ($client, $clientType, $i, &$results, &$latencies): void {
                         $requestStart = microtime(true);
 
                         switch ($clientType) {
@@ -366,11 +384,13 @@ describe('Concurrent Requests Performance Tests', function () {
                 ->and($maxLatency)->toBeLessThan(500); // Max latency under 500ms
         });
 
-        it('maintains consistent performance across sustained load', function () {
-            $sustainedClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+        it('maintains consistent performance across sustained load', function (): void {
+            $sustainedClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'sustained_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'sustained_test']]),
+                ]),
             );
 
             $batchResults = [];
@@ -392,7 +412,7 @@ describe('Concurrent Requests Performance Tests', function () {
                     'batch' => $batch,
                     'time' => $batchTime,
                     'operations' => count($batchResponses),
-                    'throughput' => count($batchResponses) / ($batchTime / 1000)
+                    'throughput' => count($batchResponses) / ($batchTime / 1000),
                 ];
             }
 

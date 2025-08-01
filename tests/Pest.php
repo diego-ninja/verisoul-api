@@ -5,55 +5,47 @@ use Ninja\Verisoul\Tests\TestCase;
 uses(TestCase::class)->in('Unit', 'Feature', 'Integration');
 
 // Custom expectations
-expect()->extend('toBeValidDto', function () {
-    return $this->toBeInstanceOf(stdClass::class)
-        ->and($this->value)->toHaveMethod('toArray')
-        ->and($this->value)->toHaveMethod('fromArray');
-});
+expect()->extend('toBeValidDto', fn() => $this->toBeInstanceOf(stdClass::class)
+    ->and($this->value)->toHaveMethod('toArray')
+    ->and($this->value)->toHaveMethod('fromArray'));
 
-expect()->extend('toBeValidEnum', function () {
-    return $this->toBeInstanceOf(BackedEnum::class);
-});
+expect()->extend('toBeValidEnum', fn() => $this->toBeInstanceOf(BackedEnum::class));
 
-expect()->extend('toBeValidResponse', function () {
-    return $this->toHaveKeys(['success', 'data'])
-        ->and($this->success)->toBeBool()
-        ->and($this->data)->toBeArray();
-});
+expect()->extend('toBeValidResponse', fn() => $this->toHaveKeys(['success', 'data'])
+    ->and($this->success)->toBeBool()
+    ->and($this->data)->toBeArray());
 
-expect()->extend('toBeValidScore', function () {
-    return $this->toBeInstanceOf(\Ninja\Verisoul\ValueObjects\Score::class)
-        ->and($this->value->value)->toBeFloat()
-        ->and($this->value->value)->toBeGreaterThanOrEqual(0.0)
-        ->and($this->value->value)->toBeLessThanOrEqual(1.0);
-});
+expect()->extend('toBeValidScore', fn() => $this->toBeInstanceOf(Ninja\Verisoul\ValueObjects\Score::class)
+    ->and($this->value->value)->toBeFloat()
+    ->and($this->value->value)->toBeGreaterThanOrEqual(0.0)
+    ->and($this->value->value)->toBeLessThanOrEqual(1.0));
 
 // Helper functions for tests
-function createMockHttpClient(): \Ninja\Verisoul\Contracts\HttpClientInterface
+function createMockHttpClient(): Ninja\Verisoul\Contracts\HttpClientInterface
 {
-    return Mockery::mock(\Ninja\Verisoul\Contracts\HttpClientInterface::class);
+    return Mockery::mock(Ninja\Verisoul\Contracts\HttpClientInterface::class);
 }
 
-function createMockCache(): \Psr\SimpleCache\CacheInterface
+function createMockCache(): Psr\SimpleCache\CacheInterface
 {
-    return Mockery::mock(\Psr\SimpleCache\CacheInterface::class);
+    return Mockery::mock(Psr\SimpleCache\CacheInterface::class);
 }
 
 function getFixture(string $name): array
 {
     $path = __DIR__ . "/fixtures/api/responses/{$name}.json";
-    
-    if (!file_exists($path)) {
+
+    if ( ! file_exists($path)) {
         throw new InvalidArgumentException("Fixture {$name} not found at {$path}");
     }
-    
+
     $content = file_get_contents($path);
     $data = json_decode($content, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
+
+    if (JSON_ERROR_NONE !== json_last_error()) {
         throw new InvalidArgumentException("Invalid JSON in fixture {$name}: " . json_last_error_msg());
     }
-    
+
     return $data;
 }
 
@@ -86,13 +78,13 @@ function createTestClient(string $clientClass, array $params = []): object
 {
     $defaultParams = [
         'retryAttempts' => 1,
-        'retryDelay' => 0
+        'retryDelay' => 0,
     ];
-    
+
     $mergedParams = array_merge($defaultParams, $params);
     $apiKey = $mergedParams['apiKey'] ?? 'test_key';
     unset($mergedParams['apiKey']);
-    
+
     return new $clientClass($apiKey, ...$mergedParams);
 }
 
@@ -112,7 +104,7 @@ function validSessionData(): array
 {
     return [
         'session_id' => randomSessionId(),
-        'account_id' => randomAccountId(), 
+        'account_id' => randomAccountId(),
         'risk_level' => 'low',
         'score' => 0.95,
         'created_at' => date('c'),
@@ -135,7 +127,7 @@ function mockSuccessResponse(array $data = []): array
     ];
 }
 
-function mockErrorResponse(string $message = 'Error', int $code = 400): array  
+function mockErrorResponse(string $message = 'Error', int $code = 400): array
 {
     return [
         'success' => false,
@@ -148,15 +140,15 @@ function mockErrorResponse(string $message = 'Error', int $code = 400): array
 }
 
 // Pest hooks
-beforeEach(function () {
+beforeEach(function (): void {
     // Reset any static state
     Mockery::resetContainer();
-    
+
     // Set default environment variables
     $_ENV['VERISOUL_API_KEY'] = 'test_api_key_12345';
     $_ENV['VERISOUL_ENVIRONMENT'] = 'sandbox';
 });
 
-afterEach(function () {
+afterEach(function (): void {
     Mockery::close();
 });

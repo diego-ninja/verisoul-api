@@ -3,8 +3,8 @@
 namespace Ninja\Verisoul\Support;
 
 use Exception;
-use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\CircuitBreakerOpenException;
+use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Psr\SimpleCache\CacheInterface;
 
 final readonly class CircuitBreaker
@@ -20,7 +20,7 @@ final readonly class CircuitBreaker
         private CacheInterface $cache,
         private int $failureThreshold = 5,
         private int $timeoutSeconds = 60,
-        private int $recoveryTime = 300 // 5 minutes
+        private int $recoveryTime = 300, // 5 minutes
     ) {}
 
     /**
@@ -39,7 +39,7 @@ final readonly class CircuitBreaker
                 }
                 throw new CircuitBreakerOpenException(
                     "Circuit breaker is OPEN for service: {$this->service}",
-                    503
+                    503,
                 );
 
             case self::STATE_HALF_OPEN:
@@ -89,7 +89,7 @@ final readonly class CircuitBreaker
                 throw new VerisoulApiException(
                     message: "Operation timed out after {$duration} seconds",
                     statusCode: 504,
-                    previous: $e
+                    previous: $e,
                 );
             }
 
@@ -101,7 +101,7 @@ final readonly class CircuitBreaker
     {
         try {
             return $this->cache->get($this->getStateKey(), self::STATE_CLOSED);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return self::STATE_CLOSED;
         }
     }
@@ -110,7 +110,7 @@ final readonly class CircuitBreaker
     {
         try {
             $this->cache->set($this->getStateKey(), $state, $this->recoveryTime);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently ignore cache failures
         }
     }
@@ -119,7 +119,7 @@ final readonly class CircuitBreaker
     {
         try {
             return (int) $this->cache->get($this->getFailureCountKey(), 0);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return 0;
         }
     }
@@ -130,7 +130,7 @@ final readonly class CircuitBreaker
             $count = $this->getFailureCount() + 1;
             $this->cache->set($this->getFailureCountKey(), $count, 600); // 10 minutes
             $this->cache->set($this->getLastFailureKey(), time(), 600);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently ignore cache failures
         }
     }
@@ -145,7 +145,7 @@ final readonly class CircuitBreaker
             } else {
                 $this->cache->delete($this->getFailureCountKey());
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently ignore cache failures
         }
     }
@@ -155,7 +155,7 @@ final readonly class CircuitBreaker
         try {
             $this->cache->delete($this->getFailureCountKey());
             $this->cache->delete($this->getLastFailureKey());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently ignore cache failures
         }
     }
@@ -164,9 +164,9 @@ final readonly class CircuitBreaker
     {
         try {
             $lastFailure = $this->cache->get($this->getLastFailureKey());
-            return $lastFailure === null ||
+            return null === $lastFailure ||
                 (time() - (int) $lastFailure) >= $this->recoveryTime;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return true; // Allow recovery if cache fails
         }
     }

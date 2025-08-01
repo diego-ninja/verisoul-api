@@ -74,7 +74,7 @@ enum VerisoulApiEndpoint
 
         // First, substitute all provided parameters.
         foreach ($parameters as $key => $value) {
-            $endpoint = str_replace('{'.$key.'}', $value, $endpoint);
+            $endpoint = str_replace('{' . $key . '}', $value, $endpoint);
         }
 
         // If the URL has a query string with remaining placeholders, clean it up.
@@ -84,13 +84,11 @@ enum VerisoulApiEndpoint
             parse_str($urlParts['query'], $queryParams);
 
             // Keep query parameters that do not contain a placeholder.
-            $finalQueryParams = array_filter($queryParams, function ($value) {
-                return ! is_string($value) || ! str_contains($value, '{');
-            });
+            $finalQueryParams = array_filter($queryParams, fn($value) => ! is_string($value) || ! str_contains($value, '{'));
 
             $newQuery = http_build_query($finalQueryParams);
 
-            return $newQuery ? $path.'?'.$newQuery : $path;
+            return $newQuery ? $path . '?' . $newQuery : $path;
         }
 
         return $endpoint;

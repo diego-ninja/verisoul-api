@@ -140,10 +140,10 @@ class GuzzleHttpClient implements HttpClientInterface
 
         // Validate response content type
         $contentType = $response->getHeaderLine('content-type');
-        if (!str_contains($contentType, 'application/json')) {
+        if ( ! str_contains($contentType, 'application/json')) {
             throw VerisoulApiException::invalidResponse(
                 $url,
-                "Expected JSON response, got: {$contentType}"
+                "Expected JSON response, got: {$contentType}",
             );
         }
 
@@ -154,11 +154,11 @@ class GuzzleHttpClient implements HttpClientInterface
         } catch (Exception $e) {
             throw VerisoulApiException::invalidResponse(
                 $url,
-                "Invalid JSON response: {$e->getMessage()}"
+                "Invalid JSON response: {$e->getMessage()}",
             );
         }
 
-        if (!is_array($data)) {
+        if ( ! is_array($data)) {
             throw VerisoulApiException::invalidResponse($url, 'Response is not a JSON object');
         }
 
@@ -182,29 +182,29 @@ class GuzzleHttpClient implements HttpClientInterface
                 message: "Business logic error: {$errorMessage}",
                 statusCode: 200,
                 response: $data,
-                endpoint: $url
+                endpoint: $url,
             );
         }
 
         // Check for success flag being false
-        if (isset($data['success']) && $data['success'] === false) {
+        if (isset($data['success']) && false === $data['success']) {
             $message = $data['message'] ?? 'Operation failed';
             throw new VerisoulApiException(
                 message: "Operation failed: {$message}",
                 statusCode: 200,
                 response: $data,
-                endpoint: $url
+                endpoint: $url,
             );
         }
 
         // Check for specific error status
-        if (isset($data['status']) && $data['status'] === 'error') {
+        if (isset($data['status']) && 'error' === $data['status']) {
             $message = $data['message'] ?? $data['error_message'] ?? 'Unknown error';
             throw new VerisoulApiException(
                 message: "API returned error status: {$message}",
                 statusCode: 200,
                 response: $data,
-                endpoint: $url
+                endpoint: $url,
             );
         }
     }
@@ -215,7 +215,7 @@ class GuzzleHttpClient implements HttpClientInterface
     private function createApiExceptionFromResponse(string $url, ResponseInterface $response): VerisoulApiException
     {
         $statusCode = $response->getStatusCode();
-        
+
         try {
             $responseData = json_decode($response->getBody()->getContents(), true) ?? [];
         } catch (Exception $e) {
@@ -229,13 +229,13 @@ class GuzzleHttpClient implements HttpClientInterface
                 message: 'Resource not found',
                 statusCode: 404,
                 response: $responseData,
-                endpoint: $url
+                endpoint: $url,
             ),
             422 => new VerisoulApiException(
                 message: $responseData['message'] ?? 'Validation failed',
                 statusCode: 422,
                 response: $responseData,
-                endpoint: $url
+                endpoint: $url,
             ),
             429 => VerisoulApiException::rateLimitExceeded($url, $responseData),
             default => VerisoulApiException::serverError($url, $statusCode, $responseData),

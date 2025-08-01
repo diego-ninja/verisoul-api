@@ -2,9 +2,9 @@
 
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 
-describe('VerisoulEnvironment Enum', function () {
-    describe('enum cases', function () {
-        it('has all expected cases', function () {
+describe('VerisoulEnvironment Enum', function (): void {
+    describe('enum cases', function (): void {
+        it('has all expected cases', function (): void {
             $cases = VerisoulEnvironment::cases();
             $values = array_map(fn($case) => $case->value, $cases);
 
@@ -13,25 +13,25 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and($values)->toContain('production');
         });
 
-        it('has correct enum values', function () {
+        it('has correct enum values', function (): void {
             expect(VerisoulEnvironment::Sandbox->value)->toBe('sandbox')
                 ->and(VerisoulEnvironment::Production->value)->toBe('production');
         });
 
-        it('can be created from string values', function () {
+        it('can be created from string values', function (): void {
             expect(VerisoulEnvironment::from('sandbox'))->toBe(VerisoulEnvironment::Sandbox)
                 ->and(VerisoulEnvironment::from('production'))->toBe(VerisoulEnvironment::Production);
         });
 
-        it('can try to create from string values', function () {
+        it('can try to create from string values', function (): void {
             expect(VerisoulEnvironment::tryFrom('sandbox'))->toBe(VerisoulEnvironment::Sandbox)
                 ->and(VerisoulEnvironment::tryFrom('production'))->toBe(VerisoulEnvironment::Production)
                 ->and(VerisoulEnvironment::tryFrom('invalid'))->toBeNull();
         });
     });
 
-    describe('getBaseUrl method', function () {
-        it('returns correct sandbox URL', function () {
+    describe('getBaseUrl method', function (): void {
+        it('returns correct sandbox URL', function (): void {
             $url = VerisoulEnvironment::Sandbox->getBaseUrl();
 
             expect($url)->toBe('https://api.sandbox.verisoul.ai')
@@ -39,7 +39,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and($url)->toContain('sandbox');
         });
 
-        it('returns correct production URL', function () {
+        it('returns correct production URL', function (): void {
             $url = VerisoulEnvironment::Production->getBaseUrl();
 
             expect($url)->toBe('https://api.verisoul.ai')
@@ -47,7 +47,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and($url)->not->toContain('sandbox');
         });
 
-        it('URLs are properly formatted', function () {
+        it('URLs are properly formatted', function (): void {
             $sandboxUrl = VerisoulEnvironment::Sandbox->getBaseUrl();
             $productionUrl = VerisoulEnvironment::Production->getBaseUrl();
 
@@ -64,7 +64,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and(parse_url($productionUrl, PHP_URL_SCHEME))->toBe('https');
         });
 
-        it('provides different URLs for different environments', function () {
+        it('provides different URLs for different environments', function (): void {
             $sandboxUrl = VerisoulEnvironment::Sandbox->getBaseUrl();
             $productionUrl = VerisoulEnvironment::Production->getBaseUrl();
 
@@ -72,16 +72,16 @@ describe('VerisoulEnvironment Enum', function () {
         });
     });
 
-    describe('enum behavior', function () {
-        it('supports comparison operations', function () {
+    describe('enum behavior', function (): void {
+        it('supports comparison operations', function (): void {
             expect(VerisoulEnvironment::Sandbox === VerisoulEnvironment::Sandbox)->toBeTrue()
                 ->and(VerisoulEnvironment::Sandbox === VerisoulEnvironment::Production)->toBeFalse()
                 ->and(VerisoulEnvironment::Sandbox !== VerisoulEnvironment::Production)->toBeTrue();
         });
 
-        it('can be used in match expressions', function () {
+        it('can be used in match expressions', function (): void {
             $env = VerisoulEnvironment::Production;
-            
+
             $description = match ($env) {
                 VerisoulEnvironment::Sandbox => 'Testing environment',
                 VerisoulEnvironment::Production => 'Live environment',
@@ -90,16 +90,16 @@ describe('VerisoulEnvironment Enum', function () {
             expect($description)->toBe('Live environment');
         });
 
-        it('can be used in conditional logic', function () {
+        it('can be used in conditional logic', function (): void {
             $env = VerisoulEnvironment::Sandbox;
-            $isProduction = $env === VerisoulEnvironment::Production;
-            $isSandbox = $env === VerisoulEnvironment::Sandbox;
+            $isProduction = VerisoulEnvironment::Production === $env;
+            $isSandbox = VerisoulEnvironment::Sandbox === $env;
 
             expect($isProduction)->toBeFalse()
                 ->and($isSandbox)->toBeTrue();
         });
 
-        it('can be used in arrays', function () {
+        it('can be used in arrays', function (): void {
             $environments = [VerisoulEnvironment::Sandbox, VerisoulEnvironment::Production];
 
             expect($environments)->toHaveCount(2)
@@ -107,7 +107,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and(in_array(VerisoulEnvironment::Production, $environments))->toBeTrue();
         });
 
-        it('supports serialization', function () {
+        it('supports serialization', function (): void {
             $env = VerisoulEnvironment::Production;
             $serialized = serialize($env);
             $unserialized = unserialize($serialized);
@@ -118,8 +118,8 @@ describe('VerisoulEnvironment Enum', function () {
         });
     });
 
-    describe('integration scenarios', function () {
-        it('provides correct URLs for API client configuration', function () {
+    describe('integration scenarios', function (): void {
+        it('provides correct URLs for API client configuration', function (): void {
             $configurations = [
                 [VerisoulEnvironment::Sandbox, 'https://api.sandbox.verisoul.ai'],
                 [VerisoulEnvironment::Production, 'https://api.verisoul.ai'],
@@ -130,7 +130,7 @@ describe('VerisoulEnvironment Enum', function () {
             }
         });
 
-        it('supports environment switching logic', function () {
+        it('supports environment switching logic', function (): void {
             $startEnv = VerisoulEnvironment::Sandbox;
             $targetEnv = VerisoulEnvironment::Production;
 
@@ -142,7 +142,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and($startUrl)->not->toBe($targetUrl);
         });
 
-        it('handles environment detection patterns', function () {
+        it('handles environment detection patterns', function (): void {
             // Simulate common environment detection scenarios
             $testCases = [
                 ['sandbox', VerisoulEnvironment::Sandbox],
@@ -158,8 +158,8 @@ describe('VerisoulEnvironment Enum', function () {
         });
     });
 
-    describe('URL construction and validation', function () {
-        it('constructs valid API endpoints', function () {
+    describe('URL construction and validation', function (): void {
+        it('constructs valid API endpoints', function (): void {
             $sandboxBase = VerisoulEnvironment::Sandbox->getBaseUrl();
             $productionBase = VerisoulEnvironment::Production->getBaseUrl();
 
@@ -175,7 +175,7 @@ describe('VerisoulEnvironment Enum', function () {
             }
         });
 
-        it('provides consistent URL structure', function () {
+        it('provides consistent URL structure', function (): void {
             $sandboxUrl = VerisoulEnvironment::Sandbox->getBaseUrl();
             $productionUrl = VerisoulEnvironment::Production->getBaseUrl();
 
@@ -186,7 +186,7 @@ describe('VerisoulEnvironment Enum', function () {
                 ->and($productionUrl)->toEndWith('.verisoul.ai');
         });
 
-        it('maintains URL immutability', function () {
+        it('maintains URL immutability', function (): void {
             $env = VerisoulEnvironment::Sandbox;
             $url1 = $env->getBaseUrl();
             $url2 = $env->getBaseUrl();
@@ -196,13 +196,13 @@ describe('VerisoulEnvironment Enum', function () {
         });
     });
 
-    describe('validation and error handling', function () {
-        it('throws exception for invalid string values', function () {
+    describe('validation and error handling', function (): void {
+        it('throws exception for invalid string values', function (): void {
             expect(fn() => VerisoulEnvironment::from('invalid'))
                 ->toThrow(ValueError::class);
         });
 
-        it('handles case sensitivity correctly', function () {
+        it('handles case sensitivity correctly', function (): void {
             expect(VerisoulEnvironment::tryFrom('SANDBOX'))->toBeNull()
                 ->and(VerisoulEnvironment::tryFrom('Sandbox'))->toBeNull()
                 ->and(VerisoulEnvironment::tryFrom('PRODUCTION'))->toBeNull()
@@ -211,20 +211,20 @@ describe('VerisoulEnvironment Enum', function () {
 
     });
 
-    describe('string representation', function () {
-        it('converts to string correctly', function () {
+    describe('string representation', function (): void {
+        it('converts to string correctly', function (): void {
             expect(VerisoulEnvironment::Sandbox->value)->toBe('sandbox')
                 ->and(VerisoulEnvironment::Production->value)->toBe('production');
         });
 
-        it('provides meaningful string representation', function () {
+        it('provides meaningful string representation', function (): void {
             expect((string) VerisoulEnvironment::Sandbox->value)->toBe('sandbox')
                 ->and((string) VerisoulEnvironment::Production->value)->toBe('production');
         });
     });
 
-    describe('development workflow support', function () {
-        it('supports typical development environment patterns', function () {
+    describe('development workflow support', function (): void {
+        it('supports typical development environment patterns', function (): void {
             // Test common development patterns
             $devEnv = VerisoulEnvironment::Sandbox;
             $prodEnv = VerisoulEnvironment::Production;
@@ -234,17 +234,17 @@ describe('VerisoulEnvironment Enum', function () {
 
             // Sandbox should be suitable for testing
             expect($devEnv)->toBe(VerisoulEnvironment::Sandbox);
-            
+
             // Production should be separate
             expect($prodEnv)->toBe(VerisoulEnvironment::Production);
         });
 
-        it('enables environment-specific configuration', function () {
+        it('enables environment-specific configuration', function (): void {
             $environments = VerisoulEnvironment::cases();
 
             foreach ($environments as $env) {
                 $url = $env->getBaseUrl();
-                
+
                 // Each environment should have a unique, valid URL
                 expect($url)->toStartWith('https://')
                     ->and(filter_var($url, FILTER_VALIDATE_URL))->not->toBeFalse();

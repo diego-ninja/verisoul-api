@@ -2,9 +2,9 @@
 
 use Ninja\Verisoul\DTO\Location;
 
-describe('Location DTO', function () {
-    describe('construction', function () {
-        it('can be created with all properties', function () {
+describe('Location DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all properties', function (): void {
             $location = new Location(
                 continent: 'North America',
                 countryCode: 'US',
@@ -13,7 +13,7 @@ describe('Location DTO', function () {
                 zipCode: '94105',
                 timezone: 'America/Los_Angeles',
                 latitude: 37.7749,
-                longitude: -122.4194
+                longitude: -122.4194,
             );
 
             expect($location->continent)->toBe('North America')
@@ -26,7 +26,7 @@ describe('Location DTO', function () {
                 ->and($location->longitude)->toBe(-122.4194);
         });
 
-        it('can be created with null properties', function () {
+        it('can be created with null properties', function (): void {
             $location = new Location(
                 continent: null,
                 countryCode: null,
@@ -35,7 +35,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: null,
                 latitude: null,
-                longitude: null
+                longitude: null,
             );
 
             expect($location->continent)->toBeNull()
@@ -48,7 +48,7 @@ describe('Location DTO', function () {
                 ->and($location->longitude)->toBeNull();
         });
 
-        it('can be created with partial data', function () {
+        it('can be created with partial data', function (): void {
             $location = new Location(
                 continent: 'Europe',
                 countryCode: 'GB',
@@ -57,7 +57,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: 'Europe/London',
                 latitude: 51.5074,
-                longitude: -0.1278
+                longitude: -0.1278,
             );
 
             expect($location->continent)->toBe('Europe')
@@ -71,8 +71,8 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $location = new Location(
                 continent: 'Asia',
                 countryCode: 'JP',
@@ -81,7 +81,7 @@ describe('Location DTO', function () {
                 zipCode: '100-0001',
                 timezone: 'Asia/Tokyo',
                 latitude: 35.6762,
-                longitude: 139.6503
+                longitude: 139.6503,
             );
 
             $reflection = new ReflectionClass($location);
@@ -89,12 +89,12 @@ describe('Location DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
 
-        it('maintains data integrity', function () {
+        it('maintains data integrity', function (): void {
             $location = new Location(
                 continent: 'South America',
                 countryCode: 'BR',
@@ -103,7 +103,7 @@ describe('Location DTO', function () {
                 zipCode: '01310-100',
                 timezone: 'America/Sao_Paulo',
                 latitude: -23.5505,
-                longitude: -46.6333
+                longitude: -46.6333,
             );
 
             expect($location->continent)->toBe('South America');
@@ -113,8 +113,8 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $location = new Location(
                 continent: 'Australia',
                 countryCode: 'AU',
@@ -123,7 +123,7 @@ describe('Location DTO', function () {
                 zipCode: '2000',
                 timezone: 'Australia/Sydney',
                 latitude: -33.8688,
-                longitude: 151.2093
+                longitude: 151.2093,
             );
 
             $array = $location->array();
@@ -131,7 +131,7 @@ describe('Location DTO', function () {
             expect($array)->toBeArray()
                 ->and($array)->toHaveKeys([
                     'continent', 'country_code', 'state', 'city',
-                    'zip_code', 'timezone', 'latitude', 'longitude'
+                    'zip_code', 'timezone', 'latitude', 'longitude',
                 ])
                 ->and($array['continent'])->toBe('Australia')
                 ->and($array['country_code'])->toBe('AU')
@@ -143,7 +143,7 @@ describe('Location DTO', function () {
                 ->and($array['longitude'])->toBe(151.2093);
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'continent' => 'Africa',
                 'countryCode' => 'ZA',
@@ -168,7 +168,7 @@ describe('Location DTO', function () {
                 ->and($location->longitude)->toBe(18.4241);
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new Location(
                 continent: 'North America',
                 countryCode: 'CA',
@@ -177,7 +177,7 @@ describe('Location DTO', function () {
                 zipCode: 'M5V 3L9',
                 timezone: 'America/Toronto',
                 latitude: 43.6532,
-                longitude: -79.3832
+                longitude: -79.3832,
             );
 
             $array = $original->array();
@@ -193,9 +193,9 @@ describe('Location DTO', function () {
                 ->and($restored->longitude)->toBe($original->longitude);
         });
 
-        it('can be created from JSON string', function () {
+        it('can be created from JSON string', function (): void {
             $json = '{"continent":"Europe","countryCode":"FR","state":"Île-de-France","city":"Paris","zipCode":"75001","timezone":"Europe/Paris","latitude":48.8566,"longitude":2.3522}';
-            
+
             $location = Location::from($json);
 
             expect($location)->toBeInstanceOf(Location::class)
@@ -206,7 +206,7 @@ describe('Location DTO', function () {
                 ->and($location->longitude)->toBe(2.3522);
         });
 
-        it('handles null values in serialization', function () {
+        it('handles null values in serialization', function (): void {
             $location = new Location(
                 continent: 'Asia',
                 countryCode: 'IN',
@@ -215,7 +215,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: 'Asia/Kolkata',
                 latitude: 19.0760,
-                longitude: 72.8777
+                longitude: 72.8777,
             );
 
             $array = $location->array();
@@ -231,12 +231,12 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('coordinate handling', function () {
-        it('handles positive and negative coordinates', function () {
+    describe('coordinate handling', function (): void {
+        it('handles positive and negative coordinates', function (): void {
             $locations = [
                 // Northern Hemisphere, Eastern Longitude
                 [40.7128, 74.0060, 'New York'],
-                // Southern Hemisphere, Western Longitude  
+                // Southern Hemisphere, Western Longitude
                 [-34.6037, -58.3816, 'Buenos Aires'],
                 // Northern Hemisphere, Western Longitude
                 [55.7558, -37.6176, 'Moscow'],
@@ -253,7 +253,7 @@ describe('Location DTO', function () {
                     zipCode: null,
                     timezone: null,
                     latitude: $lat,
-                    longitude: $lng
+                    longitude: $lng,
                 );
 
                 expect($location->latitude)->toBe($lat)
@@ -262,7 +262,7 @@ describe('Location DTO', function () {
             }
         });
 
-        it('handles extreme coordinate values', function () {
+        it('handles extreme coordinate values', function (): void {
             // North Pole
             $northPole = new Location(
                 continent: null,
@@ -272,7 +272,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: null,
                 latitude: 90.0,
-                longitude: 0.0
+                longitude: 0.0,
             );
 
             // South Pole
@@ -284,7 +284,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: null,
                 latitude: -90.0,
-                longitude: 0.0
+                longitude: 0.0,
             );
 
             expect($northPole->latitude)->toBe(90.0)
@@ -292,7 +292,7 @@ describe('Location DTO', function () {
                 ->and($southPole->continent)->toBe('Antarctica');
         });
 
-        it('handles high precision coordinates', function () {
+        it('handles high precision coordinates', function (): void {
             $location = new Location(
                 continent: null,
                 countryCode: null,
@@ -301,7 +301,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: null,
                 latitude: 37.774929496,
-                longitude: -122.419415582
+                longitude: -122.419415582,
             );
 
             expect($location->latitude)->toBe(37.774929496)
@@ -309,8 +309,8 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('timezone handling', function () {
-        it('handles various timezone formats', function () {
+    describe('timezone handling', function (): void {
+        it('handles various timezone formats', function (): void {
             $timezones = [
                 'America/New_York',
                 'Europe/London',
@@ -321,7 +321,7 @@ describe('Location DTO', function () {
                 'Europe/Berlin',
                 'Asia/Shanghai',
                 'Pacific/Auckland',
-                'America/Sao_Paulo'
+                'America/Sao_Paulo',
             ];
 
             foreach ($timezones as $timezone) {
@@ -333,21 +333,21 @@ describe('Location DTO', function () {
                     zipCode: null,
                     timezone: $timezone,
                     latitude: null,
-                    longitude: null
+                    longitude: null,
                 );
 
                 expect($location->timezone)->toBe($timezone);
             }
         });
 
-        it('handles UTC and GMT variations', function () {
+        it('handles UTC and GMT variations', function (): void {
             $utcVariations = [
                 'UTC',
                 'GMT',
                 'UTC+0',
                 'GMT+0',
                 'Etc/UTC',
-                'Etc/GMT'
+                'Etc/GMT',
             ];
 
             foreach ($utcVariations as $timezone) {
@@ -359,7 +359,7 @@ describe('Location DTO', function () {
                     zipCode: null,
                     timezone: $timezone,
                     latitude: null,
-                    longitude: null
+                    longitude: null,
                 );
 
                 expect($location->timezone)->toBe($timezone);
@@ -367,8 +367,8 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('international locations', function () {
-        it('handles various country codes', function () {
+    describe('international locations', function (): void {
+        it('handles various country codes', function (): void {
             $countries = [
                 ['US', 'United States'],
                 ['GB', 'United Kingdom'],
@@ -379,7 +379,7 @@ describe('Location DTO', function () {
                 ['IN', 'India'],
                 ['CN', 'China'],
                 ['ZA', 'South Africa'],
-                ['EG', 'Egypt']
+                ['EG', 'Egypt'],
             ];
 
             foreach ($countries as [$code, $name]) {
@@ -391,7 +391,7 @@ describe('Location DTO', function () {
                     zipCode: null,
                     timezone: null,
                     latitude: null,
-                    longitude: null
+                    longitude: null,
                 );
 
                 expect($location->countryCode)->toBe($code)
@@ -399,7 +399,7 @@ describe('Location DTO', function () {
             }
         });
 
-        it('handles international postal codes', function () {
+        it('handles international postal codes', function (): void {
             $postalCodes = [
                 ['US', '94105'],       // US ZIP
                 ['GB', 'SW1A 1AA'],   // UK Postcode
@@ -420,7 +420,7 @@ describe('Location DTO', function () {
                     zipCode: $zipCode,
                     timezone: null,
                     latitude: null,
-                    longitude: null
+                    longitude: null,
                 );
 
                 expect($location->countryCode)->toBe($country)
@@ -428,7 +428,7 @@ describe('Location DTO', function () {
             }
         });
 
-        it('handles unicode city and state names', function () {
+        it('handles unicode city and state names', function (): void {
             $unicodeLocations = [
                 ['São Paulo', 'São Paulo', 'BR'],
                 ['Москва', 'Московская область', 'RU'],
@@ -436,7 +436,7 @@ describe('Location DTO', function () {
                 ['東京', '東京都', 'JP'],
                 ['القاهرة', 'محافظة القاهرة', 'EG'],
                 ['München', 'Bayern', 'DE'],
-                ['Zürich', 'Zürich', 'CH']
+                ['Zürich', 'Zürich', 'CH'],
             ];
 
             foreach ($unicodeLocations as [$city, $state, $country]) {
@@ -448,7 +448,7 @@ describe('Location DTO', function () {
                     zipCode: null,
                     timezone: null,
                     latitude: null,
-                    longitude: null
+                    longitude: null,
                 );
 
                 expect($location->city)->toBe($city)
@@ -458,8 +458,8 @@ describe('Location DTO', function () {
         });
     });
 
-    describe('real-world usage patterns', function () {
-        it('supports typical IP geolocation data', function () {
+    describe('real-world usage patterns', function (): void {
+        it('supports typical IP geolocation data', function (): void {
             $ipLocation = new Location(
                 continent: 'North America',
                 countryCode: 'US',
@@ -468,7 +468,7 @@ describe('Location DTO', function () {
                 zipCode: '94043',
                 timezone: 'America/Los_Angeles',
                 latitude: 37.4419,
-                longitude: -122.1430
+                longitude: -122.1430,
             );
 
             expect($ipLocation->continent)->toBe('North America')
@@ -479,7 +479,7 @@ describe('Location DTO', function () {
                 ->and($ipLocation->timezone)->toBe('America/Los_Angeles');
         });
 
-        it('supports partial location data from mobile devices', function () {
+        it('supports partial location data from mobile devices', function (): void {
             $mobileLocation = new Location(
                 continent: null,
                 countryCode: 'US',
@@ -488,7 +488,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: 'America/Los_Angeles',
                 latitude: 37.7749,
-                longitude: -122.4194
+                longitude: -122.4194,
             );
 
             expect($mobileLocation->countryCode)->toBe('US')
@@ -498,7 +498,7 @@ describe('Location DTO', function () {
                 ->and($mobileLocation->longitude)->toBe(-122.4194);
         });
 
-        it('supports VPN/proxy detection scenarios', function () {
+        it('supports VPN/proxy detection scenarios', function (): void {
             $vpnLocation = new Location(
                 continent: 'Europe',
                 countryCode: 'NL',
@@ -507,7 +507,7 @@ describe('Location DTO', function () {
                 zipCode: null,
                 timezone: 'Europe/Amsterdam',
                 latitude: 52.3676,
-                longitude: 4.9041
+                longitude: 4.9041,
             );
 
             expect($vpnLocation->continent)->toBe('Europe')

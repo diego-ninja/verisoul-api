@@ -5,6 +5,7 @@ namespace Ninja\Verisoul\Responses;
 use Illuminate\Support\Collection;
 use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
 use Ninja\Granite\Serialization\Attributes\SerializationConvention;
+use Ninja\Verisoul\Collections\RiskFlagCollection;
 use Ninja\Verisoul\Collections\RiskSignalCollection;
 use Ninja\Verisoul\DTO\DeviceNetworkSignals;
 use Ninja\Verisoul\DTO\Document;
@@ -21,14 +22,11 @@ use Ninja\Verisoul\ValueObjects\Score;
 #[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class VerifyIdResponse extends ApiResponse
 {
-    /**
-     * @param  Collection<RiskFlag>  $riskFlags
-     */
     public function __construct(
         public Metadata $metadata,
         public VerisoulDecision $decision,
         public Score $riskScore,
-        public Collection $riskFlags,
+        public RiskFlagCollection $riskFlags,
         public DocumentSignals $documentSignals,
         public Document $documentData,
         public DeviceNetworkSignals $deviceNetworkSignals,
@@ -46,11 +44,14 @@ final readonly class VerifyIdResponse extends ApiResponse
     {
         $categories = [];
         foreach ($this->riskFlags as $flag) {
-            $category = $flag->getCategory();
-            if (! isset($categories[$category])) {
-                $categories[$category] = [];
+            $flagCategories = $flag->getCategories();
+            foreach ($flagCategories as $category) {
+                $categoryValue = $category->value;
+                if ( ! isset($categories[$categoryValue])) {
+                    $categories[$categoryValue] = [];
+                }
+                $categories[$categoryValue][] = $flag;
             }
-            $categories[$category][] = $flag;
         }
 
         return $categories;
@@ -62,9 +63,9 @@ final readonly class VerifyIdResponse extends ApiResponse
     public function getRiskFlagsByLevel(): array
     {
         $levels = [];
-        $this->riskFlags->each(function (RiskFlag $flag) use (&$levels) {
+        $this->riskFlags->each(function (RiskFlag $flag) use (&$levels): void {
             $level = $flag->getRiskLevel();
-            if (! isset($levels[$level->value])) {
+            if ( ! isset($levels[$level->value])) {
                 $levels[$level->value] = [];
             }
             $levels[$level->value][] = $flag;
@@ -78,7 +79,7 @@ final readonly class VerifyIdResponse extends ApiResponse
      */
     public function hasRiskFlag(RiskFlag $flag): bool
     {
-        return $this->riskFlags->contains(fn (RiskFlag $riskFlag) => $riskFlag === $flag);
+        return $this->riskFlags->contains(fn(RiskFlag $riskFlag) => $riskFlag === $flag);
     }
 
     /**
@@ -86,7 +87,7 @@ final readonly class VerifyIdResponse extends ApiResponse
      */
     public function getRiskFlagsAsStrings(): array
     {
-        return $this->riskFlags->map(fn (RiskFlag $flag) => $flag->value)->toArray();
+        return $this->riskFlags->map(fn(RiskFlag $flag) => $flag->value)->toArray();
     }
 
     /**
@@ -97,7 +98,7 @@ final readonly class VerifyIdResponse extends ApiResponse
         return RiskSignalCollection::fromVerisoulSignals(
             deviceNetworkSignals: $this->deviceNetworkSignals,
             documentSignals: $this->documentSignals,
-            referringSessionSignals: $this->referringSessionSignals
+            referringSessionSignals: $this->referringSessionSignals,
         );
     }
 }

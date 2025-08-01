@@ -3,10 +3,10 @@
 namespace Ninja\Verisoul\Clients;
 
 use Ninja\Verisoul\Contracts\PhoneInterface;
-use Ninja\Verisoul\Responses\VerifyPhoneResponse;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\VerifyPhoneResponse;
 
 final class PhoneClient extends Client implements PhoneInterface
 {
@@ -19,7 +19,7 @@ final class PhoneClient extends Client implements PhoneInterface
         $response = $this->call(
             VerisoulApiEndpoint::VerifyPhone,
             [],
-            ['phone_number' => $phoneNumber]
+            ['phone_number' => $phoneNumber],
         );
 
         return VerifyPhoneResponse::from($response);

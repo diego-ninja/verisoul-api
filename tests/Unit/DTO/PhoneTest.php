@@ -1,18 +1,17 @@
 <?php
 
 use Ninja\Verisoul\DTO\Phone;
-use Ninja\Verisoul\Tests\Helpers\DataProvider;
 
-describe('Phone DTO', function () {
-    describe('construction', function () {
-        it('can be created with all required properties', function () {
+describe('Phone DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all required properties', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Verizon',
-                lineType: 'mobile'
+                lineType: 'mobile',
             );
 
             expect($phone->valid)->toBeTrue()
@@ -23,14 +22,14 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('mobile');
         });
 
-        it('can be created with invalid phone data', function () {
+        it('can be created with invalid phone data', function (): void {
             $phone = new Phone(
                 valid: false,
                 phoneNumber: 'invalid',
                 callingCountryCode: '',
                 countryCode: '',
                 carrierName: '',
-                lineType: 'unknown'
+                lineType: 'unknown',
             );
 
             expect($phone->valid)->toBeFalse()
@@ -39,7 +38,7 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('unknown');
         });
 
-        it('handles different line types', function () {
+        it('handles different line types', function (): void {
             $lineTypes = ['mobile', 'landline', 'voip', 'unknown'];
 
             foreach ($lineTypes as $lineType) {
@@ -49,14 +48,14 @@ describe('Phone DTO', function () {
                     callingCountryCode: '1',
                     countryCode: 'US',
                     carrierName: 'Test Carrier',
-                    lineType: $lineType
+                    lineType: $lineType,
                 );
 
                 expect($phone->lineType)->toBe($lineType);
             }
         });
 
-        it('handles different country codes', function () {
+        it('handles different country codes', function (): void {
             $testCases = [
                 ['US', '1', '+14155552671'],
                 ['GB', '44', '+442071234567'],
@@ -71,7 +70,7 @@ describe('Phone DTO', function () {
                     callingCountryCode: $callingCode,
                     countryCode: $countryCode,
                     carrierName: 'Test Carrier',
-                    lineType: 'mobile'
+                    lineType: 'mobile',
                 );
 
                 expect($phone->countryCode)->toBe($countryCode)
@@ -81,15 +80,15 @@ describe('Phone DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Verizon',
-                lineType: 'mobile'
+                lineType: 'mobile',
             );
 
             $reflection = new ReflectionClass($phone);
@@ -97,19 +96,19 @@ describe('Phone DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
 
-        it('maintains data integrity', function () {
+        it('maintains data integrity', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Verizon',
-                lineType: 'mobile'
+                lineType: 'mobile',
             );
 
             // Verify data doesn't change
@@ -120,15 +119,15 @@ describe('Phone DTO', function () {
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Verizon',
-                lineType: 'mobile'
+                lineType: 'mobile',
             );
 
             $array = $phone->array();
@@ -136,7 +135,7 @@ describe('Phone DTO', function () {
             expect($array)->toBeArray()
                 ->and($array)->toHaveKeys([
                     'valid', 'phone_number', 'calling_country_code',
-                    'country_code', 'carrier_name', 'line_type'
+                    'country_code', 'carrier_name', 'line_type',
                 ])
                 ->and($array['valid'])->toBeTrue()
                 ->and($array['phone_number'])->toBe('+14155552671')
@@ -146,7 +145,7 @@ describe('Phone DTO', function () {
                 ->and($array['line_type'])->toBe('mobile');
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'valid' => true,
                 'phoneNumber' => '+14155552671',
@@ -167,14 +166,14 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('mobile');
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new Phone(
                 valid: false,
                 phoneNumber: '+442071234567',
                 callingCountryCode: '44',
                 countryCode: 'GB',
                 carrierName: 'British Telecom',
-                lineType: 'landline'
+                lineType: 'landline',
             );
 
             $array = $original->array();
@@ -188,9 +187,9 @@ describe('Phone DTO', function () {
                 ->and($restored->lineType)->toBe($original->lineType);
         });
 
-        it('can create from JSON string', function () {
+        it('can create from JSON string', function (): void {
             $json = '{"valid":true,"phoneNumber":"+14155552671","callingCountryCode":"1","countryCode":"US","carrierName":"Verizon","lineType":"mobile"}';
-            
+
             $phone = Phone::from($json);
 
             expect($phone)->toBeInstanceOf(Phone::class)
@@ -200,22 +199,22 @@ describe('Phone DTO', function () {
         });
     });
 
-    describe('edge cases and validation', function () {
-        it('handles empty carrier names', function () {
+    describe('edge cases and validation', function (): void {
+        it('handles empty carrier names', function (): void {
             $phone = new Phone(
                 valid: false,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: '',
-                lineType: 'unknown'
+                lineType: 'unknown',
             );
 
             expect($phone->carrierName)->toBe('')
                 ->and($phone->valid)->toBeFalse();
         });
 
-        it('handles international phone numbers', function () {
+        it('handles international phone numbers', function (): void {
             $internationalNumbers = [
                 ['+442071234567', '44', 'GB'],
                 ['+33123456789', '33', 'FR'],
@@ -231,7 +230,7 @@ describe('Phone DTO', function () {
                     callingCountryCode: $callingCode,
                     countryCode: $countryCode,
                     carrierName: 'Test Carrier',
-                    lineType: 'mobile'
+                    lineType: 'mobile',
                 );
 
                 expect($phone->phoneNumber)->toBe($number)
@@ -240,16 +239,16 @@ describe('Phone DTO', function () {
             }
         });
 
-        it('handles various line types correctly', function () {
+        it('handles various line types correctly', function (): void {
             $lineTypes = [
                 'mobile',
-                'landline', 
+                'landline',
                 'voip',
                 'toll-free',
                 'premium',
                 'unknown',
                 'personal',
-                'business'
+                'business',
             ];
 
             foreach ($lineTypes as $lineType) {
@@ -259,14 +258,14 @@ describe('Phone DTO', function () {
                     callingCountryCode: '1',
                     countryCode: 'US',
                     carrierName: 'Test Carrier',
-                    lineType: $lineType
+                    lineType: $lineType,
                 );
 
                 expect($phone->lineType)->toBe($lineType);
             }
         });
 
-        it('handles special characters in carrier names', function () {
+        it('handles special characters in carrier names', function (): void {
             $carrierNames = [
                 'AT&T',
                 "O'Reilly Mobile",
@@ -284,7 +283,7 @@ describe('Phone DTO', function () {
                     callingCountryCode: '1',
                     countryCode: 'US',
                     carrierName: $carrierName,
-                    lineType: 'mobile'
+                    lineType: 'mobile',
                 );
 
                 expect($phone->carrierName)->toBe($carrierName);
@@ -292,15 +291,15 @@ describe('Phone DTO', function () {
         });
     });
 
-    describe('real-world scenarios', function () {
-        it('handles typical US mobile number', function () {
+    describe('real-world scenarios', function (): void {
+        it('handles typical US mobile number', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Verizon Wireless',
-                lineType: 'mobile'
+                lineType: 'mobile',
             );
 
             expect($phone->valid)->toBeTrue()
@@ -309,14 +308,14 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('mobile');
         });
 
-        it('handles invalid phone number format', function () {
+        it('handles invalid phone number format', function (): void {
             $phone = new Phone(
                 valid: false,
                 phoneNumber: '123',
                 callingCountryCode: '',
                 countryCode: '',
                 carrierName: '',
-                lineType: 'unknown'
+                lineType: 'unknown',
             );
 
             expect($phone->valid)->toBeFalse()
@@ -324,14 +323,14 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('unknown');
         });
 
-        it('handles VOIP numbers', function () {
+        it('handles VOIP numbers', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+14155552671',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Google Voice',
-                lineType: 'voip'
+                lineType: 'voip',
             );
 
             expect($phone->valid)->toBeTrue()
@@ -339,14 +338,14 @@ describe('Phone DTO', function () {
                 ->and($phone->lineType)->toBe('voip');
         });
 
-        it('handles toll-free numbers', function () {
+        it('handles toll-free numbers', function (): void {
             $phone = new Phone(
                 valid: true,
                 phoneNumber: '+18005551234',
                 callingCountryCode: '1',
                 countryCode: 'US',
                 carrierName: 'Toll Free Service',
-                lineType: 'toll-free'
+                lineType: 'toll-free',
             );
 
             expect($phone->phoneNumber)->toStartWith('+1800')

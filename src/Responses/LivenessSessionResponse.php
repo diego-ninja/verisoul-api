@@ -19,7 +19,7 @@ final readonly class LivenessSessionResponse extends ApiResponse
         $url = sprintf(
             'https://app.%s.verisoul.ai/?session_id=%s',
             $environment->value,
-            $this->sessionId
+            $this->sessionId,
         );
 
         if ($redirectUrl) {

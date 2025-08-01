@@ -2,9 +2,9 @@
 
 use Ninja\Verisoul\Enums\VerisoulDecision;
 
-describe('VerisoulDecision Enum', function () {
-    describe('enum cases', function () {
-        it('has all expected cases', function () {
+describe('VerisoulDecision Enum', function (): void {
+    describe('enum cases', function (): void {
+        it('has all expected cases', function (): void {
             $cases = VerisoulDecision::cases();
             $values = array_map(fn($case) => $case->value, $cases);
 
@@ -15,14 +15,14 @@ describe('VerisoulDecision Enum', function () {
                 ->and($values)->toContain('Unknown');
         });
 
-        it('has correct enum values', function () {
+        it('has correct enum values', function (): void {
             expect(VerisoulDecision::Fake->value)->toBe('Fake')
                 ->and(VerisoulDecision::Suspicious->value)->toBe('Suspicious')
                 ->and(VerisoulDecision::Real->value)->toBe('Real')
                 ->and(VerisoulDecision::Unknown->value)->toBe('Unknown');
         });
 
-        it('uses proper capitalization', function () {
+        it('uses proper capitalization', function (): void {
             // Values should be capitalized as they come from API
             expect(VerisoulDecision::Fake->value)->toBe('Fake')
                 ->and(VerisoulDecision::Suspicious->value)->toBe('Suspicious')
@@ -30,22 +30,22 @@ describe('VerisoulDecision Enum', function () {
                 ->and(VerisoulDecision::Unknown->value)->toBe('Unknown');
         });
 
-        it('can be created from string values', function () {
+        it('can be created from string values', function (): void {
             expect(VerisoulDecision::from('Fake'))->toBe(VerisoulDecision::Fake)
                 ->and(VerisoulDecision::from('Suspicious'))->toBe(VerisoulDecision::Suspicious)
                 ->and(VerisoulDecision::from('Real'))->toBe(VerisoulDecision::Real)
                 ->and(VerisoulDecision::from('Unknown'))->toBe(VerisoulDecision::Unknown);
         });
 
-        it('can try to create from string values', function () {
+        it('can try to create from string values', function (): void {
             expect(VerisoulDecision::tryFrom('Real'))->toBe(VerisoulDecision::Real)
                 ->and(VerisoulDecision::tryFrom('Fake'))->toBe(VerisoulDecision::Fake)
                 ->and(VerisoulDecision::tryFrom('invalid'))->toBeNull();
         });
     });
 
-    describe('values method', function () {
-        it('returns all enum values as array', function () {
+    describe('values method', function (): void {
+        it('returns all enum values as array', function (): void {
             $values = VerisoulDecision::values();
 
             expect($values)->toBeArray()
@@ -56,7 +56,7 @@ describe('VerisoulDecision Enum', function () {
                 ->and($values)->toContain('Unknown');
         });
 
-        it('maintains correct order', function () {
+        it('maintains correct order', function (): void {
             $values = VerisoulDecision::values();
 
             expect($values[0])->toBe('Fake')
@@ -65,7 +65,7 @@ describe('VerisoulDecision Enum', function () {
                 ->and($values[3])->toBe('Unknown');
         });
 
-        it('provides values suitable for API communication', function () {
+        it('provides values suitable for API communication', function (): void {
             $values = VerisoulDecision::values();
 
             foreach ($values as $value) {
@@ -76,29 +76,29 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('decision semantics', function () {
-        it('represents clear positive decision', function () {
+    describe('decision semantics', function (): void {
+        it('represents clear positive decision', function (): void {
             $real = VerisoulDecision::Real;
 
             expect($real->value)->toBe('Real')
                 ->and($real)->toBe(VerisoulDecision::Real);
         });
 
-        it('represents clear negative decision', function () {
+        it('represents clear negative decision', function (): void {
             $fake = VerisoulDecision::Fake;
 
             expect($fake->value)->toBe('Fake')
                 ->and($fake)->toBe(VerisoulDecision::Fake);
         });
 
-        it('represents uncertain negative decision', function () {
+        it('represents uncertain negative decision', function (): void {
             $suspicious = VerisoulDecision::Suspicious;
 
             expect($suspicious->value)->toBe('Suspicious')
                 ->and($suspicious)->toBe(VerisoulDecision::Suspicious);
         });
 
-        it('represents inconclusive decision', function () {
+        it('represents inconclusive decision', function (): void {
             $unknown = VerisoulDecision::Unknown;
 
             expect($unknown->value)->toBe('Unknown')
@@ -106,8 +106,8 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('decision ordering and priority', function () {
-        it('supports risk-based ordering', function () {
+    describe('decision ordering and priority', function (): void {
+        it('supports risk-based ordering', function (): void {
             // From highest risk to lowest risk
             $riskOrdering = [
                 VerisoulDecision::Fake,      // Definitely fraudulent
@@ -117,14 +117,14 @@ describe('VerisoulDecision Enum', function () {
             ];
 
             expect($riskOrdering)->toHaveCount(4);
-            
+
             // Verify all decisions are included
             foreach (VerisoulDecision::cases() as $decision) {
                 expect(in_array($decision, $riskOrdering, true))->toBeTrue();
             }
         });
 
-        it('can be used for decision comparison logic', function () {
+        it('can be used for decision comparison logic', function (): void {
             $testDecisions = [
                 VerisoulDecision::Real,
                 VerisoulDecision::Suspicious,
@@ -138,8 +138,8 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('business logic applications', function () {
-        it('supports allow/deny decision making', function () {
+    describe('business logic applications', function (): void {
+        it('supports allow/deny decision making', function (): void {
             $allowDecisions = [VerisoulDecision::Real];
             $denyDecisions = [VerisoulDecision::Fake, VerisoulDecision::Suspicious];
             $reviewDecisions = [VerisoulDecision::Unknown];
@@ -158,7 +158,7 @@ describe('VerisoulDecision Enum', function () {
                 ->and(in_array(VerisoulDecision::Real, $reviewDecisions))->toBeFalse();
         });
 
-        it('supports confidence level assessment', function () {
+        it('supports confidence level assessment', function (): void {
             $highConfidenceDecisions = [VerisoulDecision::Real, VerisoulDecision::Fake];
             $lowConfidenceDecisions = [VerisoulDecision::Suspicious, VerisoulDecision::Unknown];
 
@@ -171,9 +171,9 @@ describe('VerisoulDecision Enum', function () {
                 ->and(in_array(VerisoulDecision::Unknown, $lowConfidenceDecisions))->toBeTrue();
         });
 
-        it('enables risk-based routing', function () {
+        it('enables risk-based routing', function (): void {
             $decision = VerisoulDecision::Suspicious;
-            
+
             $action = match ($decision) {
                 VerisoulDecision::Real => 'approve',
                 VerisoulDecision::Fake => 'deny',
@@ -185,16 +185,16 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('enum behavior', function () {
-        it('supports comparison operations', function () {
+    describe('enum behavior', function (): void {
+        it('supports comparison operations', function (): void {
             expect(VerisoulDecision::Real === VerisoulDecision::Real)->toBeTrue()
                 ->and(VerisoulDecision::Real === VerisoulDecision::Fake)->toBeFalse()
                 ->and(VerisoulDecision::Real !== VerisoulDecision::Fake)->toBeTrue();
         });
 
-        it('can be used in match expressions', function () {
+        it('can be used in match expressions', function (): void {
             $decision = VerisoulDecision::Suspicious;
-            
+
             $riskLevel = match ($decision) {
                 VerisoulDecision::Real => 'low',
                 VerisoulDecision::Unknown => 'medium',
@@ -205,24 +205,24 @@ describe('VerisoulDecision Enum', function () {
             expect($riskLevel)->toBe('high');
         });
 
-        it('can be used in conditional logic', function () {
+        it('can be used in conditional logic', function (): void {
             $decision = VerisoulDecision::Fake;
-            
+
             $isTrusted = match ($decision) {
                 VerisoulDecision::Real => true,
                 default => false,
             };
 
             $isRisky = in_array($decision, [
-                VerisoulDecision::Fake, 
-                VerisoulDecision::Suspicious
+                VerisoulDecision::Fake,
+                VerisoulDecision::Suspicious,
             ]);
 
             expect($isTrusted)->toBeFalse()
                 ->and($isRisky)->toBeTrue();
         });
 
-        it('can be used in arrays', function () {
+        it('can be used in arrays', function (): void {
             $negativeDecisions = [
                 VerisoulDecision::Fake,
                 VerisoulDecision::Suspicious,
@@ -233,7 +233,7 @@ describe('VerisoulDecision Enum', function () {
                 ->and(in_array(VerisoulDecision::Real, $negativeDecisions))->toBeFalse();
         });
 
-        it('supports serialization', function () {
+        it('supports serialization', function (): void {
             $decision = VerisoulDecision::Suspicious;
             $serialized = serialize($decision);
             $unserialized = unserialize($serialized);
@@ -243,8 +243,8 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('API integration', function () {
-        it('handles API response values correctly', function () {
+    describe('API integration', function (): void {
+        it('handles API response values correctly', function (): void {
             // Simulate typical API responses
             $apiResponses = [
                 'Real' => VerisoulDecision::Real,
@@ -259,9 +259,9 @@ describe('VerisoulDecision Enum', function () {
             }
         });
 
-        it('supports API value validation', function () {
+        it('supports API value validation', function (): void {
             $validApiValues = VerisoulDecision::values();
-            
+
             foreach ($validApiValues as $value) {
                 expect(VerisoulDecision::tryFrom($value))->not->toBeNull();
             }
@@ -273,13 +273,13 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('validation and error handling', function () {
-        it('throws exception for invalid string values', function () {
+    describe('validation and error handling', function (): void {
+        it('throws exception for invalid string values', function (): void {
             expect(fn() => VerisoulDecision::from('invalid'))
                 ->toThrow(ValueError::class);
         });
 
-        it('handles case sensitivity correctly', function () {
+        it('handles case sensitivity correctly', function (): void {
             // Only exact case matches should work
             expect(VerisoulDecision::tryFrom('real'))->toBeNull()
                 ->and(VerisoulDecision::tryFrom('REAL'))->toBeNull()
@@ -292,8 +292,8 @@ describe('VerisoulDecision Enum', function () {
 
     });
 
-    describe('decision workflow support', function () {
-        it('supports fraud detection workflow', function () {
+    describe('decision workflow support', function (): void {
+        it('supports fraud detection workflow', function (): void {
             $testScenarios = [
                 ['decision' => VerisoulDecision::Real, 'action' => 'approve'],
                 ['decision' => VerisoulDecision::Fake, 'action' => 'reject'],
@@ -316,7 +316,7 @@ describe('VerisoulDecision Enum', function () {
             }
         });
 
-        it('supports decision aggregation', function () {
+        it('supports decision aggregation', function (): void {
             $decisions = [
                 VerisoulDecision::Real,
                 VerisoulDecision::Suspicious,
@@ -338,22 +338,22 @@ describe('VerisoulDecision Enum', function () {
         });
     });
 
-    describe('string representation', function () {
-        it('converts to string correctly', function () {
+    describe('string representation', function (): void {
+        it('converts to string correctly', function (): void {
             expect(VerisoulDecision::Real->value)->toBe('Real')
                 ->and(VerisoulDecision::Fake->value)->toBe('Fake')
                 ->and(VerisoulDecision::Suspicious->value)->toBe('Suspicious')
                 ->and(VerisoulDecision::Unknown->value)->toBe('Unknown');
         });
 
-        it('provides API-compatible string values', function () {
+        it('provides API-compatible string values', function (): void {
             foreach (VerisoulDecision::cases() as $decision) {
                 expect($decision->value)->toBeString()
                     ->and(strlen($decision->value))->toBeGreaterThan(0);
             }
         });
 
-        it('maintains consistent capitalization', function () {
+        it('maintains consistent capitalization', function (): void {
             foreach (VerisoulDecision::cases() as $decision) {
                 $value = $decision->value;
                 expect($value[0])->toBe(strtoupper($value[0])); // First letter capitalized

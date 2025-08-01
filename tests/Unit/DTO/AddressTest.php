@@ -2,15 +2,15 @@
 
 use Ninja\Verisoul\DTO\Address;
 
-describe('Address DTO', function () {
-    describe('construction', function () {
-        it('can be created with all properties', function () {
+describe('Address DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all properties', function (): void {
             $address = new Address(
                 city: 'San Francisco',
                 country: 'US',
                 postalCode: '94105',
                 state: 'CA',
-                street: '123 Main St'
+                street: '123 Main St',
             );
 
             expect($address->city)->toBe('San Francisco')
@@ -20,13 +20,13 @@ describe('Address DTO', function () {
                 ->and($address->street)->toBe('123 Main St');
         });
 
-        it('can be created with null properties', function () {
+        it('can be created with null properties', function (): void {
             $address = new Address(
                 city: null,
                 country: null,
                 postalCode: null,
                 state: null,
-                street: null
+                street: null,
             );
 
             expect($address->city)->toBeNull()
@@ -36,13 +36,13 @@ describe('Address DTO', function () {
                 ->and($address->street)->toBeNull();
         });
 
-        it('can be created with partial data', function () {
+        it('can be created with partial data', function (): void {
             $address = new Address(
                 city: 'New York',
                 country: 'US',
                 postalCode: null,
                 state: 'NY',
-                street: null
+                street: null,
             );
 
             expect($address->city)->toBe('New York')
@@ -53,8 +53,8 @@ describe('Address DTO', function () {
         });
     });
 
-    describe('hasData method', function () {
-        it('returns true when any field has data', function () {
+    describe('hasData method', function (): void {
+        it('returns true when any field has data', function (): void {
             $addresses = [
                 new Address('City', null, null, null, null),
                 new Address(null, 'Country', null, null, null),
@@ -68,39 +68,39 @@ describe('Address DTO', function () {
             }
         });
 
-        it('returns false when all fields are null', function () {
+        it('returns false when all fields are null', function (): void {
             $address = new Address(null, null, null, null, null);
-            
+
             expect($address->hasData())->toBeFalse();
         });
 
-        it('returns false when all fields are empty strings', function () {
+        it('returns false when all fields are empty strings', function (): void {
             $address = new Address('', '', '', '', '');
-            
+
             expect($address->hasData())->toBeFalse();
         });
 
-        it('returns true when at least one field is not empty', function () {
+        it('returns true when at least one field is not empty', function (): void {
             $address = new Address('', '', '', '', '123 Main St');
-            
+
             expect($address->hasData())->toBeTrue();
         });
     });
 
-    describe('isComplete method', function () {
-        it('returns true when all required fields are filled', function () {
+    describe('isComplete method', function (): void {
+        it('returns true when all required fields are filled', function (): void {
             $address = new Address(
                 city: 'San Francisco',
                 country: 'US',
                 postalCode: '94105',
                 state: 'CA',
-                street: '123 Main St'
+                street: '123 Main St',
             );
 
             expect($address->isComplete())->toBeTrue();
         });
 
-        it('returns false when any required field is missing', function () {
+        it('returns false when any required field is missing', function (): void {
             $incompleteAddresses = [
                 new Address(null, 'US', '94105', 'CA', '123 Main St'),     // missing city
                 new Address('SF', null, '94105', 'CA', '123 Main St'),     // missing country
@@ -114,7 +114,7 @@ describe('Address DTO', function () {
             }
         });
 
-        it('returns false when any required field is empty string', function () {
+        it('returns false when any required field is empty string', function (): void {
             $incompleteAddresses = [
                 new Address('', 'US', '94105', 'CA', '123 Main St'),
                 new Address('SF', '', '94105', 'CA', '123 Main St'),
@@ -129,88 +129,88 @@ describe('Address DTO', function () {
         });
     });
 
-    describe('getFormattedAddress method', function () {
-        it('returns formatted address with all fields', function () {
+    describe('getFormattedAddress method', function (): void {
+        it('returns formatted address with all fields', function (): void {
             $address = new Address(
                 city: 'San Francisco',
                 country: 'US',
                 postalCode: '94105',
                 state: 'CA',
-                street: '123 Main St'
+                street: '123 Main St',
             );
 
             $formatted = $address->getFormattedAddress();
-            
+
             expect($formatted)->toBe('123 Main St, San Francisco, CA, 94105, US');
         });
 
-        it('excludes null fields from formatting', function () {
+        it('excludes null fields from formatting', function (): void {
             $address = new Address(
                 city: 'New York',
                 country: 'US',
                 postalCode: null,
                 state: 'NY',
-                street: '456 Broadway'
+                street: '456 Broadway',
             );
 
             $formatted = $address->getFormattedAddress();
-            
+
             expect($formatted)->toBe('456 Broadway, New York, NY, US');
         });
 
-        it('excludes empty string fields from formatting', function () {
+        it('excludes empty string fields from formatting', function (): void {
             $address = new Address(
                 city: 'Boston',
                 country: 'US',
                 postalCode: '',
                 state: 'MA',
-                street: '789 Commonwealth Ave'
+                street: '789 Commonwealth Ave',
             );
 
             $formatted = $address->getFormattedAddress();
-            
+
             expect($formatted)->toBe('789 Commonwealth Ave, Boston, MA, US');
         });
 
-        it('returns empty string when no data', function () {
+        it('returns empty string when no data', function (): void {
             $address = new Address(null, null, null, null, null);
-            
+
             expect($address->getFormattedAddress())->toBe('');
         });
 
-        it('handles single field address', function () {
+        it('handles single field address', function (): void {
             $address = new Address(
                 city: 'Chicago',
                 country: null,
                 postalCode: null,
                 state: null,
-                street: null
+                street: null,
             );
 
             expect($address->getFormattedAddress())->toBe('Chicago');
         });
     });
 
-    describe('getCompletionPercentage method', function () {
-        it('returns 100% for complete address', function () {
+    describe('getCompletionPercentage method', function (): void {
+        it('returns 100% for complete address', function (): void {
             $address = new Address(
                 city: 'San Francisco',
                 country: 'US',
                 postalCode: '94105',
                 state: 'CA',
-                street: '123 Main St'
+                street: '123 Main St',
             );
 
             expect($address->getCompletionPercentage())->toBe(100.0);
         });
 
-        it('returns 0% for empty address', function () {
+        it('returns 0% for empty address', function (): void {
             $address = new Address(null, null, null, null, null);
-            
+
             expect($address->getCompletionPercentage())->toBe(0.0);
         });
 
-        it('returns correct percentage for partial addresses', function () {
+        it('returns correct percentage for partial addresses', function (): void {
             $testCases = [
                 [1, 20.0], // 1 field filled
                 [2, 40.0], // 2 fields filled
@@ -228,20 +228,20 @@ describe('Address DTO', function () {
                     country: $allFields[1],
                     postalCode: $allFields[2],
                     state: $allFields[3],
-                    street: $allFields[4]
+                    street: $allFields[4],
                 );
 
                 expect($address->getCompletionPercentage())->toBe($expectedPercentage);
             }
         });
 
-        it('treats empty strings as not filled', function () {
+        it('treats empty strings as not filled', function (): void {
             $address = new Address(
                 city: 'San Francisco',
                 country: '',
                 postalCode: '94105',
                 state: '',
-                street: '123 Main St'
+                street: '123 Main St',
             );
 
             // 3 fields filled (city, postalCode, street), 2 empty
@@ -249,14 +249,14 @@ describe('Address DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $address = new Address(
                 city: 'Test City',
                 country: 'US',
                 postalCode: '12345',
                 state: 'TS',
-                street: 'Test St'
+                street: 'Test St',
             );
 
             $reflection = new ReflectionClass($address);
@@ -264,20 +264,20 @@ describe('Address DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $address = new Address(
                 city: 'Portland',
                 country: 'US',
                 postalCode: '97201',
                 state: 'OR',
-                street: '1234 NW Everett St'
+                street: '1234 NW Everett St',
             );
 
             $array = $address->array();
@@ -291,7 +291,7 @@ describe('Address DTO', function () {
                 ->and($array['street'])->toBe('1234 NW Everett St');
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'city' => 'Seattle',
                 'country' => 'US',
@@ -310,13 +310,13 @@ describe('Address DTO', function () {
                 ->and($address->street)->toBe('500 Pine St');
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new Address(
                 city: 'Denver',
                 country: 'US',
                 postalCode: null,
                 state: 'CO',
-                street: '16th Street Mall'
+                street: '16th Street Mall',
             );
 
             $array = $original->array();
@@ -329,13 +329,13 @@ describe('Address DTO', function () {
                 ->and($restored->street)->toBe($original->street);
         });
 
-        it('handles null values in serialization', function () {
+        it('handles null values in serialization', function (): void {
             $address = new Address(
                 city: 'Seattle',
                 country: 'US',
                 postalCode: null,
                 state: 'WA',
-                street: '500 Pine St'
+                street: '500 Pine St',
             );
 
             $array = $address->array();
@@ -348,40 +348,40 @@ describe('Address DTO', function () {
         });
     });
 
-    describe('international addresses', function () {
-        it('handles UK addresses', function () {
+    describe('international addresses', function (): void {
+        it('handles UK addresses', function (): void {
             $address = new Address(
                 city: 'London',
                 country: 'GB',
                 postalCode: 'SW1A 1AA',
                 state: 'England',
-                street: '10 Downing Street'
+                street: '10 Downing Street',
             );
 
             expect($address->isComplete())->toBeTrue()
                 ->and($address->getFormattedAddress())->toBe('10 Downing Street, London, England, SW1A 1AA, GB');
         });
 
-        it('handles Canadian addresses', function () {
+        it('handles Canadian addresses', function (): void {
             $address = new Address(
                 city: 'Toronto',
                 country: 'CA',
                 postalCode: 'M5V 3L9',
                 state: 'ON',
-                street: '290 Bremner Blvd'
+                street: '290 Bremner Blvd',
             );
 
             expect($address->isComplete())->toBeTrue()
                 ->and($address->getFormattedAddress())->toBe('290 Bremner Blvd, Toronto, ON, M5V 3L9, CA');
         });
 
-        it('handles addresses with special characters', function () {
+        it('handles addresses with special characters', function (): void {
             $address = new Address(
                 city: 'São Paulo',
                 country: 'BR',
                 postalCode: '01310-100',
                 state: 'SP',
-                street: 'Avenida Paulista, 1578'
+                street: 'Avenida Paulista, 1578',
             );
 
             expect($address->city)->toBe('São Paulo')
@@ -390,29 +390,29 @@ describe('Address DTO', function () {
         });
     });
 
-    describe('edge cases', function () {
-        it('handles very long addresses', function () {
+    describe('edge cases', function (): void {
+        it('handles very long addresses', function (): void {
             $longStreet = 'This is a very long street name that might exceed typical length limits for street addresses in some systems but should still be handled correctly';
-            
+
             $address = new Address(
                 city: 'LongCityNameThatMightBeLongerThanUsual',
                 country: 'US',
                 postalCode: '12345-6789',
                 state: 'CA',
-                street: $longStreet
+                street: $longStreet,
             );
 
             expect($address->street)->toBe($longStreet)
                 ->and($address->isComplete())->toBeTrue();
         });
 
-        it('handles addresses with only numeric values', function () {
+        it('handles addresses with only numeric values', function (): void {
             $address = new Address(
                 city: '123',
                 country: '456',
                 postalCode: '789',
                 state: '012',
-                street: '345'
+                street: '345',
             );
 
             expect($address->isComplete())->toBeTrue()

@@ -7,8 +7,13 @@ use Ninja\Granite\GraniteVO;
 final readonly class Score extends GraniteVO
 {
     public function __construct(
-        public float $value
+        public float $value,
     ) {}
+
+    public function __toString(): string
+    {
+        return (string) $this->value;
+    }
 
     public static function rules(): array
     {
@@ -20,10 +25,5 @@ final readonly class Score extends GraniteVO
     public function value(): float
     {
         return $this->value;
-    }
-
-    public function __toString(): string
-    {
-        return (string) $this->value;
     }
 }

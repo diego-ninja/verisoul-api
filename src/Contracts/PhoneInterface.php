@@ -2,9 +2,9 @@
 
 namespace Ninja\Verisoul\Contracts;
 
-use Ninja\Verisoul\Responses\VerifyPhoneResponse;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\VerifyPhoneResponse;
 
 interface PhoneInterface
 {

@@ -2,14 +2,14 @@
 
 use Ninja\Verisoul\DTO\UserAccount;
 
-describe('UserAccount DTO', function () {
-    describe('construction', function () {
-        it('can be created with all properties', function () {
+describe('UserAccount DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all properties', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_123',
                 email: 'test@example.com',
                 metadata: ['role' => 'admin', 'department' => 'engineering'],
-                group: 'premium'
+                group: 'premium',
             );
 
             expect($userAccount->id)->toBe('user_123')
@@ -18,7 +18,7 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBe('premium');
         });
 
-        it('can be created with minimal properties', function () {
+        it('can be created with minimal properties', function (): void {
             $userAccount = new UserAccount(id: 'user_456');
 
             expect($userAccount->id)->toBe('user_456')
@@ -27,10 +27,10 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBeNull();
         });
 
-        it('can be created with partial data', function () {
+        it('can be created with partial data', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_789',
-                email: 'partial@example.com'
+                email: 'partial@example.com',
             );
 
             expect($userAccount->id)->toBe('user_789')
@@ -39,10 +39,10 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBeNull();
         });
 
-        it('handles empty metadata array', function () {
+        it('handles empty metadata array', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_empty',
-                metadata: []
+                metadata: [],
             );
 
             expect($userAccount->metadata)->toBe([])
@@ -51,13 +51,13 @@ describe('UserAccount DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_test',
                 email: 'test@example.com',
                 metadata: ['key' => 'value'],
-                group: 'test'
+                group: 'test',
             );
 
             $reflection = new ReflectionClass($userAccount);
@@ -65,15 +65,15 @@ describe('UserAccount DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
 
-        it('maintains data integrity', function () {
+        it('maintains data integrity', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_integrity',
-                email: 'integrity@example.com'
+                email: 'integrity@example.com',
             );
 
             expect($userAccount->id)->toBe('user_integrity');
@@ -83,13 +83,13 @@ describe('UserAccount DTO', function () {
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_serial',
                 email: 'serial@example.com',
                 metadata: ['type' => 'test', 'priority' => 'high'],
-                group: 'serialization'
+                group: 'serialization',
             );
 
             $array = $userAccount->array();
@@ -102,7 +102,7 @@ describe('UserAccount DTO', function () {
                 ->and($array['group'])->toBe('serialization');
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'id' => 'user_from_array',
                 'email' => 'fromarray@example.com',
@@ -119,12 +119,12 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBe('array_test');
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new UserAccount(
                 id: 'user_roundtrip',
                 email: null,
                 metadata: ['test' => true, 'number' => 42],
-                group: 'roundtrip'
+                group: 'roundtrip',
             );
 
             $array = $original->array();
@@ -136,9 +136,9 @@ describe('UserAccount DTO', function () {
                 ->and($restored->group)->toBe($original->group);
         });
 
-        it('can be created from JSON string', function () {
+        it('can be created from JSON string', function (): void {
             $json = '{"id":"user_json","email":"json@example.com","metadata":{"format":"json"},"group":"json_test"}';
-            
+
             $userAccount = UserAccount::from($json);
 
             expect($userAccount)->toBeInstanceOf(UserAccount::class)
@@ -148,12 +148,12 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBe('json_test');
         });
 
-        it('handles null values in serialization', function () {
+        it('handles null values in serialization', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_nulls',
                 email: null,
                 metadata: [],
-                group: null
+                group: null,
             );
 
             $array = $userAccount->array();
@@ -165,25 +165,25 @@ describe('UserAccount DTO', function () {
         });
     });
 
-    describe('metadata handling', function () {
-        it('handles complex metadata structures', function () {
+    describe('metadata handling', function (): void {
+        it('handles complex metadata structures', function (): void {
             $complexMetadata = [
                 'user_preferences' => [
                     'theme' => 'dark',
                     'language' => 'en',
-                    'notifications' => ['email', 'sms']
+                    'notifications' => ['email', 'sms'],
                 ],
                 'account_info' => [
                     'created_at' => '2023-01-01',
                     'last_login' => '2023-12-01',
-                    'login_count' => 150
+                    'login_count' => 150,
                 ],
-                'flags' => ['verified', 'premium', 'beta_tester']
+                'flags' => ['verified', 'premium', 'beta_tester'],
             ];
 
             $userAccount = new UserAccount(
                 id: 'user_complex',
-                metadata: $complexMetadata
+                metadata: $complexMetadata,
             );
 
             expect($userAccount->metadata)->toBe($complexMetadata)
@@ -192,7 +192,7 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->metadata['flags'])->toContain('premium');
         });
 
-        it('handles metadata with various data types', function () {
+        it('handles metadata with various data types', function (): void {
             $mixedMetadata = [
                 'string_value' => 'text',
                 'integer_value' => 42,
@@ -200,12 +200,12 @@ describe('UserAccount DTO', function () {
                 'boolean_value' => true,
                 'null_value' => null,
                 'array_value' => [1, 2, 3],
-                'nested_object' => ['key' => 'value']
+                'nested_object' => ['key' => 'value'],
             ];
 
             $userAccount = new UserAccount(
                 id: 'user_mixed',
-                metadata: $mixedMetadata
+                metadata: $mixedMetadata,
             );
 
             expect($userAccount->metadata['string_value'])->toBe('text')
@@ -218,8 +218,8 @@ describe('UserAccount DTO', function () {
         });
     });
 
-    describe('validation scenarios', function () {
-        it('handles various ID formats', function () {
+    describe('validation scenarios', function (): void {
+        it('handles various ID formats', function (): void {
             $idFormats = [
                 'user_123',
                 'usr-456-789',
@@ -228,7 +228,7 @@ describe('UserAccount DTO', function () {
                 'USER_CAPS',
                 'user.with.dots',
                 'user@domain.com',
-                'urn:user:12345'
+                'urn:user:12345',
             ];
 
             foreach ($idFormats as $idFormat) {
@@ -237,25 +237,25 @@ describe('UserAccount DTO', function () {
             }
         });
 
-        it('handles various email formats', function () {
+        it('handles various email formats', function (): void {
             $emailFormats = [
                 'simple@example.com',
                 'user+tag@domain.co.uk',
                 'firstname.lastname@company.com',
                 'user123@test-domain.net',
-                'unusual@sub.domain.example.org'
+                'unusual@sub.domain.example.org',
             ];
 
             foreach ($emailFormats as $email) {
                 $userAccount = new UserAccount(
                     id: 'user_email_test',
-                    email: $email
+                    email: $email,
                 );
                 expect($userAccount->email)->toBe($email);
             }
         });
 
-        it('handles various group names', function () {
+        it('handles various group names', function (): void {
             $groupNames = [
                 'free',
                 'premium',
@@ -265,21 +265,21 @@ describe('UserAccount DTO', function () {
                 'group_with_underscores',
                 'Group With Spaces',
                 'group123',
-                'dev-team-alpha'
+                'dev-team-alpha',
             ];
 
             foreach ($groupNames as $group) {
                 $userAccount = new UserAccount(
                     id: 'user_group_test',
-                    group: $group
+                    group: $group,
                 );
                 expect($userAccount->group)->toBe($group);
             }
         });
     });
 
-    describe('edge cases and special scenarios', function () {
-        it('handles very long IDs', function () {
+    describe('edge cases and special scenarios', function (): void {
+        it('handles very long IDs', function (): void {
             $longId = str_repeat('a', 255);
             $userAccount = new UserAccount(id: $longId);
 
@@ -287,28 +287,28 @@ describe('UserAccount DTO', function () {
                 ->and(strlen($userAccount->id))->toBe(255);
         });
 
-        it('handles very long emails', function () {
+        it('handles very long emails', function (): void {
             $longLocalPart = str_repeat('a', 50);
             $longEmail = $longLocalPart . '@example.com';
-            
+
             $userAccount = new UserAccount(
                 id: 'user_long_email',
-                email: $longEmail
+                email: $longEmail,
             );
 
             expect($userAccount->email)->toBe($longEmail)
                 ->and(strlen($userAccount->email))->toBeGreaterThan(50);
         });
 
-        it('handles large metadata objects', function () {
+        it('handles large metadata objects', function (): void {
             $largeMetadata = [];
             for ($i = 0; $i < 100; $i++) {
-                $largeMetadata["key_$i"] = "value_$i";
+                $largeMetadata["key_{$i}"] = "value_{$i}";
             }
 
             $userAccount = new UserAccount(
                 id: 'user_large_meta',
-                metadata: $largeMetadata
+                metadata: $largeMetadata,
             );
 
             expect($userAccount->metadata)->toHaveCount(100)
@@ -316,12 +316,12 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->metadata['key_99'])->toBe('value_99');
         });
 
-        it('handles Unicode characters in all fields', function () {
+        it('handles Unicode characters in all fields', function (): void {
             $userAccount = new UserAccount(
                 id: 'user_测试_🚀',
                 email: 'tëst@exãmple.cøm',
                 metadata: ['名前' => 'テスト', '🎯' => '目标'],
-                group: 'grüppe_α'
+                group: 'grüppe_α',
             );
 
             expect($userAccount->id)->toBe('user_测试_🚀')
@@ -332,8 +332,8 @@ describe('UserAccount DTO', function () {
         });
     });
 
-    describe('real-world usage patterns', function () {
-        it('supports typical user account data', function () {
+    describe('real-world usage patterns', function (): void {
+        it('supports typical user account data', function (): void {
             $userAccount = new UserAccount(
                 id: 'auth0|user_12345',
                 email: 'john.doe@company.com',
@@ -343,9 +343,9 @@ describe('UserAccount DTO', function () {
                     'role' => 'software_engineer',
                     'department' => 'engineering',
                     'hire_date' => '2023-01-15',
-                    'permissions' => ['read', 'write', 'admin']
+                    'permissions' => ['read', 'write', 'admin'],
                 ],
-                group: 'employees'
+                group: 'employees',
             );
 
             expect($userAccount->id)->toBe('auth0|user_12345')
@@ -355,7 +355,7 @@ describe('UserAccount DTO', function () {
                 ->and($userAccount->group)->toBe('employees');
         });
 
-        it('supports minimal anonymous user', function () {
+        it('supports minimal anonymous user', function (): void {
             $anonymousUser = new UserAccount(id: 'anon_session_abc123');
 
             expect($anonymousUser->id)->toBe('anon_session_abc123')
@@ -364,7 +364,7 @@ describe('UserAccount DTO', function () {
                 ->and($anonymousUser->group)->toBeNull();
         });
 
-        it('supports API integration patterns', function () {
+        it('supports API integration patterns', function (): void {
             $apiUserAccount = new UserAccount(
                 id: 'api_client_xyz789',
                 email: 'api@service.com',
@@ -372,9 +372,9 @@ describe('UserAccount DTO', function () {
                     'api_version' => 'v2',
                     'rate_limit' => 1000,
                     'scopes' => ['read:users', 'write:data'],
-                    'created_by' => 'admin_user_123'
+                    'created_by' => 'admin_user_123',
                 ],
-                group: 'api_clients'
+                group: 'api_clients',
             );
 
             expect($apiUserAccount->group)->toBe('api_clients')

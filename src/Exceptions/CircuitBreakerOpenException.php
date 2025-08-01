@@ -2,9 +2,11 @@
 
 namespace Ninja\Verisoul\Exceptions;
 
+use Throwable;
+
 class CircuitBreakerOpenException extends VerisoulApiException
 {
-    public function __construct(string $message = 'Circuit breaker is open', int $statusCode = 503, ?\Throwable $previous = null)
+    public function __construct(string $message = 'Circuit breaker is open', int $statusCode = 503, ?Throwable $previous = null)
     {
         parent::__construct($message, $statusCode, [], null, $previous);
     }

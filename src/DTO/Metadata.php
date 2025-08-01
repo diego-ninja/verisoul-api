@@ -2,8 +2,8 @@
 
 namespace Ninja\Verisoul\DTO;
 
-use Ninja\Granite\GraniteDTO;
 use Carbon\Carbon;
+use Ninja\Granite\GraniteDTO;
 use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
 use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 
