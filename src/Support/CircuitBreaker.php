@@ -26,7 +26,7 @@ final readonly class CircuitBreaker
     /**
      * @throws VerisoulApiException
      */
-    public function call(callable $callback)
+    public function call(callable $callback): mixed
     {
         $state = $this->getState();
 
@@ -72,7 +72,7 @@ final readonly class CircuitBreaker
     /**
      * @throws VerisoulApiException
      */
-    private function executeCall(callable $callback)
+    private function executeCall(callable $callback): mixed
     {
         $startTime = microtime(true);
 

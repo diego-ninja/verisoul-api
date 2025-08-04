@@ -21,7 +21,7 @@ final readonly class RetryStrategy
     /**
      * @throws Exception
      */
-    public function execute(callable $callback)
+    public function execute(callable $callback): mixed
     {
         $attempt = 1;
         $lastException = null;

@@ -26,8 +26,18 @@
         "phpstan/phpstan": "^2",
         "phpunit/phpunit": "^11",
         "rector/rector": "^2.0",
-        "squizlabs/php_codesniffer": "^3.7"
+        "squizlabs/php_codesniffer": "^3.7",
+        "pestphp/pest-plugin-type-coverage": "^3.6"
 
+    },
+    "scripts": {
+      "test": "pest",
+      "test:unit": "pest --testsuite=Unit",
+      "test:coverage": "pest --coverage-clover coverage/clover.xml --coverage-html coverage/html --coverage-text coverage/coverage.txt",
+      "test:coverage-clover": "pest --coverage-clover coverage/clover.xml",
+      "analyse": "phpstan analyse",
+      "cs:check": "pint --test src tests",
+      "cs:fix": "pint src tests"
     },
     "minimum-stability": "stable",
     "autoload": {

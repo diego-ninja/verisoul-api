@@ -66,7 +66,7 @@ enum DocumentSignalStatus: string
      */
     public static function getByQualityLevel(string $level): array
     {
-        return array_filter(self::cases(), fn($status) => $status->getQualityLevel() === $level);
+        return array_filter(self::cases(), fn(self $status) => $status->getQualityLevel() === $level);
     }
 
     /**
@@ -74,7 +74,7 @@ enum DocumentSignalStatus: string
      */
     public static function getValidStatuses(): array
     {
-        return array_filter(self::cases(), fn($status) => $status->isValid());
+        return array_filter(self::cases(), fn(self $status) => $status->isValid());
     }
 
     /**
@@ -82,7 +82,7 @@ enum DocumentSignalStatus: string
      */
     public static function getInvalidStatuses(): array
     {
-        return array_filter(self::cases(), fn($status) => $status->isInvalid());
+        return array_filter(self::cases(), fn(self $status) => $status->isInvalid());
     }
 
     /**
@@ -126,6 +126,11 @@ enum DocumentSignalStatus: string
             self::InvalidId => 'Invalid ID',
             self::ExpiredId => 'Expired ID',
             self::SuspiciousId => 'Suspicious ID',
+            self::BarcodeRequestedButNotFound => 'Barcode Requested But Not Found',
+            self::LikelyOriginalFace => 'Likely Original Face',
+            self::LikelyOriginalText => 'Likely Original Text',
+            self::LikelyPhysicalId => 'Likely Physical ID',
+            self::FullIdDetected => 'Full ID Detected',
         };
     }
 

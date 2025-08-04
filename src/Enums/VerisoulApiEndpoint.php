@@ -84,7 +84,7 @@ enum VerisoulApiEndpoint
             parse_str($urlParts['query'], $queryParams);
 
             // Keep query parameters that do not contain a placeholder.
-            $finalQueryParams = array_filter($queryParams, fn($value) => ! is_string($value) || ! str_contains($value, '{'));
+            $finalQueryParams = array_filter($queryParams, fn(mixed $value) => ! is_string($value) || ! str_contains($value, '{'));
 
             $newQuery = http_build_query($finalQueryParams);
 

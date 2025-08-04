@@ -13,3 +13,7 @@ Thumbs.db
 composer.lock
 tester.php
 /var
+/coverage-html
+coverage.txt
+coverage.xml
+/.claude
