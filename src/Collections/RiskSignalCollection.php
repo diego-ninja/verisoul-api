@@ -3,6 +3,8 @@
 namespace Ninja\Verisoul\Collections;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
+use JsonException;
 use Ninja\Granite\Contracts\GraniteObject;
 use Ninja\Verisoul\DTO\DeviceNetworkSignals;
 use Ninja\Verisoul\DTO\DocumentSignals;
@@ -24,25 +26,111 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public static function from(mixed ...$args): static
     {
-        $collection = new self;
+        $collection = new self();
         $signals = $args[0] ?? [];
+
+        if ( ! is_iterable($signals)) {
+            return $collection;
+        }
 
         foreach ($signals as $signal => $data) {
             if (is_array($data)) {
-                $collection->addSignal(
-                    name: $data['name'],
-                    score: $data['score'],
-                    scope: SignalScope::tryFrom($data['scope']) ?? SignalScope::getScopeForSignal($data['name'])
-                );
+                $name = $data['name'] ?? '';
+                $score = $data['score'] ?? 0;
+                $scope = $data['scope'] ?? null;
+
+                if (is_string($name) && is_numeric($score)) {
+                    $collection->addSignal(
+                        name: $name,
+                        score: (float) $score,
+                        scope: (is_string($scope) || is_int($scope)) ? SignalScope::tryFrom($scope) : SignalScope::getScopeForSignal($name),
+                    );
+                }
             }
 
-            if (is_float($data) && $data > 0) {
+            if (is_float($data) && $data > 0 && is_string($signal)) {
                 $collection->addSignal(
                     name: $signal,
                     score: Score::from($data),
-                    scope: SignalScope::getScopeForSignal($signal)
+                    scope: SignalScope::getScopeForSignal($signal),
                 );
             }
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Create collection from DeviceNetworkSignals DTO
+     */
+    public static function fromDeviceNetworkSignals(DeviceNetworkSignals $signals): self
+    {
+        $collection = new self();
+
+        $collection->addSignal('device_risk', $signals->deviceRisk, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('proxy', $signals->proxy, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('vpn', $signals->vpn, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('datacenter', $signals->datacenter, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('tor', $signals->tor, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('spoofed_ip', $signals->spoofedIp, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('recent_fraud_ip', $signals->recentFraudIp, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('device_network_mismatch', $signals->deviceNetworkMismatch, scope: SignalScope::DeviceNetwork);
+        $collection->addSignal('location_spoofing', $signals->locationSpoofing, scope: SignalScope::DeviceNetwork);
+
+        return $collection;
+    }
+
+    /**
+     * Create collection from DocumentSignals DTO
+     */
+    public static function fromDocumentSignals(DocumentSignals $signals): self
+    {
+        $collection = new self();
+
+        // Note: id_age is not a score (0-1 range), so we skip it
+        // $collection->addSignal('id_age', (float) $signals->idAge, scope: SignalScope::Document);
+        $collection->addSignal('id_face_match_score', $signals->idFaceMatchScore, scope: SignalScope::Document);
+        // Note: Other document signals are enums, not scores, so we don't include them here
+
+        return $collection;
+    }
+
+    /**
+     * Create collection from ReferringSessionSignals DTO
+     */
+    public static function fromReferringSessionSignals(ReferringSessionSignals $signals): self
+    {
+        $collection = new self();
+
+        $collection->addSignal('impossible_travel', $signals->impossibleTravel, scope: SignalScope::ReferringSession);
+        $collection->addSignal('ip_mismatch', $signals->ipMismatch, scope: SignalScope::ReferringSession);
+        $collection->addSignal('user_agent_mismatch', $signals->userAgentMismatch, scope: SignalScope::ReferringSession);
+        $collection->addSignal('device_timezone_mismatch', $signals->deviceTimezoneMismatch, scope: SignalScope::ReferringSession);
+        $collection->addSignal('ip_timezone_mismatch', $signals->ipTimezoneMismatch, scope: SignalScope::ReferringSession);
+
+        return $collection;
+    }
+
+    /**
+     * Create comprehensive collection from all signal DTOs
+     */
+    public static function fromVerisoulSignals(
+        ?DeviceNetworkSignals $deviceNetworkSignals = null,
+        ?DocumentSignals $documentSignals = null,
+        ?ReferringSessionSignals $referringSessionSignals = null,
+    ): self {
+        $collection = new self();
+
+        if ($deviceNetworkSignals) {
+            $collection = $collection->merge(self::fromDeviceNetworkSignals($deviceNetworkSignals));
+        }
+
+        if ($documentSignals) {
+            $collection = $collection->merge(self::fromDocumentSignals($documentSignals));
+        }
+
+        if ($referringSessionSignals) {
+            $collection = $collection->merge(self::fromReferringSessionSignals($referringSessionSignals));
         }
 
         return $collection;
@@ -53,7 +141,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function byScope(SignalScope $scope): self
     {
-        return $this->filter(fn (RiskSignal $signal) => $signal->scope === $scope);
+        return $this->filter(function ($signal) use ($scope) {
+            if ( ! $signal instanceof RiskSignal) {
+                return false;
+            }
+            return $signal->scope === $scope;
+        });
     }
 
 
@@ -62,7 +155,14 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function byName(string $name): ?RiskSignal
     {
-        return $this->first(fn (RiskSignal $signal) => $signal->name === $name);
+        $result = $this->first(function ($signal) use ($name) {
+            if ( ! $signal instanceof RiskSignal) {
+                return false;
+            }
+            return $signal->name === $name;
+        });
+
+        return $result instanceof RiskSignal ? $result : null;
     }
 
     /**
@@ -70,7 +170,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function byNames(array $names): self
     {
-        return $this->filter(fn (RiskSignal $signal) => in_array($signal->name, $names));
+        return $this->filter(function ($signal) use ($names) {
+            if ( ! $signal instanceof RiskSignal) {
+                return false;
+            }
+            return in_array($signal->name, $names);
+        });
     }
 
     /**
@@ -82,7 +187,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
             return Score::from(0.0);
         }
 
-        return Score::from($this->avg(fn (RiskSignal $signal) => $signal->score->value()));
+        return Score::from($this->avg(function ($signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                return 0.0;
+            }
+            return $signal->score->value();
+        }));
     }
 
     /**
@@ -107,9 +217,15 @@ final class RiskSignalCollection extends Collection implements GraniteObject
         $weightedSum = 0;
 
         foreach ($this as $signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                continue;
+            }
             $weight = $weights[$signal->scope->value] ?? 0.1;
-            $weightedSum += $signal->score->value() * $weight;
-            $totalWeight += $weight;
+            $scoreValue = $signal->score->value();
+            if (is_numeric($scoreValue) && is_numeric($weight)) {
+                $weightedSum += (float) $scoreValue * (float) $weight;
+                $totalWeight += (float) $weight;
+            }
         }
 
         return Score::from($totalWeight > 0 ? $weightedSum / $totalWeight : 0.0);
@@ -120,7 +236,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function groupedByScope(): array
     {
-        return $this->groupBy(fn (RiskSignal $signal) => $signal->scope->value)->toArray();
+        return $this->groupBy(function ($signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                return 'unknown';
+            }
+            return $signal->scope->value;
+        })->toArray();
     }
 
 
@@ -144,9 +265,24 @@ final class RiskSignalCollection extends Collection implements GraniteObject
             'total_signals' => $this->count(),
             'overall_risk_score' => $this->getOverallRiskScore(),
             'weighted_risk_score' => $this->getWeightedRiskScore(),
-            'max_score' => $this->max(fn (RiskSignal $signal) => $signal->score->value()),
-            'min_score' => $this->min(fn (RiskSignal $signal) => $signal->score->value()),
-            'avg_score' => $this->avg(fn (RiskSignal $signal) => $signal->score->value()),
+            'max_score' => $this->max(function ($signal) {
+                if ( ! $signal instanceof RiskSignal) {
+                    return 0.0;
+                }
+                return $signal->score->value();
+            }),
+            'min_score' => $this->min(function ($signal) {
+                if ( ! $signal instanceof RiskSignal) {
+                    return 0.0;
+                }
+                return $signal->score->value();
+            }),
+            'avg_score' => $this->avg(function ($signal) {
+                if ( ! $signal instanceof RiskSignal) {
+                    return 0.0;
+                }
+                return $signal->score->value();
+            }),
             'by_scope' => $this->groupedByScope(),
         ];
     }
@@ -156,7 +292,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function getMostCritical(int $limit = 5): self
     {
-        return $this->sortByDesc(fn (RiskSignal $signal) => $signal->score->value())->take($limit);
+        return $this->sortByDesc(function ($signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                return 0.0;
+            }
+            return $signal->score->value();
+        })->take($limit);
     }
 
 
@@ -165,7 +306,12 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function array(): array
     {
-        return $this->map(fn (RiskSignal $signal) => $signal->array())->toArray();
+        return $this->map(function ($signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                throw new InvalidArgumentException('Expected RiskSignal instance');
+            }
+            return $signal->array();
+        })->toArray();
     }
 
     /**
@@ -192,8 +338,17 @@ final class RiskSignalCollection extends Collection implements GraniteObject
         $result = [];
 
         foreach ($this as $signal) {
+            if ( ! $signal instanceof RiskSignal) {
+                continue;
+            }
+            if ( ! is_string($signal->name)) {
+                continue;
+            }
             $key = str_replace('_', '', ucwords($signal->name, '_'));
             $key = lcfirst($key);
+            if ( ! is_object($signal->score)) {
+                continue;
+            }
             $result[$key] = $signal->score->value();
         }
 
@@ -223,10 +378,15 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function updateSignal(string $name, float $score, ?float $average = null): self
     {
-        $index = $this->search(fn (RiskSignal $signal) => $signal->name === $name);
+        $index = $this->search(function ($signal) use ($name) {
+            if ( ! $signal instanceof RiskSignal) {
+                return false;
+            }
+            return $signal->name === $name;
+        });
         $score = Score::from($score);
 
-        if ($index !== false) {
+        if (false !== $index) {
             /** @var  RiskSignal $existingSignal */
             $existingSignal = $this->get($index);
             $this->put($index, new RiskSignal(
@@ -235,7 +395,7 @@ final class RiskSignalCollection extends Collection implements GraniteObject
                 scope: $existingSignal->scope,
             ));
         } else {
-            return $this->addSignal($name, $score, $average);
+            return $this->addSignal($name, $score, null);
         }
 
         return $this;
@@ -246,86 +406,16 @@ final class RiskSignalCollection extends Collection implements GraniteObject
      */
     public function removeSignal(string $name): self
     {
-        return $this->reject(fn (RiskSignal $signal) => $signal->name === $name);
+        return $this->reject(function ($signal) use ($name) {
+            if ( ! $signal instanceof RiskSignal) {
+                return false;
+            }
+            return $signal->name === $name;
+        });
     }
 
     /**
-     * Create collection from DeviceNetworkSignals DTO
-     */
-    public static function fromDeviceNetworkSignals(DeviceNetworkSignals $signals): self
-    {
-        $collection = new self;
-
-        $collection->addSignal('device_risk', $signals->deviceRisk, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('proxy', $signals->proxy, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('vpn', $signals->vpn, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('datacenter', $signals->datacenter, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('tor', $signals->tor, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('spoofed_ip', $signals->spoofedIp, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('recent_fraud_ip', $signals->recentFraudIp, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('device_network_mismatch', $signals->deviceNetworkMismatch, scope: SignalScope::DeviceNetwork);
-        $collection->addSignal('location_spoofing', $signals->locationSpoofing, scope: SignalScope::DeviceNetwork);
-
-        return $collection;
-    }
-
-    /**
-     * Create collection from DocumentSignals DTO
-     */
-    public static function fromDocumentSignals(DocumentSignals $signals): self
-    {
-        $collection = new self;
-
-        $collection->addSignal('id_age', (float) $signals->idAge, scope: SignalScope::Document);
-        $collection->addSignal('id_face_match_score', $signals->idFaceMatchScore, scope: SignalScope::Document);
-        // Note: Other document signals are enums, not scores, so we don't include them here
-
-        return $collection;
-    }
-
-    /**
-     * Create collection from ReferringSessionSignals DTO
-     */
-    public static function fromReferringSessionSignals(ReferringSessionSignals $signals): self
-    {
-        $collection = new self;
-
-        $collection->addSignal('impossible_travel', $signals->impossibleTravel, scope: SignalScope::ReferringSession);
-        $collection->addSignal('ip_mismatch', $signals->ipMismatch, scope: SignalScope::ReferringSession);
-        $collection->addSignal('user_agent_mismatch', $signals->userAgentMismatch, scope: SignalScope::ReferringSession);
-        $collection->addSignal('device_timezone_mismatch', $signals->deviceTimezoneMismatch, scope: SignalScope::ReferringSession);
-        $collection->addSignal('ip_timezone_mismatch', $signals->ipTimezoneMismatch, scope: SignalScope::ReferringSession);
-
-        return $collection;
-    }
-
-    /**
-     * Create comprehensive collection from all signal DTOs
-     */
-    public static function fromVerisoulSignals(
-        ?DeviceNetworkSignals $deviceNetworkSignals = null,
-        ?DocumentSignals $documentSignals = null,
-        ?ReferringSessionSignals $referringSessionSignals = null
-    ): self {
-        $collection = new self;
-
-        if ($deviceNetworkSignals) {
-            $collection = $collection->merge(self::fromDeviceNetworkSignals($deviceNetworkSignals));
-        }
-
-        if ($documentSignals) {
-            $collection = $collection->merge(self::fromDocumentSignals($documentSignals));
-        }
-
-        if ($referringSessionSignals) {
-            $collection = $collection->merge(self::fromReferringSessionSignals($referringSessionSignals));
-        }
-
-        return $collection;
-    }
-
-    /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function json(): string
     {

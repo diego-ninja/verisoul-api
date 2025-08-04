@@ -1,30 +1,28 @@
 <?php
 
-use Ninja\Verisoul\Support\CircuitBreaker;
-use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
 use Ninja\Verisoul\Exceptions\CircuitBreakerOpenException;
+use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Support\CircuitBreaker;
 use Psr\SimpleCache\CacheInterface;
 
-describe('CircuitBreaker Integration Tests', function () {
-    beforeEach(function () {
+describe('CircuitBreaker Integration Tests', function (): void {
+    beforeEach(function (): void {
         $this->mockCache = Mockery::mock(CacheInterface::class);
-        $this->mockCache->shouldReceive('get')->andReturnUsing(function($key, $default = null) {
-            return $default ?? 'closed';
-        })->byDefault();
+        $this->mockCache->shouldReceive('get')->andReturnUsing(fn($key, $default = null) => $default ?? 'closed')->byDefault();
         $this->mockCache->shouldReceive('set')->andReturn(true)->byDefault();
         $this->mockCache->shouldReceive('delete')->andReturn(true)->byDefault();
     });
 
-    describe('Circuit state transitions under load', function () {
-        it('transitions from closed to open under failure load', function () {
+    describe('Circuit state transitions under load', function (): void {
+        it('transitions from closed to open under failure load', function (): void {
             // Use real cache for this test to properly simulate state transitions
-            $realCache = new \Ninja\Verisoul\Support\InMemoryCache();
-            
+            $realCache = new Ninja\Verisoul\Support\InMemoryCache();
+
             $circuitBreaker = new CircuitBreaker(
                 service: 'test-service',
                 cache: $realCache,
                 failureThreshold: 3,
-                recoveryTime: 1000
+                recoveryTime: 1000,
             );
 
             $failureCount = 0;
@@ -33,7 +31,7 @@ describe('CircuitBreaker Integration Tests', function () {
             // Simulate 5 consecutive failures
             for ($i = 0; $i < 5; $i++) {
                 try {
-                    $circuitBreaker->call(function() use (&$failureCount) {
+                    $circuitBreaker->call(function () use (&$failureCount): void {
                         $failureCount++;
                         throw new VerisoulConnectionException("Service failure #{$failureCount}");
                     });
@@ -52,21 +50,21 @@ describe('CircuitBreaker Integration Tests', function () {
                 ->and($circuitOpenExceptions)->toBe(2); // 2 calls should be blocked by open circuit
         });
 
-        it('transitions from open to half-open after timeout', function () {
+        it('transitions from open to half-open after timeout', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'timeout-test',
                 cache: $this->mockCache,
                 failureThreshold: 2,
-                recoveryTime: 100 // Short timeout for testing
+                recoveryTime: 100, // Short timeout for testing
             );
 
             // Trigger circuit to open
             for ($i = 0; $i < 3; $i++) {
                 try {
-                    $circuitBreaker->call(function() {
+                    $circuitBreaker->call(function (): void {
                         throw new VerisoulConnectionException("Initial failure");
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Expected
                 }
             }
@@ -78,7 +76,7 @@ describe('CircuitBreaker Integration Tests', function () {
 
             // Next call should be in half-open state
             try {
-                $result = $circuitBreaker->call(function() use (&$halfOpenTested) {
+                $result = $circuitBreaker->call(function () use (&$halfOpenTested) {
                     $halfOpenTested = true;
                     return ['status' => 'recovered'];
                 });
@@ -86,26 +84,26 @@ describe('CircuitBreaker Integration Tests', function () {
                 expect($result)->toBe(['status' => 'recovered'])
                     ->and($halfOpenTested)->toBeTrue();
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // If this fails, circuit should go back to open
             }
         });
 
-        it('resets to closed state after successful half-open operation', function () {
+        it('resets to closed state after successful half-open operation', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'reset-test',
                 cache: $this->mockCache,
                 failureThreshold: 2,
-                recoveryTime: 50
+                recoveryTime: 50,
             );
 
             // Open the circuit
             for ($i = 0; $i < 3; $i++) {
                 try {
-                    $circuitBreaker->call(function() {
+                    $circuitBreaker->call(function (): void {
                         throw new VerisoulConnectionException("Opening circuit");
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Expected
                 }
             }
@@ -114,28 +112,24 @@ describe('CircuitBreaker Integration Tests', function () {
             usleep(100000); // 100ms
 
             // Successful call in half-open state should reset to closed
-            $result = $circuitBreaker->call(function() {
-                return ['circuit' => 'reset'];
-            });
+            $result = $circuitBreaker->call(fn() => ['circuit' => 'reset']);
 
             expect($result)->toBe(['circuit' => 'reset']);
 
             // Subsequent calls should work normally (circuit is closed)
-            $result2 = $circuitBreaker->call(function() {
-                return ['circuit' => 'working'];
-            });
+            $result2 = $circuitBreaker->call(fn() => ['circuit' => 'working']);
 
             expect($result2)->toBe(['circuit' => 'working']);
         });
     });
 
-    describe('High load scenarios', function () {
-        it('handles concurrent requests appropriately', function () {
+    describe('High load scenarios', function (): void {
+        it('handles concurrent requests appropriately', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'concurrent-test',
                 cache: $this->mockCache,
                 failureThreshold: 5,
-                recoveryTime: 200
+                recoveryTime: 200,
             );
 
             $results = [];
@@ -144,17 +138,17 @@ describe('CircuitBreaker Integration Tests', function () {
             // Simulate 10 concurrent operations
             $operations = [];
             for ($i = 0; $i < 10; $i++) {
-                $operations[] = function() use ($circuitBreaker, $i, &$results, &$exceptions) {
+                $operations[] = function () use ($circuitBreaker, $i, &$results, &$exceptions): void {
                     try {
-                        $result = $circuitBreaker->call(function() use ($i) {
+                        $result = $circuitBreaker->call(function () use ($i) {
                             // 50% failure rate
-                            if ($i % 2 === 0) {
+                            if (0 === $i % 2) {
                                 throw new VerisoulConnectionException("Failure #{$i}");
                             }
                             return ['operation' => $i, 'success' => true];
                         });
                         $results[$i] = $result;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $exceptions[$i] = $e;
                     }
                 };
@@ -171,12 +165,12 @@ describe('CircuitBreaker Integration Tests', function () {
             expect(count($results) + count($exceptions))->toBe(10);
         });
 
-        it('maintains performance under burst load', function () {
+        it('maintains performance under burst load', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'burst-test',
                 cache: $this->mockCache,
                 failureThreshold: 10,
-                recoveryTime: 100
+                recoveryTime: 100,
             );
 
             $startTime = microtime(true);
@@ -185,24 +179,24 @@ describe('CircuitBreaker Integration Tests', function () {
 
             for ($i = 0; $i < $totalOperations; $i++) {
                 try {
-                    $result = $circuitBreaker->call(function() use ($i) {
+                    $result = $circuitBreaker->call(function () use ($i) {
                         // Simulate varying response times
-                        if ($i % 10 === 0) {
+                        if (0 === $i % 10) {
                             usleep(1000); // 1ms delay for some operations
                         }
-                        
+
                         // 90% success rate
-                        if ($i % 10 !== 9) {
+                        if (9 !== $i % 10) {
                             return ['burst_op' => $i];
                         }
-                        
+
                         throw new VerisoulConnectionException("Burst failure #{$i}");
                     });
-                    
+
                     if ($result) {
                         $successCount++;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Some operations will fail
                 }
             }
@@ -215,26 +209,26 @@ describe('CircuitBreaker Integration Tests', function () {
         });
     });
 
-    describe('Cache integration and persistence', function () {
-        it('persists circuit state across instances', function () {
+    describe('Cache integration and persistence', function (): void {
+        it('persists circuit state across instances', function (): void {
             // Use real cache to properly test persistence
-            $sharedCache = new \Ninja\Verisoul\Support\InMemoryCache();
-            
+            $sharedCache = new Ninja\Verisoul\Support\InMemoryCache();
+
             // First instance opens the circuit
             $circuit1 = new CircuitBreaker(
                 service: 'persistent-test',
                 cache: $sharedCache,
                 failureThreshold: 2,
-                recoveryTime: 1000
+                recoveryTime: 1000,
             );
 
             // Open the circuit with first instance
             for ($i = 0; $i < 3; $i++) {
                 try {
-                    $circuit1->call(function() {
+                    $circuit1->call(function (): void {
                         throw new VerisoulConnectionException("Persistent failure");
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Expected
                 }
             }
@@ -244,32 +238,28 @@ describe('CircuitBreaker Integration Tests', function () {
                 service: 'persistent-test',
                 cache: $sharedCache,
                 failureThreshold: 2,
-                recoveryTime: 1000
+                recoveryTime: 1000,
             );
 
-            expect(function() use ($circuit2) {
-                $circuit2->call(function() {
-                    return ['should' => 'fail'];
-                });
+            expect(function () use ($circuit2): void {
+                $circuit2->call(fn() => ['should' => 'fail']);
             })->toThrow(CircuitBreakerOpenException::class);
         });
 
-        it('handles cache failures gracefully', function () {
+        it('handles cache failures gracefully', function (): void {
             $failingCache = Mockery::mock(CacheInterface::class);
-            $failingCache->shouldReceive('get')->andThrow(new \Exception("Cache failure"));
-            $failingCache->shouldReceive('set')->andThrow(new \Exception("Cache failure"));
+            $failingCache->shouldReceive('get')->andThrow(new Exception("Cache failure"));
+            $failingCache->shouldReceive('set')->andThrow(new Exception("Cache failure"));
 
             $circuitBreaker = new CircuitBreaker(
                 service: 'cache-fail-test',
                 cache: $failingCache,
                 failureThreshold: 3,
-                recoveryTime: 100
+                recoveryTime: 100,
             );
 
             // Circuit breaker should still work even with cache failures
-            $result = $circuitBreaker->call(function() {
-                return ['cache_failed' => 'but_circuit_works'];
-            });
+            $result = $circuitBreaker->call(fn() => ['cache_failed' => 'but_circuit_works']);
 
             expect($result)->toBe(['cache_failed' => 'but_circuit_works']);
 
@@ -277,11 +267,11 @@ describe('CircuitBreaker Integration Tests', function () {
             $failureCount = 0;
             for ($i = 0; $i < 5; $i++) {
                 try {
-                    $circuitBreaker->call(function() use (&$failureCount) {
+                    $circuitBreaker->call(function () use (&$failureCount): void {
                         $failureCount++;
                         throw new VerisoulConnectionException("Service down");
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Expected - should handle failures even without cache
                 }
             }
@@ -290,13 +280,13 @@ describe('CircuitBreaker Integration Tests', function () {
         });
     });
 
-    describe('Resource cleanup and memory management', function () {
-        it('properly cleans up resources after many operations', function () {
+    describe('Resource cleanup and memory management', function (): void {
+        it('properly cleans up resources after many operations', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'cleanup-test',
                 cache: $this->mockCache,
                 failureThreshold: 50,
-                recoveryTime: 100
+                recoveryTime: 100,
             );
 
             $initialMemory = memory_get_usage();
@@ -304,14 +294,14 @@ describe('CircuitBreaker Integration Tests', function () {
             // Perform many operations
             for ($i = 0; $i < 1000; $i++) {
                 try {
-                    $circuitBreaker->call(function() use ($i) {
+                    $circuitBreaker->call(function () use ($i) {
                         // Mix of successes and failures
-                        if ($i % 10 === 0) {
+                        if (0 === $i % 10) {
                             throw new VerisoulConnectionException("Occasional failure");
                         }
                         return ['iteration' => $i];
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Some will fail
                 }
             }
@@ -323,12 +313,12 @@ describe('CircuitBreaker Integration Tests', function () {
             expect($memoryIncrease)->toBeLessThan(2 * 1024 * 1024);
         });
 
-        it('handles rapid state changes efficiently', function () {
+        it('handles rapid state changes efficiently', function (): void {
             $circuitBreaker = new CircuitBreaker(
                 service: 'rapid-change-test',
                 cache: $this->mockCache,
                 failureThreshold: 2,
-                recoveryTime: 10 // Very short timeout
+                recoveryTime: 10, // Very short timeout
             );
 
             $stateChanges = 0;
@@ -337,19 +327,19 @@ describe('CircuitBreaker Integration Tests', function () {
             // Rapidly cycle between success and failure
             for ($i = 0; $i < 50; $i++) {
                 try {
-                    $circuitBreaker->call(function() use ($i) {
+                    $circuitBreaker->call(function () use ($i) {
                         // Alternate between success and failure patterns
                         if ($i % 4 < 2) {
                             throw new VerisoulConnectionException("Rapid failure");
                         }
                         return ['rapid' => $i];
                     });
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $stateChanges++;
                 }
 
                 // Small delay to allow timeout recovery
-                if ($i % 10 === 0) {
+                if (0 === $i % 10) {
                     usleep(15000); // 15ms
                 }
             }

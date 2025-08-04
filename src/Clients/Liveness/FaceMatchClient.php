@@ -2,13 +2,13 @@
 
 namespace Ninja\Verisoul\Clients\Liveness;
 
-use Ninja\Verisoul\Responses\LivenessSessionResponse;
-use Ninja\Verisoul\Responses\VerifyFaceResponse;
-use Ninja\Verisoul\Responses\VerifyIdentityResponse;
 use Ninja\Verisoul\Contracts\FaceMatchInterface;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\LivenessSessionResponse;
+use Ninja\Verisoul\Responses\VerifyFaceResponse;
+use Ninja\Verisoul\Responses\VerifyIdentityResponse;
 
 final class FaceMatchClient extends LivenessApiClient implements FaceMatchInterface
 {
@@ -16,9 +16,9 @@ final class FaceMatchClient extends LivenessApiClient implements FaceMatchInterf
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function session(?string $referringSessionId = null): ?LivenessSessionResponse
+    public function session(?string $referringSessionId = null): LivenessSessionResponse
     {
-        $params = $referringSessionId !== null ?
+        $params = null !== $referringSessionId ?
             ['referring_session_id' => $referringSessionId] :
             [];
 

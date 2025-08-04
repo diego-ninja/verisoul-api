@@ -3,12 +3,12 @@
 namespace Ninja\Verisoul\Clients;
 
 use Ninja\Verisoul\Contracts\SessionInterface;
-use Ninja\Verisoul\Responses\AuthenticateSessionResponse;
-use Ninja\Verisoul\Responses\SessionResponse;
 use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\AuthenticateSessionResponse;
+use Ninja\Verisoul\Responses\SessionResponse;
 
 final class SessionClient extends Client implements SessionInterface
 {
@@ -26,7 +26,7 @@ final class SessionClient extends Client implements SessionInterface
             [
                 'account' => $account->array(),
                 'session_id' => $sessionId,
-            ]
+            ],
         );
 
         return AuthenticateSessionResponse::from($response);
@@ -45,7 +45,7 @@ final class SessionClient extends Client implements SessionInterface
             ],
             [
                 'session_id' => $sessionId,
-            ]
+            ],
         );
 
         return SessionResponse::from($response);
@@ -59,7 +59,7 @@ final class SessionClient extends Client implements SessionInterface
     {
         $response = $this->call(
             VerisoulApiEndpoint::SessionGet,
-            ['session_id' => $sessionId]
+            ['session_id' => $sessionId],
         );
 
         return SessionResponse::from($response);

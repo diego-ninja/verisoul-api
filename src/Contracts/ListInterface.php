@@ -2,9 +2,9 @@
 
 namespace Ninja\Verisoul\Contracts;
 
-use Ninja\Verisoul\Responses\ListOperationResponse;
 use Ninja\Verisoul\Collections\AccountListCollection;
 use Ninja\Verisoul\DTO\AccountList;
+use Ninja\Verisoul\Responses\ListOperationResponse;
 
 interface ListInterface
 {

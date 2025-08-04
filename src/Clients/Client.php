@@ -6,33 +6,31 @@ use Exception;
 use InvalidArgumentException;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
 use Ninja\Verisoul\Contracts\VerisoulApi;
-use Ninja\Verisoul\Http\GuzzleHttpClient;
-use Ninja\Verisoul\Support\CircuitBreaker;
-use Ninja\Verisoul\Support\InMemoryCache;
-use Ninja\Verisoul\Support\Logger;
-use Ninja\Verisoul\Support\RetryStrategy;
-use Psr\SimpleCache\CacheInterface;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
-use Ninja\Verisoul\Exceptions\VerisoulValidationException;
+use Ninja\Verisoul\Http\GuzzleHttpClient;
+use Ninja\Verisoul\Support\CircuitBreaker;
+use Ninja\Verisoul\Support\InMemoryCache;
+use Ninja\Verisoul\Support\RetryStrategy;
+use Psr\SimpleCache\CacheInterface;
 
 abstract class Client implements VerisoulApi
 {
     protected string $apiKey;
 
-    private VerisoulEnvironment $environment;
-
     protected int $timeout;
 
     protected int $connectTimeout;
 
+    protected array $headers;
+
+    private VerisoulEnvironment $environment;
+
     private RetryStrategy $retryStrategy;
 
     private CircuitBreaker $circuitBreaker;
-
-    protected array $headers;
 
     private HttpClientInterface $httpClient;
 
@@ -55,21 +53,21 @@ abstract class Client implements VerisoulApi
 
         $this->retryStrategy = new RetryStrategy(
             maxAttempts: $retryAttempts,
-            baseDelayMs: $retryDelay
+            baseDelayMs: $retryDelay,
         );
 
-        $cache = $cache ?? new InMemoryCache();
-        
+        $cache ??= new InMemoryCache();
+
         $this->circuitBreaker = new CircuitBreaker(
             service: static::class,
             cache: $cache,
             failureThreshold: 5,
             timeoutSeconds: $timeout,
-            recoveryTime: 300
+            recoveryTime: 300,
         );
 
         $this->headers = $this->buildDefaultHeaders();
-        
+
         $this->httpClient = $httpClient ?? new GuzzleHttpClient();
         $this->httpClient
             ->setTimeout($timeout)
@@ -77,8 +75,12 @@ abstract class Client implements VerisoulApi
             ->setHeaders($this->headers);
     }
 
-    public static function create(string $apiKey, VerisoulEnvironment $environment = VerisoulEnvironment::Sandbox): Client
+    /**
+     * @return static
+     */
+    public static function create(string $apiKey, VerisoulEnvironment $environment = VerisoulEnvironment::Sandbox): static
     {
+        // @phpstan-ignore-next-line
         return new static($apiKey, $environment);
     }
 
@@ -89,10 +91,16 @@ abstract class Client implements VerisoulApi
      */
     public function get(string $endpoint, array $query = [], array $headers = []): array
     {
-        return $this->retryStrategy->execute(function () use ($endpoint, $query, $headers) {
+        $result = $this->retryStrategy->execute(function () use ($endpoint, $query, $headers) {
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->get($url, $query, $headers);
         });
+
+        if ( ! is_array($result)) {
+            throw new VerisoulApiException('Expected array response from API');
+        }
+
+        return $result;
     }
 
     /**
@@ -102,10 +110,16 @@ abstract class Client implements VerisoulApi
      */
     public function post(string $endpoint, array $data = [], array $headers = []): array
     {
-        return $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
+        $result = $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->post($url, $data, $headers);
         });
+
+        if ( ! is_array($result)) {
+            throw new VerisoulApiException('Expected array response from API');
+        }
+
+        return $result;
     }
 
     /**
@@ -115,10 +129,16 @@ abstract class Client implements VerisoulApi
      */
     public function put(string $endpoint, array $data = [], array $headers = []): array
     {
-        return $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
+        $result = $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->put($url, $data, $headers);
         });
+
+        if ( ! is_array($result)) {
+            throw new VerisoulApiException('Expected array response from API');
+        }
+
+        return $result;
     }
 
     /**
@@ -128,10 +148,16 @@ abstract class Client implements VerisoulApi
      */
     public function delete(string $endpoint, array $data = [], array $headers = []): array
     {
-        return $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
+        $result = $this->retryStrategy->execute(function () use ($endpoint, $data, $headers) {
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->delete($url, $data, $headers);
         });
+
+        if ( ! is_array($result)) {
+            throw new VerisoulApiException('Expected array response from API');
+        }
+
+        return $result;
     }
 
     public function setApiKey(string $apiKey): self
@@ -167,12 +193,11 @@ abstract class Client implements VerisoulApi
         $endpointPath = $endpoint->withParameters($parameters);
         $method = $endpoint->getMethod();
 
-        // $this->validateEndpointCall($endpoint, $parameters, $data);
 
         $operation = function () use ($method, $endpointPath, $data) {
             return $this->retryStrategy->execute(function () use ($method, $endpointPath, $data) {
                 $url = $this->getBaseUrl() . $endpointPath;
-                
+
                 return match (strtoupper($method)) {
                     'GET' => $this->httpClient->get($url, $data),
                     'POST' => $this->httpClient->post($url, $data),
@@ -183,7 +208,13 @@ abstract class Client implements VerisoulApi
             });
         };
 
-        return $this->circuitBreaker->call($operation);
+        $result = $this->circuitBreaker->call($operation);
+
+        if ( ! is_array($result)) {
+            throw new VerisoulApiException('Expected array response from API');
+        }
+
+        return $result;
     }
 
     /**
@@ -204,37 +235,6 @@ abstract class Client implements VerisoulApi
         }
     }
 
-    /**
-     * Validate endpoint call parameters
-     *
-     * @throws VerisoulValidationException
-     */
-    private function validateEndpointCall(VerisoulApiEndpoint $endpoint, array $parameters, array $data): void
-    {
-        // Validate required parameters are provided
-        $url = $endpoint->url();
-        preg_match_all('/\{(\w+)\}/', $url, $matches);
-        $requiredParams = $matches[1] ?? [];
-
-        foreach ($requiredParams as $param) {
-            if (empty($parameters[$param])) {
-                throw new VerisoulValidationException(
-                    message: "Missing required parameter: {$param}",
-                    field: $param,
-                    value: null
-                );
-            }
-        }
-
-        // Validate data payload for POST/PUT requests
-        $method = $endpoint->getMethod();
-        if (in_array($method, ['POST', 'PUT']) && empty($data)) {
-            Logger::warning('Empty data payload for write operation', [
-                'endpoint' => $endpoint->name,
-                'method' => $method,
-            ]);
-        }
-    }
 
     /**
      * Build default headers

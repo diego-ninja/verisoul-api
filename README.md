@@ -1,16 +1,24 @@
 # Verisoul API Client for PHP
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/diego-ninja/verisoul-api.svg?style=flat&color=blue)](https://packagist.org/packages/diego-ninja/verisoul-api)
-[![Total Downloads](https://img.shields.io/packagist/dt/diego-ninja/verisoaul-api.svg?style=flat&color=blue)](https://packagist.org/packages/diego-ninja/verisoul-api)
+[![Total Downloads](https://img.shields.io/packagist/dt/diego-ninja/verisoul-api.svg?style=flat&color=blue)](https://packagist.org/packages/diego-ninja/verisoul-api)
 ![PHP Version](https://img.shields.io/packagist/php-v/diego-ninja/verisoul-api.svg?style=flat&color=blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![GitHub last commit](https://img.shields.io/github/last-commit/diego-ninja/verisoul-api?color=blue)
 [![wakatime](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b.svg)](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b)
+
+
+[![Tests](https://github.com/diego-ninja/verisoul-api/actions/workflows/tests.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/tests.yml)
+[![Static Analysis](https://github.com/diego-ninja/verisoul-api/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/static-analysis.yml)
+[![Code Style](https://github.com/diego-ninja/verisoul-api/actions/workflows/code-style.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/code-style.yml)
+
 ## Description
 
 This is a PHP API client designed to interact with the Verisoul API. It provides a simple and effective way to access Verisoul's services, which include account management, session authentication, biometric identity verification, and list management.
 
 The client is designed to be flexible and easy to use, with a focus on the immutability of Data Transfer Objects (DTOs) to ensure data integrity throughout your application.
+
+This documentation has been generated almost in its entirety using 🦠 Claude 4 Sonnet based on source code analysis. Some sections may be incomplete, outdated or may contain documentation for planned or not-released features. For the most accurate information, please refer to the source code or open an issue on the package repository.
 
 ## ❤️ Features
 

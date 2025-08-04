@@ -16,7 +16,7 @@ final class Logger
 
     public static function getInstance(): LoggerInterface
     {
-        if (self::$instance === null) {
+        if (null === self::$instance) {
             self::$instance = new NullLogger();
         }
 

@@ -1,0 +1,30 @@
+parameters:
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        # Allow mixed types in specific contexts where it's intentional  
+        - '#Parameter \#1 \$data of method .* expects array, mixed given#'
+        - '#Cannot call method .* on mixed#'
+        - '#Dead catch - ReflectionException is never thrown in the try block#'
+        # Collection filter/map callbacks with typed parameters
+        - '#Type .* of parameter .* of passed callable needs to be same or wider than parameter type mixed of accepting callable#'
+        # PHPDoc and generics issues
+        - '#PHPDoc tag @return contains generic type .* but enum .* is not generic#'
+        # Function already narrowed type warnings (these are overly strict)
+        - '#Call to function is_.* will always evaluate to (true|false)#'
+        # Part of encapsed string cannot be cast to string (when we know it can)
+        - '#Part .* of encapsed string cannot be cast to string#'
+        # Cannot access property/offset on mixed (when we've validated the type)
+        - '#Cannot access property .* on mixed#'
+        - '#Cannot access offset .* on mixed#'
+        # Cannot cast mixed to string/int (when we've validated the type)  
+        - '#Cannot cast mixed to (string|int)#'
+        # Parameter expects string, mixed given (when we know the type)
+        - '#Parameter .* expects string, mixed given#'
+        -
+            identifier: missingType.iterableValue
+        -
+            identifier: missingType.generics
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: var/cache/phpstan

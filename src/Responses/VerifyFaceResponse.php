@@ -3,8 +3,10 @@
 namespace Ninja\Verisoul\Responses;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
 use Ninja\Granite\Serialization\Attributes\SerializationConvention;
+use Ninja\Verisoul\Collections\RiskFlagCollection;
 use Ninja\Verisoul\Collections\RiskSignalCollection;
 use Ninja\Verisoul\DTO\DeviceNetworkSignals;
 use Ninja\Verisoul\DTO\Matches;
@@ -20,14 +22,11 @@ use Ninja\Verisoul\ValueObjects\Score;
 #[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class VerifyFaceResponse extends ApiResponse
 {
-    /**
-     * @param  Collection<RiskFlag>  $riskFlags
-     */
     public function __construct(
         public Metadata $metadata,
         public VerisoulDecision $decision,
         public Score $riskScore,
-        public Collection $riskFlags,
+        public RiskFlagCollection $riskFlags,
         public DeviceNetworkSignals $deviceNetworkSignals,
         public ReferringSessionSignals $referringSessionSignals,
         public PhotoUrls $photoUrls,
@@ -40,7 +39,7 @@ final readonly class VerifyFaceResponse extends ApiResponse
      */
     public function hasBlockingRiskFlags(): bool
     {
-        return $this->riskFlags->some(fn (RiskFlag $flag) => $flag->shouldBlock());
+        return $this->riskFlags->some(fn(RiskFlag $flag) => $flag->shouldBlock());
     }
 
     /**
@@ -48,7 +47,7 @@ final readonly class VerifyFaceResponse extends ApiResponse
      */
     public function hasModerateRiskFlags(): bool
     {
-        return $this->riskFlags->some(fn (RiskFlag $flag) => $flag->getRiskLevel() === RiskLevel::Medium);
+        return $this->riskFlags->some(fn(RiskFlag $flag) => RiskLevel::Moderate === $flag->getRiskLevel());
     }
 
     /**
@@ -58,11 +57,23 @@ final readonly class VerifyFaceResponse extends ApiResponse
     {
         $categories = [];
         foreach ($this->riskFlags as $flag) {
-            $category = $flag->getCategory();
-            if (! isset($categories[$category])) {
-                $categories[$category] = [];
+            if ( ! $flag instanceof RiskFlag) {
+                continue;
             }
-            $categories[$category][] = $flag;
+            $flagCategories = $flag->getCategories();
+            if ( ! is_iterable($flagCategories)) {
+                continue;
+            }
+            foreach ($flagCategories as $category) {
+                if ( ! is_object($category) || ! property_exists($category, 'value')) {
+                    continue;
+                }
+                $categoryValue = $category->value;
+                if ( ! isset($categories[$categoryValue])) {
+                    $categories[$categoryValue] = [];
+                }
+                $categories[$categoryValue][] = $flag;
+            }
         }
 
         return $categories;
@@ -74,9 +85,12 @@ final readonly class VerifyFaceResponse extends ApiResponse
     public function getRiskFlagsByLevel(): array
     {
         $levels = [];
-        $this->riskFlags->each(function (RiskFlag $flag) use (&$levels) {
+        $this->riskFlags->each(function ($flag) use (&$levels): void {
+            if ( ! $flag instanceof RiskFlag) {
+                return;
+            }
             $level = $flag->getRiskLevel();
-            if (! isset($levels[$level->value])) {
+            if ( ! isset($levels[$level->value])) {
                 $levels[$level->value] = [];
             }
             $levels[$level->value][] = $flag;
@@ -90,7 +104,7 @@ final readonly class VerifyFaceResponse extends ApiResponse
      */
     public function hasRiskFlag(RiskFlag $flag): bool
     {
-        return $this->riskFlags->contains(fn (RiskFlag $riskFlag) => $riskFlag === $flag);
+        return $this->riskFlags->contains(fn(RiskFlag $riskFlag) => $riskFlag === $flag);
     }
 
     /**
@@ -98,7 +112,12 @@ final readonly class VerifyFaceResponse extends ApiResponse
      */
     public function getRiskFlagsAsStrings(): array
     {
-        return $this->riskFlags->map(fn (RiskFlag $flag) => $flag->value)->toArray();
+        return $this->riskFlags->map(function ($flag) {
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
+            }
+            return $flag->value;
+        })->toArray();
     }
 
     /**
@@ -108,7 +127,7 @@ final readonly class VerifyFaceResponse extends ApiResponse
     {
         return RiskSignalCollection::fromVerisoulSignals(
             deviceNetworkSignals: $this->deviceNetworkSignals,
-            referringSessionSignals: $this->referringSessionSignals
+            referringSessionSignals: $this->referringSessionSignals,
         );
     }
 }

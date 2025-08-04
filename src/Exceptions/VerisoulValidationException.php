@@ -10,13 +10,13 @@ class VerisoulValidationException extends VerisoulApiException
         string $message,
         public readonly string $field,
         public readonly mixed $value,
-        ?Exception $previous = null
+        ?Exception $previous = null,
     ) {
         parent::__construct(
             message: $message,
             statusCode: 422,
             response: ['field' => $field, 'value' => $value],
-            previous: $previous
+            previous: $previous,
         );
     }
 
@@ -25,7 +25,7 @@ class VerisoulValidationException extends VerisoulApiException
         return new self(
             message: "Invalid {$field}: {$reason}",
             field: $field,
-            value: $value
+            value: $value,
         );
     }
 
@@ -34,7 +34,7 @@ class VerisoulValidationException extends VerisoulApiException
         return new self(
             message: "Missing required field: {$field}",
             field: $field,
-            value: null
+            value: null,
         );
     }
 }

@@ -18,6 +18,18 @@ final readonly class RiskSignal extends GraniteDTO
     ) {}
 
     /**
+     * Create RiskSignal from score
+     */
+    public static function fromScore(string $name, float $score): self
+    {
+        return new self(
+            name: $name,
+            score: Score::from($score),
+            scope: SignalScope::getScopeForSignal($name),
+        );
+    }
+
+    /**
      * Get display name for the signal
      */
     public function getDisplayName(): string
@@ -89,20 +101,8 @@ final readonly class RiskSignal extends GraniteDTO
             'device_timezone_mismatch' => 'Device timezone mismatch',
             'ip_timezone_mismatch' => 'IP timezone mismatch',
 
-            default => 'Risk signal: '.$this->name,
+            default => 'Risk signal: ' . $this->name,
         };
-    }
-
-    /**
-     * Create RiskSignal from score
-     */
-    public static function fromScore(string $name, float $score): self
-    {
-        return new self(
-            name: $name,
-            score: Score::from($score),
-            scope: SignalScope::getScopeForSignal($name),
-        );
     }
 
     /**

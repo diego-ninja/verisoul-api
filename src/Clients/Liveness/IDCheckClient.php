@@ -2,12 +2,12 @@
 
 namespace Ninja\Verisoul\Clients\Liveness;
 
-use Ninja\Verisoul\Responses\LivenessSessionResponse;
-use Ninja\Verisoul\Responses\VerifyIdResponse;
 use Ninja\Verisoul\Contracts\IDCheckInterface;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\LivenessSessionResponse;
+use Ninja\Verisoul\Responses\VerifyIdResponse;
 
 final class IDCheckClient extends LivenessApiClient implements IDCheckInterface
 {
@@ -15,9 +15,9 @@ final class IDCheckClient extends LivenessApiClient implements IDCheckInterface
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function session(?string $referringSessionId = null): ?LivenessSessionResponse
+    public function session(?string $referringSessionId = null): LivenessSessionResponse
     {
-        $params = $referringSessionId !== null ?
+        $params = null !== $referringSessionId ?
             ['referring_session_id' => $referringSessionId] :
             [];
 

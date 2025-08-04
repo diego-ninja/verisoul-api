@@ -37,7 +37,9 @@ class VerisoulApiException extends Exception
 
     public static function badRequest(string $endpoint, array $response): self
     {
-        $message = $response['error']['message'] ?? 'Bad request to Verisoul API';
+        $message = (isset($response['error']['message']) && is_string($response['error']['message']))
+            ? $response['error']['message']
+            : 'Bad request to Verisoul API';
 
         return new self(
             message: $message,

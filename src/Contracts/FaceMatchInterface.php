@@ -2,10 +2,10 @@
 
 namespace Ninja\Verisoul\Contracts;
 
-use Ninja\Verisoul\Responses\VerifyFaceResponse;
-use Ninja\Verisoul\Responses\VerifyIdentityResponse;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\VerifyFaceResponse;
+use Ninja\Verisoul\Responses\VerifyIdentityResponse;
 
 interface FaceMatchInterface extends BiometricInterface
 {

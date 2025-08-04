@@ -23,27 +23,27 @@ enum VerificationStatus: string
 
     public function isPending(): bool
     {
-        return $this === self::Pending;
+        return self::Pending === $this;
     }
 
     public function isVerified(): bool
     {
-        return $this === self::Verified;
+        return self::Verified === $this;
     }
 
     public function isFailed(): bool
     {
-        return $this === self::Failed;
+        return self::Failed === $this;
     }
 
     public function isExpired(): bool
     {
-        return $this === self::Expired;
+        return self::Expired === $this;
     }
 
     public function requiresManualReview(): bool
     {
-        return $this === self::ManualReview;
+        return self::ManualReview === $this;
     }
 
     public function isCompleted(): bool
@@ -56,7 +56,7 @@ enum VerificationStatus: string
         return match ($this) {
             self::Pending => in_array($status, [self::Verified, self::Failed, self::ManualReview], true),
             self::ManualReview => in_array($status, [self::Verified, self::Failed], true),
-            self::Verified => $status === self::Expired,
+            self::Verified => self::Expired === $status,
             default => false,
         };
     }

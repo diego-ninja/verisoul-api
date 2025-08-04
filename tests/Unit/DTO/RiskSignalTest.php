@@ -4,14 +4,14 @@ use Ninja\Verisoul\DTO\RiskSignal;
 use Ninja\Verisoul\Enums\SignalScope;
 use Ninja\Verisoul\ValueObjects\Score;
 
-describe('RiskSignal DTO', function () {
-    describe('construction', function () {
-        it('can be created with all properties', function () {
+describe('RiskSignal DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all properties', function (): void {
             $score = new Score(0.85);
             $riskSignal = new RiskSignal(
                 name: 'device_risk',
                 score: $score,
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             expect($riskSignal->name)->toBe('device_risk')
@@ -19,11 +19,11 @@ describe('RiskSignal DTO', function () {
                 ->and($riskSignal->scope)->toBe(SignalScope::DeviceNetwork);
         });
 
-        it('can be created with default scope', function () {
+        it('can be created with default scope', function (): void {
             $score = new Score(0.65);
             $riskSignal = new RiskSignal(
                 name: 'proxy',
-                score: $score
+                score: $score,
             );
 
             expect($riskSignal->name)->toBe('proxy')
@@ -31,17 +31,17 @@ describe('RiskSignal DTO', function () {
                 ->and($riskSignal->scope)->toBe(SignalScope::DeviceNetwork);
         });
 
-        it('can be created with different scopes', function () {
+        it('can be created with different scopes', function (): void {
             $documentSignal = new RiskSignal(
                 name: 'id_validity',
                 score: new Score(0.95),
-                scope: SignalScope::Document
+                scope: SignalScope::Document,
             );
 
             $sessionSignal = new RiskSignal(
                 name: 'impossible_travel',
                 score: new Score(0.75),
-                scope: SignalScope::ReferringSession
+                scope: SignalScope::ReferringSession,
             );
 
             expect($documentSignal->scope)->toBe(SignalScope::Document)
@@ -49,12 +49,12 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $riskSignal = new RiskSignal(
                 name: 'test_signal',
                 score: new Score(0.5),
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             $reflection = new ReflectionClass($riskSignal);
@@ -62,17 +62,17 @@ describe('RiskSignal DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
 
-        it('maintains data integrity', function () {
+        it('maintains data integrity', function (): void {
             $score = new Score(0.42);
             $riskSignal = new RiskSignal(
                 name: 'vpn',
                 score: $score,
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             expect($riskSignal->name)->toBe('vpn');
@@ -82,8 +82,8 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('display name functionality', function () {
-        it('returns correct display names for device network signals', function () {
+    describe('display name functionality', function (): void {
+        it('returns correct display names for device network signals', function (): void {
             $deviceSignals = [
                 'device_risk' => 'Device Risk',
                 'proxy' => 'Proxy',
@@ -100,14 +100,14 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.5),
-                    scope: SignalScope::DeviceNetwork
+                    scope: SignalScope::DeviceNetwork,
                 );
 
                 expect($signal->getDisplayName())->toBe($expectedDisplayName);
             }
         });
 
-        it('returns correct display names for document signals', function () {
+        it('returns correct display names for document signals', function (): void {
             $documentSignals = [
                 'id_age' => 'ID Age',
                 'id_face_match_score' => 'ID Face Match Score',
@@ -123,14 +123,14 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.8),
-                    scope: SignalScope::Document
+                    scope: SignalScope::Document,
                 );
 
                 expect($signal->getDisplayName())->toBe($expectedDisplayName);
             }
         });
 
-        it('returns correct display names for session signals', function () {
+        it('returns correct display names for session signals', function (): void {
             $sessionSignals = [
                 'impossible_travel' => 'Impossible Travel',
                 'ip_mismatch' => 'IP Mismatch',
@@ -143,24 +143,24 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.3),
-                    scope: SignalScope::ReferringSession
+                    scope: SignalScope::ReferringSession,
                 );
 
                 expect($signal->getDisplayName())->toBe($expectedDisplayName);
             }
         });
 
-        it('handles unknown signal names gracefully', function () {
+        it('handles unknown signal names gracefully', function (): void {
             $unknownSignal = new RiskSignal(
                 name: 'unknown_custom_signal',
                 score: new Score(0.6),
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             expect($unknownSignal->getDisplayName())->toBe('Unknown Custom Signal');
         });
 
-        it('handles signal names with numbers and special cases', function () {
+        it('handles signal names with numbers and special cases', function (): void {
             $specialSignals = [
                 'signal_v2' => 'Signal V2',
                 'test_signal_123' => 'Test Signal 123',
@@ -171,7 +171,7 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.7),
-                    scope: SignalScope::DeviceNetwork
+                    scope: SignalScope::DeviceNetwork,
                 );
 
                 expect($signal->getDisplayName())->toBe($expectedDisplayName);
@@ -179,8 +179,8 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('description functionality', function () {
-        it('returns correct descriptions for device network signals', function () {
+    describe('description functionality', function (): void {
+        it('returns correct descriptions for device network signals', function (): void {
             $deviceSignals = [
                 'device_risk' => 'Overall device risk assessment',
                 'proxy' => 'Connection through proxy server detected',
@@ -193,14 +193,14 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.5),
-                    scope: SignalScope::DeviceNetwork
+                    scope: SignalScope::DeviceNetwork,
                 );
 
                 expect($signal->getDescription())->toBe($expectedDescription);
             }
         });
 
-        it('returns correct descriptions for document signals', function () {
+        it('returns correct descriptions for document signals', function (): void {
             $documentSignals = [
                 'id_age' => 'Age of the identity document',
                 'id_face_match_score' => 'Face match score between selfie and ID',
@@ -212,14 +212,14 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.8),
-                    scope: SignalScope::Document
+                    scope: SignalScope::Document,
                 );
 
                 expect($signal->getDescription())->toBe($expectedDescription);
             }
         });
 
-        it('returns correct descriptions for session signals', function () {
+        it('returns correct descriptions for session signals', function (): void {
             $sessionSignals = [
                 'impossible_travel' => 'Impossible travel pattern detected',
                 'ip_mismatch' => 'IP address mismatch between sessions',
@@ -230,26 +230,26 @@ describe('RiskSignal DTO', function () {
                 $signal = new RiskSignal(
                     name: $signalName,
                     score: new Score(0.3),
-                    scope: SignalScope::ReferringSession
+                    scope: SignalScope::ReferringSession,
                 );
 
                 expect($signal->getDescription())->toBe($expectedDescription);
             }
         });
 
-        it('handles unknown signal descriptions', function () {
+        it('handles unknown signal descriptions', function (): void {
             $unknownSignal = new RiskSignal(
                 name: 'custom_unknown_signal',
                 score: new Score(0.6),
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             expect($unknownSignal->getDescription())->toBe('Risk signal: custom_unknown_signal');
         });
     });
 
-    describe('factory method fromScore', function () {
-        it('can create RiskSignal from float score', function () {
+    describe('factory method fromScore', function (): void {
+        it('can create RiskSignal from float score', function (): void {
             $signal = RiskSignal::fromScore('proxy', 0.85);
 
             expect($signal)->toBeInstanceOf(RiskSignal::class)
@@ -258,7 +258,7 @@ describe('RiskSignal DTO', function () {
                 ->and($signal->scope)->toBe(SignalScope::DeviceNetwork);
         });
 
-        it('automatically determines correct scope for known signals', function () {
+        it('automatically determines correct scope for known signals', function (): void {
             $testCases = [
                 ['device_risk', SignalScope::DeviceNetwork],
                 ['id_validity', SignalScope::Document],
@@ -275,13 +275,13 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('defaults to DeviceNetwork scope for unknown signals', function () {
+        it('defaults to DeviceNetwork scope for unknown signals', function (): void {
             $unknownSignal = RiskSignal::fromScore('unknown_signal', 0.7);
 
             expect($unknownSignal->scope)->toBe(SignalScope::DeviceNetwork);
         });
 
-        it('handles various score values', function () {
+        it('handles various score values', function (): void {
             $scoreValues = [0.0, 0.25, 0.5, 0.75, 1.0];
 
             foreach ($scoreValues as $scoreValue) {
@@ -292,13 +292,13 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $score = new Score(0.78);
             $riskSignal = new RiskSignal(
                 name: 'vpn',
                 score: $score,
-                scope: SignalScope::DeviceNetwork
+                scope: SignalScope::DeviceNetwork,
             );
 
             $array = $riskSignal->array();
@@ -312,7 +312,7 @@ describe('RiskSignal DTO', function () {
                 ->and($array['description'])->toBe('VPN usage detected');
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'name' => 'id_validity',
                 'score' => ['value' => 0.92],
@@ -327,11 +327,11 @@ describe('RiskSignal DTO', function () {
                 ->and($riskSignal->scope)->toBe(SignalScope::Document);
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new RiskSignal(
                 name: 'impossible_travel',
                 score: new Score(0.88),
-                scope: SignalScope::ReferringSession
+                scope: SignalScope::ReferringSession,
             );
 
             $array = $original->array();
@@ -342,9 +342,9 @@ describe('RiskSignal DTO', function () {
                 ->and($restored->scope)->toBe($original->scope);
         });
 
-        it('can be created from JSON string', function () {
+        it('can be created from JSON string', function (): void {
             $json = '{"name":"tor","score":{"value":0.95},"scope":"device_network"}';
-            
+
             $riskSignal = RiskSignal::from($json);
 
             expect($riskSignal)->toBeInstanceOf(RiskSignal::class)
@@ -354,8 +354,8 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('risk assessment scenarios', function () {
-        it('handles high-risk signals', function () {
+    describe('risk assessment scenarios', function (): void {
+        it('handles high-risk signals', function (): void {
             $highRiskSignals = [
                 'tor' => 0.95,
                 'recent_fraud_ip' => 0.90,
@@ -372,7 +372,7 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('handles low-risk signals', function () {
+        it('handles low-risk signals', function (): void {
             $lowRiskSignals = [
                 'device_risk' => 0.05,
                 'id_age' => 0.10,
@@ -388,7 +388,7 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('handles medium-risk signals', function () {
+        it('handles medium-risk signals', function (): void {
             $mediumRiskSignals = [
                 'proxy' => 0.45,
                 'vpn' => 0.55,
@@ -404,12 +404,12 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('scope categorization', function () {
-        it('correctly categorizes all device network signals', function () {
+    describe('scope categorization', function (): void {
+        it('correctly categorizes all device network signals', function (): void {
             $deviceNetworkSignals = [
-                'device_risk', 'proxy', 'vpn', 'datacenter', 'tor', 
-                'spoofed_ip', 'recent_fraud_ip', 'device_network_mismatch', 
-                'location_spoofing'
+                'device_risk', 'proxy', 'vpn', 'datacenter', 'tor',
+                'spoofed_ip', 'recent_fraud_ip', 'device_network_mismatch',
+                'location_spoofing',
             ];
 
             foreach ($deviceNetworkSignals as $signalName) {
@@ -418,11 +418,11 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('correctly categorizes all document signals', function () {
+        it('correctly categorizes all document signals', function (): void {
             $documentSignals = [
-                'id_age', 'id_face_match_score', 'id_barcode_status', 
-                'id_face_status', 'id_text_status', 'is_id_digital_spoof', 
-                'is_full_id_captured', 'id_validity'
+                'id_age', 'id_face_match_score', 'id_barcode_status',
+                'id_face_status', 'id_text_status', 'is_id_digital_spoof',
+                'is_full_id_captured', 'id_validity',
             ];
 
             foreach ($documentSignals as $signalName) {
@@ -431,10 +431,10 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('correctly categorizes all session signals', function () {
+        it('correctly categorizes all session signals', function (): void {
             $sessionSignals = [
                 'impossible_travel', 'ip_mismatch', 'user_agent_mismatch',
-                'device_timezone_mismatch', 'ip_timezone_mismatch'
+                'device_timezone_mismatch', 'ip_timezone_mismatch',
             ];
 
             foreach ($sessionSignals as $signalName) {
@@ -444,8 +444,8 @@ describe('RiskSignal DTO', function () {
         });
     });
 
-    describe('real-world usage patterns', function () {
-        it('supports fraud detection workflow', function () {
+    describe('real-world usage patterns', function (): void {
+        it('supports fraud detection workflow', function (): void {
             $fraudSignals = [
                 RiskSignal::fromScore('tor', 0.95),
                 RiskSignal::fromScore('recent_fraud_ip', 0.88),
@@ -460,7 +460,7 @@ describe('RiskSignal DTO', function () {
             }
         });
 
-        it('supports risk scoring aggregation', function () {
+        it('supports risk scoring aggregation', function (): void {
             $signals = [
                 RiskSignal::fromScore('device_risk', 0.3),
                 RiskSignal::fromScore('proxy', 0.7),
@@ -482,7 +482,7 @@ describe('RiskSignal DTO', function () {
                 ->and($averageRisk)->toBeLessThan(1.0);
         });
 
-        it('supports risk signal filtering by scope', function () {
+        it('supports risk signal filtering by scope', function (): void {
             $allSignals = [
                 RiskSignal::fromScore('device_risk', 0.3),
                 RiskSignal::fromScore('id_validity', 0.8),
@@ -490,12 +490,14 @@ describe('RiskSignal DTO', function () {
                 RiskSignal::fromScore('proxy', 0.4),
             ];
 
-            $deviceSignals = array_filter($allSignals, 
-                fn($signal) => $signal->scope === SignalScope::DeviceNetwork
+            $deviceSignals = array_filter(
+                $allSignals,
+                fn($signal) => SignalScope::DeviceNetwork === $signal->scope,
             );
 
-            $documentSignals = array_filter($allSignals, 
-                fn($signal) => $signal->scope === SignalScope::Document
+            $documentSignals = array_filter(
+                $allSignals,
+                fn($signal) => SignalScope::Document === $signal->scope,
             );
 
             expect($deviceSignals)->toHaveCount(2)

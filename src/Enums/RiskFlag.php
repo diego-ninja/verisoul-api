@@ -4,38 +4,32 @@ namespace Ninja\Verisoul\Enums;
 
 enum RiskFlag: string
 {
-    // Device Risk Flags
     case HighDeviceRisk = 'high_device_risk';
-    case RepeatDevice = 'repeat_device';
-
-    // Network Risk Flags
     case ProxyDetected = 'proxy_detected';
     case VpnDetected = 'vpn_detected';
     case DatacenterDetected = 'datacenter_detected';
     case RecentFraudIp = 'recent_fraud_ip';
-
-    // ID Fraud Risk Flags
+    case ImpossibleTravelDetected = 'impossible_travel_detected';
+    case IpDocumentCountryMismatch = 'ip_document_country_mismatch';
     case CannotConfirmIdIsAuthentic = 'cannot_confirm_id_is_authentic';
     case LikelyFakeId = 'likely_fake_id';
     case IdExpired = 'id_expired';
     case IdAgeBelow16 = 'id_age_below_16';
-
-    // Face Match Risk Flags
     case LowIdFaceMatchScore = 'low_id_face_match_score';
     case ModerateIdFaceMatchScore = 'moderate_id_face_match_score';
-
-    // Multi-Accounting Risk Flags
     case RepeatFace = 'repeat_face';
     case RepeatId = 'repeat_id';
-
-    // Fraud Farm Risk Flags
+    case RepeatDevice = 'repeat_device';
     case KnownFraudFace = 'known_fraud_face';
     case KnownFraudId = 'known_fraud_id';
-
-    // ID Selling Risk Flags
-    case ImpossibleTravelDetected = 'impossible_travel_detected';
-    case IpDocumentCountryMismatch = 'ip_document_country_mismatch';
     case LocationSpoofing = 'location_spoofing';
+    case DifferentDeviceTypeSameCategory = 'different_device_type_same_category';
+    case SameDeviceTypeDifferentIp = 'same_device_type_different_ip';
+    case PotentialLinkSharing = 'potential_link_sharing';
+    case ReferringIpMismatch = 'referring_ip_mismatch';
+    case ReferringUserAgentMismatch = 'referring_user_agent_mismatch';
+    case ReferringDeviceTimezoneMismatch = 'referring_device_timezone_mismatch';
+    case ReferringIpTimezoneMismatch = 'referring_ip_timezone_mismatch';
 
     /**
      * Get all possible risk flag values
@@ -44,6 +38,7 @@ enum RiskFlag: string
     {
         return array_column(self::cases(), 'value');
     }
+
 
     /**
      * Create from string value with validation
@@ -58,7 +53,19 @@ enum RiskFlag: string
      */
     public static function getByCategory(string $category): array
     {
-        return array_filter(self::cases(), fn (RiskFlag $flag) => $flag->getCategory() === $category);
+        $flags = [];
+
+        foreach (self::cases() as $flag) {
+            $categories = $flag->getCategories();
+            foreach ($categories as $riskCategory) {
+                if (is_object($riskCategory) && property_exists($riskCategory, 'value') && $riskCategory->value === $category) {
+                    $flags[] = $flag;
+                    break;
+                }
+            }
+        }
+
+        return array_values(array_unique($flags, SORT_REGULAR));
     }
 
     /**
@@ -66,7 +73,7 @@ enum RiskFlag: string
      */
     public static function getByRiskLevel(RiskLevel $level): array
     {
-        return array_filter(self::cases(), fn (RiskFlag $flag) => $flag->getRiskLevel() === $level);
+        return array_filter(self::cases(), fn(RiskFlag $flag) => $flag->getRiskLevel() === $level);
     }
 
     /**
@@ -74,8 +81,22 @@ enum RiskFlag: string
      */
     public static function getBlockingFlags(): array
     {
-        return array_filter(self::cases(), fn (RiskFlag $flag) => $flag->shouldBlock());
+        return array_filter(self::cases(), fn(RiskFlag $flag) => $flag->shouldBlock());
     }
+
+    public function getCategories(): array
+    {
+        $categories = [];
+
+        foreach (RiskCategory::cases() as $category) {
+            if (in_array($this, $category->getFlags(), true)) {
+                $categories[] = $category;
+            }
+        }
+
+        return $categories;
+    }
+
 
     /**
      * Get display name for risk flag
@@ -83,38 +104,32 @@ enum RiskFlag: string
     public function getDisplayName(): string
     {
         return match ($this) {
-            // Device flags
             self::HighDeviceRisk => 'High Device Risk',
             self::RepeatDevice => 'Repeat Device',
-
-            // Network flags
             self::ProxyDetected => 'Proxy Detected',
             self::VpnDetected => 'VPN Detected',
             self::DatacenterDetected => 'Datacenter Detected',
             self::RecentFraudIp => 'Recent Fraud IP',
-
-            // ID Fraud flags
             self::CannotConfirmIdIsAuthentic => 'Cannot Confirm ID is Authentic',
             self::LikelyFakeId => 'Likely Fake ID',
             self::IdExpired => 'ID Expired',
             self::IdAgeBelow16 => 'ID Age Below 16',
-
-            // Face Match flags
             self::LowIdFaceMatchScore => 'Low ID Face Match Score',
             self::ModerateIdFaceMatchScore => 'Moderate ID Face Match Score',
-
-            // Multi-Accounting flags
             self::RepeatFace => 'Repeat Face',
             self::RepeatId => 'Repeat ID',
-
-            // Fraud Farm flags
             self::KnownFraudFace => 'Known Fraud Face',
             self::KnownFraudId => 'Known Fraud ID',
-
-            // ID Selling flags
             self::ImpossibleTravelDetected => 'Impossible Travel Detected',
             self::IpDocumentCountryMismatch => 'IP Document Country Mismatch',
             self::LocationSpoofing => 'Location Spoofing',
+            self::DifferentDeviceTypeSameCategory => 'Different Device Type Same Category',
+            self::SameDeviceTypeDifferentIp => 'Same Device Type Different IP',
+            self::PotentialLinkSharing => 'Potential Link Sharing',
+            self::ReferringIpMismatch => 'Referring IP Mismatch',
+            self::ReferringUserAgentMismatch => 'Referring User Agent Mismatch',
+            self::ReferringDeviceTimezoneMismatch => 'Referring Device Timezone Mismatch',
+            self::ReferringIpTimezoneMismatch => 'Referring IP Timezone Mismatch',
         };
     }
 
@@ -124,72 +139,32 @@ enum RiskFlag: string
     public function getDescription(): string
     {
         return match ($this) {
-            // Device flags
             self::HighDeviceRisk => 'Device likely emulator, VM',
             self::RepeatDevice => 'Device has been used for multiple ID Checks',
-
-            // Network flags
             self::ProxyDetected => 'ID Check on a proxy IP',
             self::VpnDetected => 'ID Check on a VPN',
             self::DatacenterDetected => 'ID Check on a datacenter IP',
             self::RecentFraudIp => 'IP recently reported as fraud',
-
-            // ID Fraud flags
             self::CannotConfirmIdIsAuthentic => 'ID may be spoofed or digital media',
             self::LikelyFakeId => 'ID very likely fake',
             self::IdExpired => 'ID Expiration date is past',
             self::IdAgeBelow16 => 'DOB on ID indicates user is below 16 years old',
-
-            // Face Match flags
             self::LowIdFaceMatchScore => 'Face does not match ID Photo',
             self::ModerateIdFaceMatchScore => 'Face may not match ID photo',
-
-            // Multi-Accounting flags
             self::RepeatFace => 'Face has been seen in your application under a different account',
             self::RepeatId => 'ID has been seen in your application under a different account',
-
-            // Fraud Farm flags
             self::KnownFraudFace => 'Face is associated with fraud',
             self::KnownFraudId => 'ID is associated with fraud',
-
-            // ID Selling flags
             self::ImpossibleTravelDetected => 'Referring session geolocation is far from ID Check geolocation',
             self::IpDocumentCountryMismatch => 'Current IP geolocation country does not match document geolocation',
             self::LocationSpoofing => 'User is actively trying to obfuscate their current location',
-        };
-    }
-
-    /**
-     * Get category for this risk flag
-     */
-    public function getCategory(): string
-    {
-        return match ($this) {
-            self::HighDeviceRisk,
-            self::RepeatDevice => 'device',
-
-            self::ProxyDetected,
-            self::VpnDetected,
-            self::DatacenterDetected,
-            self::RecentFraudIp => 'network',
-
-            self::CannotConfirmIdIsAuthentic,
-            self::LikelyFakeId,
-            self::IdExpired,
-            self::IdAgeBelow16 => 'id_fraud',
-
-            self::LowIdFaceMatchScore,
-            self::ModerateIdFaceMatchScore => 'face_match',
-
-            self::RepeatFace,
-            self::RepeatId => 'multi_accounting',
-
-            self::KnownFraudFace,
-            self::KnownFraudId => 'fraud_farm',
-
-            self::ImpossibleTravelDetected,
-            self::IpDocumentCountryMismatch,
-            self::LocationSpoofing => 'id_selling',
+            self::DifferentDeviceTypeSameCategory => 'Referring session and ID Check session are same device category (e.g., mobile), but are different types (iPhone, Android)',
+            self::SameDeviceTypeDifferentIp => 'Referring session and ID Check session are same device type (e.g., iPhone), but are different IPs',
+            self::PotentialLinkSharing => 'Referring session is likely sharing the verification link',
+            self::ReferringIpMismatch => 'Referring session IP different than ID Check session IP',
+            self::ReferringUserAgentMismatch => 'Referring session user agent different than ID Check user agent',
+            self::ReferringDeviceTimezoneMismatch => 'Referring session device timezone is a meaningfully different region than verification timezone',
+            self::ReferringIpTimezoneMismatch => 'Referring session ip timezone is a meaningfully different region than verification timezone',
         };
     }
 
@@ -200,29 +175,36 @@ enum RiskFlag: string
     {
         return match ($this) {
             // High risk flags
-            self::LikelyFakeId,
-            self::KnownFraudFace,
-            self::KnownFraudId,
-            self::LowIdFaceMatchScore => RiskLevel::High,
+            self::HighDeviceRisk,
+            self::ImpossibleTravelDetected,
+            self::RepeatFace,
+            self::RepeatDevice,
+            self::RepeatId,
+            self::LocationSpoofing,
+            self::IdAgeBelow16,
+            self::LowIdFaceMatchScore,
+            self::LikelyFakeId => RiskLevel::High,
 
             // Medium risk flags
-            self::CannotConfirmIdIsAuthentic,
-            self::HighDeviceRisk,
-            self::ModerateIdFaceMatchScore,
-            self::RepeatFace,
-            self::RepeatId,
-            self::RecentFraudIp,
-            self::ImpossibleTravelDetected,
-            self::LocationSpoofing => RiskLevel::Medium,
-
-            // Low risk flags
-            self::IdExpired,
-            self::IdAgeBelow16,
-            self::RepeatDevice,
             self::ProxyDetected,
             self::VpnDetected,
             self::DatacenterDetected,
-            self::IpDocumentCountryMismatch => RiskLevel::Low,
+            self::DifferentDeviceTypeSameCategory,
+            self::SameDeviceTypeDifferentIp,
+            self::ReferringDeviceTimezoneMismatch,
+            self::ReferringIpTimezoneMismatch,
+            self::CannotConfirmIdIsAuthentic,
+            self::IpDocumentCountryMismatch,
+            self::KnownFraudFace,
+            self::KnownFraudId,
+            self::ModerateIdFaceMatchScore => RiskLevel::Moderate,
+
+            // Low risk flags
+            self::IdExpired,
+            self::RecentFraudIp,
+            self::PotentialLinkSharing,
+            self::ReferringIpMismatch,
+            self::ReferringUserAgentMismatch => RiskLevel::Low,
         };
     }
 

@@ -2,14 +2,14 @@
 
 namespace Ninja\Verisoul\Clients;
 
-use Ninja\Verisoul\Responses\AccountResponse;
-use Ninja\Verisoul\Responses\AccountSessionsResponse;
-use Ninja\Verisoul\Responses\DeleteAccountResponse;
-use Ninja\Verisoul\Responses\LinkedAccountsResponse;
 use Ninja\Verisoul\Contracts\AccountInterface;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\AccountResponse;
+use Ninja\Verisoul\Responses\AccountSessionsResponse;
+use Ninja\Verisoul\Responses\DeleteAccountResponse;
+use Ninja\Verisoul\Responses\LinkedAccountsResponse;
 
 final class AccountClient extends Client implements AccountInterface
 {
@@ -21,7 +21,7 @@ final class AccountClient extends Client implements AccountInterface
     {
         $response = $this->call(
             VerisoulApiEndpoint::AccountGet,
-            ['account_id' => $accountId]
+            ['account_id' => $accountId],
         );
 
         return AccountResponse::from($response);
@@ -35,7 +35,7 @@ final class AccountClient extends Client implements AccountInterface
     {
         $response = $this->call(
             VerisoulApiEndpoint::AccountSessions,
-            ['account_id' => $accountId]
+            ['account_id' => $accountId],
         );
 
         return AccountSessionsResponse::from($response);
@@ -49,7 +49,7 @@ final class AccountClient extends Client implements AccountInterface
     {
         $response = $this->call(
             VerisoulApiEndpoint::AccountLinked,
-            ['account_id' => $accountId]
+            ['account_id' => $accountId],
         );
 
         return LinkedAccountsResponse::from($response);
@@ -64,7 +64,7 @@ final class AccountClient extends Client implements AccountInterface
         $response = $this->call(
             VerisoulApiEndpoint::AccountUpdate,
             ['account_id' => $accountId],
-            $data
+            $data,
         );
 
         return AccountResponse::from($response);
@@ -78,7 +78,7 @@ final class AccountClient extends Client implements AccountInterface
     {
         $response = $this->call(
             VerisoulApiEndpoint::AccountDelete,
-            ['account_id' => $accountId]
+            ['account_id' => $accountId],
         );
 
         return DeleteAccountResponse::from($response);

@@ -3,12 +3,12 @@
 namespace Ninja\Verisoul\Clients\Liveness;
 
 use Ninja\Verisoul\Clients\Client;
-use Ninja\Verisoul\Responses\EnrollAccountResponse;
 use Ninja\Verisoul\Contracts\BiometricInterface;
 use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Responses\EnrollAccountResponse;
 
 abstract class LivenessApiClient extends Client implements BiometricInterface
 {

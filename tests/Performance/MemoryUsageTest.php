@@ -2,33 +2,35 @@
 
 use Ninja\Verisoul\Clients\AccountClient;
 use Ninja\Verisoul\Clients\SessionClient;
+use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Tests\Helpers\MockFactory;
-use Ninja\Verisoul\DTO\UserAccount;
 
-describe('Memory Usage Performance Tests', function () {
-    beforeEach(function () {
+describe('Memory Usage Performance Tests', function (): void {
+    beforeEach(function (): void {
         $this->testApiKey = 'memory_test_key';
         $this->sandboxEnv = VerisoulEnvironment::Sandbox;
-        
+
         // Force garbage collection before each test
         gc_collect_cycles();
-        
+
         $this->initialMemory = memory_get_usage(true);
         $this->initialPeakMemory = memory_get_peak_usage(true);
     });
 
-    afterEach(function () {
+    afterEach(function (): void {
         // Clean up after each test
         gc_collect_cycles();
     });
 
-    describe('Memory leak detection', function () {
-        it('does not leak memory during repeated client operations', function () {
-            $client = new AccountClient($this->testApiKey, $this->sandboxEnv,
+    describe('Memory leak detection', function (): void {
+        it('does not leak memory during repeated client operations', function (): void {
+            $client = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'memory_leak_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'memory_leak_test']]),
+                ]),
             );
 
             $memoryReadings = [];
@@ -38,7 +40,7 @@ describe('Memory Usage Performance Tests', function () {
                 $response = $client->getAccount("memory_leak_test_{$i}");
 
                 // Take memory reading every 10 iterations
-                if ($i % 10 === 0) {
+                if (0 === $i % 10) {
                     gc_collect_cycles(); // Force cleanup
                     $memoryReadings[] = memory_get_usage(true);
                 }
@@ -64,17 +66,19 @@ describe('Memory Usage Performance Tests', function () {
             expect($significantGrowths)->toBeLessThan(3); // Allow some variance
         });
 
-        it('properly releases memory for large response objects', function () {
-            $largeResponseClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+        it('properly releases memory for large response objects', function (): void {
+            $largeResponseClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
                     'get' => MockFactory::createAccountResponseFromFixture([
                         'account' => [
                             'id' => 'large_response_test',
                             'metadata' => array_fill(0, 1000, 'large_data_chunk'),
-                            'sessions' => array_fill(0, 500, ['session_id' => 'test_session', 'data' => str_repeat('x', 1000)])
-                        ]
-                    ])
-                ])
+                            'sessions' => array_fill(0, 500, ['session_id' => 'test_session', 'data' => str_repeat('x', 1000)]),
+                        ],
+                    ]),
+                ]),
             );
 
             $beforeLargeResponse = memory_get_usage(true);
@@ -96,16 +100,18 @@ describe('Memory Usage Performance Tests', function () {
                 ->and($memoryReleasedAfterCleanup)->toBeGreaterThan(-1); // Memory release can vary
         });
 
-        it('handles memory efficiently with multiple client instances', function () {
+        it('handles memory efficiently with multiple client instances', function (): void {
             $initialMemory = memory_get_usage(true);
             $clients = [];
 
             // Create 20 client instances
             for ($i = 1; $i <= 20; $i++) {
-                $clients[] = new AccountClient($this->testApiKey, $this->sandboxEnv,
+                $clients[] = new AccountClient(
+                    $this->testApiKey,
+                    $this->sandboxEnv,
                     httpClient: MockFactory::createSuccessfulHttpClient([
-                        'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => "multi_client_{$i}"]])
-                    ])
+                        'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => "multi_client_{$i}"]]),
+                    ]),
                 );
             }
 
@@ -131,12 +137,14 @@ describe('Memory Usage Performance Tests', function () {
         });
     });
 
-    describe('Large payload handling', function () {
-        it('efficiently processes large UserAccount objects', function () {
-            $sessionClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+    describe('Large payload handling', function (): void {
+        it('efficiently processes large UserAccount objects', function (): void {
+            $sessionClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'large_payload_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'large_payload_test']),
+                ]),
             );
 
             $beforeProcessing = memory_get_usage(true);
@@ -151,14 +159,14 @@ describe('Memory Usage Performance Tests', function () {
                     'history' => array_fill(0, 200, [
                         'timestamp' => time(),
                         'action' => 'user_action',
-                        'details' => str_repeat('y', 200)
+                        'details' => str_repeat('y', 200),
                     ]),
                     'analytics' => array_fill(0, 100, [
                         'metric' => 'test_metric',
                         'value' => random_int(1, 1000),
-                        'context' => array_fill(0, 50, 'context_data')
-                    ])
-                ]
+                        'context' => array_fill(0, 50, 'context_data'),
+                    ]),
+                ],
             ]);
 
             $afterAccountCreation = memory_get_usage(true);
@@ -183,11 +191,13 @@ describe('Memory Usage Performance Tests', function () {
                 ->and($memoryReleased)->toBeGreaterThan(-1); // Memory release can vary
         });
 
-        it('handles batch operations without excessive memory accumulation', function () {
-            $batchClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+        it('handles batch operations without excessive memory accumulation', function (): void {
+            $batchClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'batch_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'batch_test']]),
+                ]),
             );
 
             $memoryReadings = [];
@@ -216,7 +226,7 @@ describe('Memory Usage Performance Tests', function () {
                     'end' => $batchEnd,
                     'cleanup' => $batchCleanup,
                     'used' => $batchEnd - $batchStart,
-                    'released' => $batchEnd - $batchCleanup
+                    'released' => $batchEnd - $batchCleanup,
                 ];
             }
 
@@ -236,12 +246,14 @@ describe('Memory Usage Performance Tests', function () {
         });
     });
 
-    describe('Memory optimization patterns', function () {
-        it('efficiently reuses client instances', function () {
-            $reusableClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+    describe('Memory optimization patterns', function (): void {
+        it('efficiently reuses client instances', function (): void {
+            $reusableClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'reuse_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'reuse_test']]),
+                ]),
             );
 
             $memoryBeforeReuse = memory_get_usage(true);
@@ -249,7 +261,7 @@ describe('Memory Usage Performance Tests', function () {
             // Make many requests with same client instance
             for ($i = 1; $i <= 100; $i++) {
                 $response = $reusableClient->getAccount("reuse_test_{$i}");
-                
+
                 // Process response immediately and discard
                 $accountId = null;
                 if (method_exists($response, 'getAccount')) {
@@ -258,7 +270,7 @@ describe('Memory Usage Performance Tests', function () {
                 unset($response);
 
                 // Force cleanup every 20 iterations
-                if ($i % 20 === 0) {
+                if (0 === $i % 20) {
                     gc_collect_cycles();
                 }
             }
@@ -270,11 +282,13 @@ describe('Memory Usage Performance Tests', function () {
             expect($totalMemoryIncrease)->toBeLessThan(2 * 1024 * 1024); // Less than 2MB increase
         });
 
-        it('optimizes memory when switching between environments', function () {
-            $switchingClient = new AccountClient($this->testApiKey, VerisoulEnvironment::Sandbox,
+        it('optimizes memory when switching between environments', function (): void {
+            $switchingClient = new AccountClient(
+                $this->testApiKey,
+                VerisoulEnvironment::Sandbox,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'env_switch_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'env_switch_test']]),
+                ]),
             );
 
             $memoryReadings = [];
@@ -298,7 +312,7 @@ describe('Memory Usage Performance Tests', function () {
                     'iteration' => $i,
                     'environment' => $env->value,
                     'request_memory' => $afterRequest - $beforeRequest,
-                    'cleanup_memory' => $afterRequest - $afterCleanup
+                    'cleanup_memory' => $afterRequest - $afterCleanup,
                 ];
             }
 
@@ -318,11 +332,13 @@ describe('Memory Usage Performance Tests', function () {
                 ->and($maxDeviation)->toBeLessThan(0.3); // Memory usage should be consistent (less than 30% deviation)
         });
 
-        it('handles circular references and complex object graphs efficiently', function () {
-            $complexClient = new SessionClient($this->testApiKey, $this->sandboxEnv,
+        it('handles circular references and complex object graphs efficiently', function (): void {
+            $complexClient = new SessionClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'complex_test'])
-                ])
+                    'post' => MockFactory::createAuthenticateSessionResponseFromFixture(['session_id' => 'complex_test']),
+                ]),
             );
 
             $beforeComplexOperations = memory_get_usage(true);
@@ -334,29 +350,29 @@ describe('Memory Usage Performance Tests', function () {
                         'level2' => [
                             'level3' => [
                                 'data' => array_fill(0, 100, "nested_data_{$i}"),
-                                'references' => []
-                            ]
-                        ]
-                    ]
+                                'references' => [],
+                            ],
+                        ],
+                    ],
                 ];
 
                 // Add some cross-references
                 $complexMetadata['level1']['level2']['level3']['references'] = [
                     'self' => &$complexMetadata['level1'],
-                    'parent' => &$complexMetadata
+                    'parent' => &$complexMetadata,
                 ];
 
                 $userAccount = UserAccount::from([
                     'id' => "complex_user_{$i}",
                     'email' => "complex_{$i}@example.com",
-                    'metadata' => $complexMetadata
+                    'metadata' => $complexMetadata,
                 ]);
 
                 $response = $complexClient->authenticate($userAccount, "complex_session_{$i}");
 
                 // Explicitly break circular references
-                unset($complexMetadata['level1']['level2']['level3']['references']);
-                unset($complexMetadata, $userAccount, $response);
+                unset($complexMetadata['level1']['level2']['level3']['references'], $complexMetadata, $userAccount, $response);
+
             }
 
             gc_collect_cycles();
@@ -369,35 +385,33 @@ describe('Memory Usage Performance Tests', function () {
         });
     });
 
-    describe('Memory profiling and debugging aids', function () {
-        it('provides memory usage insights for debugging', function () {
-            $profilingClient = new AccountClient($this->testApiKey, $this->sandboxEnv,
+    describe('Memory profiling and debugging aids', function (): void {
+        it('provides memory usage insights for debugging', function (): void {
+            $profilingClient = new AccountClient(
+                $this->testApiKey,
+                $this->sandboxEnv,
                 httpClient: MockFactory::createSuccessfulHttpClient([
-                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'profiling_test']])
-                ])
+                    'get' => MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'profiling_test']]),
+                ]),
             );
 
             $memoryProfile = [];
 
             // Profile memory usage for different operations
             $operations = [
-                'client_creation' => function() use (&$profilingClient) {
+                'client_creation' => function () use (&$profilingClient) {
                     // Client already created, just measure
                     return 'created';
                 },
-                'first_request' => function() use ($profilingClient) {
-                    return $profilingClient->getAccount('profiling_first');
-                },
-                'subsequent_requests' => function() use ($profilingClient) {
+                'first_request' => fn() => $profilingClient->getAccount('profiling_first'),
+                'subsequent_requests' => function () use ($profilingClient) {
                     $responses = [];
                     for ($i = 1; $i <= 5; $i++) {
                         $responses[] = $profilingClient->getAccount("profiling_subsequent_{$i}");
                     }
                     return $responses;
                 },
-                'large_response' => function() use ($profilingClient) {
-                    return $profilingClient->getAccount('profiling_large');
-                }
+                'large_response' => fn() => $profilingClient->getAccount('profiling_large'),
             ];
 
             foreach ($operations as $operationName => $operation) {
@@ -413,7 +427,7 @@ describe('Memory Usage Performance Tests', function () {
                     'memory_used' => $afterOp - $beforeOp,
                     'peak_increase' => $peakAfter - $peakBefore,
                     'current_total' => $afterOp,
-                    'peak_total' => $peakAfter
+                    'peak_total' => $peakAfter,
                 ];
 
                 // Clean up operation result
@@ -431,10 +445,10 @@ describe('Memory Usage Performance Tests', function () {
             }
 
             // First request typically uses more memory than subsequent ones
-            if (isset($memoryProfile['first_request']) && isset($memoryProfile['subsequent_requests'])) {
+            if (isset($memoryProfile['first_request'], $memoryProfile['subsequent_requests'])) {
                 $firstRequestMemory = $memoryProfile['first_request']['memory_used'];
                 $subsequentMemory = $memoryProfile['subsequent_requests']['memory_used'];
-                
+
                 // This might not always be true, but it's a good indicator of efficiency
                 // expect($firstRequestMemory)->toBeGreaterThan($subsequentMemory / 5);
             }

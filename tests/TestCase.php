@@ -3,9 +3,9 @@
 namespace Ninja\Verisoul\Tests;
 
 use Mockery;
-use PHPUnit\Framework\TestCase as BaseTestCase;
-use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
+use Ninja\Verisoul\Enums\VerisoulEnvironment;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 use Psr\SimpleCache\CacheInterface;
 
 abstract class TestCase extends BaseTestCase
@@ -13,7 +13,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Set up default environment
         $this->setUpEnvironment();
     }
@@ -29,8 +29,8 @@ abstract class TestCase extends BaseTestCase
      */
     protected function setUpEnvironment(): void
     {
-        $_ENV['VERISOUL_API_KEY'] = $_ENV['VERISOUL_API_KEY'] ?? 'test_api_key_12345';
-        $_ENV['VERISOUL_ENVIRONMENT'] = $_ENV['VERISOUL_ENVIRONMENT'] ?? 'sandbox';
+        $_ENV['VERISOUL_API_KEY'] ??= 'test_api_key_12345';
+        $_ENV['VERISOUL_ENVIRONMENT'] ??= 'sandbox';
     }
 
     /**
@@ -39,15 +39,15 @@ abstract class TestCase extends BaseTestCase
     protected function createMockHttpClient(array $responses = []): HttpClientInterface
     {
         $mock = Mockery::mock(HttpClientInterface::class);
-        
+
         $mock->shouldReceive('setTimeout')->andReturnSelf();
         $mock->shouldReceive('setConnectTimeout')->andReturnSelf();
         $mock->shouldReceive('setHeaders')->andReturnSelf();
-        
+
         foreach ($responses as $method => $response) {
             $mock->shouldReceive($method)->andReturn($response);
         }
-        
+
         return $mock;
     }
 
@@ -57,13 +57,13 @@ abstract class TestCase extends BaseTestCase
     protected function createMockCache(): CacheInterface
     {
         $mock = Mockery::mock(CacheInterface::class);
-        
+
         $mock->shouldReceive('get')->andReturn(null);
         $mock->shouldReceive('set')->andReturn(true);
         $mock->shouldReceive('delete')->andReturn(true);
         $mock->shouldReceive('clear')->andReturn(true);
         $mock->shouldReceive('has')->andReturn(false);
-        
+
         return $mock;
     }
 
@@ -89,18 +89,18 @@ abstract class TestCase extends BaseTestCase
     protected function getFixture(string $name): array
     {
         $path = __DIR__ . "/fixtures/api/responses/{$name}.json";
-        
-        if (!file_exists($path)) {
+
+        if ( ! file_exists($path)) {
             $this->fail("Fixture {$name} not found at {$path}");
         }
-        
+
         $content = file_get_contents($path);
         $data = json_decode($content, true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
+
+        if (JSON_ERROR_NONE !== json_last_error()) {
             $this->fail("Invalid JSON in fixture {$name}: " . json_last_error_msg());
         }
-        
+
         return $data;
     }
 
@@ -212,7 +212,7 @@ abstract class TestCase extends BaseTestCase
         foreach ($methods as $method) {
             $this->assertTrue(
                 method_exists($object, $method),
-                sprintf('Method %s does not exist on %s', $method, get_class($object))
+                sprintf('Method %s does not exist on %s', $method, get_class($object)),
             );
         }
     }

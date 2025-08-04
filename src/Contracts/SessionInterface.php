@@ -2,9 +2,9 @@
 
 namespace Ninja\Verisoul\Contracts;
 
+use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Responses\AuthenticateSessionResponse;
 use Ninja\Verisoul\Responses\SessionResponse;
-use Ninja\Verisoul\DTO\UserAccount;
 
 interface SessionInterface
 {

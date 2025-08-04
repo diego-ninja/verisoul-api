@@ -1,16 +1,15 @@
 <?php
 
 use Ninja\Verisoul\DTO\Email;
-use Ninja\Verisoul\Tests\Helpers\DataProvider;
 
-describe('Email DTO', function () {
-    describe('construction', function () {
-        it('can be created with all required properties', function () {
+describe('Email DTO', function (): void {
+    describe('construction', function (): void {
+        it('can be created with all required properties', function (): void {
             $email = new Email(
                 email: 'test@example.com',
                 personal: true,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             expect($email->email)->toBe('test@example.com')
@@ -19,12 +18,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('can be created with business email', function () {
+        it('can be created with business email', function (): void {
             $email = new Email(
                 email: 'contact@company.com',
                 personal: false,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             expect($email->email)->toBe('contact@company.com')
@@ -33,12 +32,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('can be created with disposable email', function () {
+        it('can be created with disposable email', function (): void {
             $email = new Email(
                 email: 'temp@10minutemail.com',
                 personal: true,
                 disposable: true,
-                valid: true
+                valid: true,
             );
 
             expect($email->email)->toBe('temp@10minutemail.com')
@@ -47,12 +46,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('can be created with invalid email', function () {
+        it('can be created with invalid email', function (): void {
             $email = new Email(
                 email: 'invalid-email',
                 personal: false,
                 disposable: false,
-                valid: false
+                valid: false,
             );
 
             expect($email->email)->toBe('invalid-email')
@@ -62,13 +61,13 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('immutability', function () {
-        it('is readonly and immutable', function () {
+    describe('immutability', function (): void {
+        it('is readonly and immutable', function (): void {
             $email = new Email(
                 email: 'test@example.com',
                 personal: true,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             $reflection = new ReflectionClass($email);
@@ -76,17 +75,17 @@ describe('Email DTO', function () {
 
             foreach ($properties as $property) {
                 expect($property->isReadOnly())->toBeTrue(
-                    "Property {$property->getName()} should be readonly"
+                    "Property {$property->getName()} should be readonly",
                 );
             }
         });
 
-        it('maintains data integrity', function () {
+        it('maintains data integrity', function (): void {
             $email = new Email(
                 email: 'test@example.com',
                 personal: true,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             // Verify data doesn't change
@@ -97,13 +96,13 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('serialization with GraniteDTO', function () {
-        it('can be serialized to array', function () {
+    describe('serialization with GraniteDTO', function (): void {
+        it('can be serialized to array', function (): void {
             $email = new Email(
                 email: 'user@domain.com',
                 personal: false,
                 disposable: true,
-                valid: true
+                valid: true,
             );
 
             $array = $email->array();
@@ -116,7 +115,7 @@ describe('Email DTO', function () {
                 ->and($array['valid'])->toBeTrue();
         });
 
-        it('can be created from array', function () {
+        it('can be created from array', function (): void {
             $data = [
                 'email' => 'contact@business.org',
                 'personal' => false,
@@ -133,12 +132,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('maintains consistency through serialization roundtrip', function () {
+        it('maintains consistency through serialization roundtrip', function (): void {
             $original = new Email(
                 email: 'temp@disposable.net',
                 personal: true,
                 disposable: true,
-                valid: false
+                valid: false,
             );
 
             $array = $original->array();
@@ -150,9 +149,9 @@ describe('Email DTO', function () {
                 ->and($restored->valid)->toBe($original->valid);
         });
 
-        it('can be created from JSON string', function () {
+        it('can be created from JSON string', function (): void {
             $json = '{"email":"test@example.com","personal":true,"disposable":false,"valid":true}';
-            
+
             $email = Email::from($json);
 
             expect($email)->toBeInstanceOf(Email::class)
@@ -163,8 +162,8 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('email validation scenarios', function () {
-        it('handles various valid email formats', function () {
+    describe('email validation scenarios', function (): void {
+        it('handles various valid email formats', function (): void {
             $validEmails = [
                 'simple@example.com',
                 'user.name@domain.co.uk',
@@ -180,7 +179,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: true,
                     disposable: false,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -188,7 +187,7 @@ describe('Email DTO', function () {
             }
         });
 
-        it('handles common personal email providers', function () {
+        it('handles common personal email providers', function (): void {
             $personalEmails = [
                 'user@gmail.com',
                 'person@yahoo.com',
@@ -202,7 +201,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: true,
                     disposable: false,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -211,7 +210,7 @@ describe('Email DTO', function () {
             }
         });
 
-        it('handles business email patterns', function () {
+        it('handles business email patterns', function (): void {
             $businessEmails = [
                 'contact@company.com',
                 'support@business.org',
@@ -225,7 +224,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: false,
                     disposable: false,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -234,7 +233,7 @@ describe('Email DTO', function () {
             }
         });
 
-        it('handles disposable email providers', function () {
+        it('handles disposable email providers', function (): void {
             $disposableEmails = [
                 'temp@10minutemail.com',
                 'test@mailinator.com',
@@ -248,7 +247,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: true,
                     disposable: true,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -257,7 +256,7 @@ describe('Email DTO', function () {
             }
         });
 
-        it('handles invalid email formats', function () {
+        it('handles invalid email formats', function (): void {
             $invalidEmails = [
                 'invalid',
                 '@domain.com',
@@ -273,7 +272,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: false,
                     disposable: false,
-                    valid: false
+                    valid: false,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -282,8 +281,8 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('boolean combinations', function () {
-        it('handles all valid boolean combinations', function () {
+    describe('boolean combinations', function (): void {
+        it('handles all valid boolean combinations', function (): void {
             $combinations = [
                 [true, true, true],    // personal, disposable, valid
                 [true, true, false],   // personal, disposable, invalid
@@ -300,7 +299,7 @@ describe('Email DTO', function () {
                     email: 'test@example.com',
                     personal: $personal,
                     disposable: $disposable,
-                    valid: $valid
+                    valid: $valid,
                 );
 
                 expect($email->personal)->toBe($personal)
@@ -310,8 +309,8 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('international and edge cases', function () {
-        it('handles international domain names', function () {
+    describe('international and edge cases', function (): void {
+        it('handles international domain names', function (): void {
             $internationalEmails = [
                 'user@café.com',
                 'test@münchen.de',
@@ -324,14 +323,14 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: true,
                     disposable: false,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress);
             }
         });
 
-        it('handles email addresses with special characters', function () {
+        it('handles email addresses with special characters', function (): void {
             $specialEmails = [
                 'user+tag@example.com',
                 'user.name@example.com',
@@ -345,7 +344,7 @@ describe('Email DTO', function () {
                     email: $emailAddress,
                     personal: true,
                     disposable: false,
-                    valid: true
+                    valid: true,
                 );
 
                 expect($email->email)->toBe($emailAddress)
@@ -353,7 +352,7 @@ describe('Email DTO', function () {
             }
         });
 
-        it('handles very long email addresses', function () {
+        it('handles very long email addresses', function (): void {
             $longLocalPart = str_repeat('a', 60);
             $longEmail = $longLocalPart . '@example.com';
 
@@ -361,19 +360,19 @@ describe('Email DTO', function () {
                 email: $longEmail,
                 personal: true,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             expect($email->email)->toBe($longEmail)
                 ->and(strlen($email->email))->toBeGreaterThan(60);
         });
 
-        it('handles edge case with empty email', function () {
+        it('handles edge case with empty email', function (): void {
             $email = new Email(
                 email: '',
                 personal: false,
                 disposable: false,
-                valid: false
+                valid: false,
             );
 
             expect($email->email)->toBe('')
@@ -381,13 +380,13 @@ describe('Email DTO', function () {
         });
     });
 
-    describe('real-world classification scenarios', function () {
-        it('correctly identifies personal Gmail account', function () {
+    describe('real-world classification scenarios', function (): void {
+        it('correctly identifies personal Gmail account', function (): void {
             $email = new Email(
                 email: 'johndoe123@gmail.com',
                 personal: true,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             expect($email->personal)->toBeTrue()
@@ -395,12 +394,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('correctly identifies business domain', function () {
+        it('correctly identifies business domain', function (): void {
             $email = new Email(
                 email: 'employee@techcompany.com',
                 personal: false,
                 disposable: false,
-                valid: true
+                valid: true,
             );
 
             expect($email->personal)->toBeFalse()
@@ -408,12 +407,12 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('correctly identifies disposable email service', function () {
+        it('correctly identifies disposable email service', function (): void {
             $email = new Email(
                 email: 'quicktest@10minutemail.com',
                 personal: true,
                 disposable: true,
-                valid: true
+                valid: true,
             );
 
             expect($email->personal)->toBeTrue()
@@ -421,13 +420,13 @@ describe('Email DTO', function () {
                 ->and($email->valid)->toBeTrue();
         });
 
-        it('handles mixed scenarios correctly', function () {
+        it('handles mixed scenarios correctly', function (): void {
             // Business email that's disposable (unusual but possible)
             $businessDisposable = new Email(
                 email: 'business@tempmail.org',
                 personal: false,
                 disposable: true,
-                valid: true
+                valid: true,
             );
 
             expect($businessDisposable->personal)->toBeFalse()

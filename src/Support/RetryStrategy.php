@@ -15,13 +15,13 @@ final readonly class RetryStrategy
         private int $baseDelayMs = 1000,
         private float $backoffMultiplier = 2.0,
         private int $maxDelayMs = 30000,
-        private ?LoggerInterface $logger = null
+        private ?LoggerInterface $logger = null,
     ) {}
 
     /**
      * @throws Exception
      */
-    public function execute(callable $callback)
+    public function execute(callable $callback): mixed
     {
         $attempt = 1;
         $lastException = null;
@@ -33,13 +33,13 @@ final readonly class RetryStrategy
                 $lastException = $e;
 
                 // Don't retry on certain errors
-                if (! $this->shouldRetry($e, $attempt)) {
+                if ( ! $this->shouldRetry($e, $attempt)) {
                     throw $e;
                 }
 
                 if ($attempt < $this->maxAttempts) {
                     $delay = $this->calculateDelay($attempt);
-                    
+
                     $this->logger?->info('Retrying operation', [
                         'attempt' => $attempt,
                         'delay_ms' => $delay,
@@ -51,6 +51,10 @@ final readonly class RetryStrategy
 
                 $attempt++;
             }
+        }
+
+        if (null === $lastException) {
+            throw new Exception('Operation failed without specific exception');
         }
 
         throw $lastException;
@@ -85,6 +89,6 @@ final readonly class RetryStrategy
         $jitter = mt_rand(0, (int) ($delay * 0.1));
         $delay += $jitter;
 
-        return min($delay, $this->maxDelayMs);
+        return (int) min($delay, $this->maxDelayMs);
     }
 }

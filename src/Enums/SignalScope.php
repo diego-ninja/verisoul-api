@@ -28,6 +28,34 @@ enum SignalScope: string
     }
 
     /**
+     * Get appropriate scope for signal name based on actual Verisoul DTOs
+     */
+    public static function getScopeForSignal(string $name): SignalScope
+    {
+        return match ($name) {
+            // DeviceNetworkSignals DTO fields
+            'device_risk', 'proxy', 'vpn', 'datacenter', 'tor', 'spoofed_ip',
+            'recent_fraud_ip', 'device_network_mismatch', 'location_spoofing' => SignalScope::DeviceNetwork,
+
+            // DocumentSignals DTO fields
+            'id_age', 'id_face_match_score', 'id_barcode_status', 'id_face_status',
+            'id_text_status', 'is_id_digital_spoof', 'is_full_id_captured', 'id_validity' => SignalScope::Document,
+
+            // ReferringSessionSignals DTO fields
+            'impossible_travel', 'ip_mismatch', 'user_agent_mismatch',
+            'device_timezone_mismatch', 'ip_timezone_mismatch' => SignalScope::ReferringSession,
+
+            // Account-level signals
+            'account_score', 'multi_accounting', 'bot' => SignalScope::Account,
+
+            // Session-level signals
+            'session_risk' => SignalScope::Session,
+
+            default => SignalScope::DeviceNetwork,
+        };
+    }
+
+    /**
      * Get display name for the scope
      */
     public function getDisplayName(): string
@@ -66,34 +94,6 @@ enum SignalScope: string
             self::ReferringSession => 'orange',
             self::Account => 'green',
             self::Session => 'purple',
-        };
-    }
-
-    /**
-     * Get appropriate scope for signal name based on actual Verisoul DTOs
-     */
-    public static function getScopeForSignal(string $name): SignalScope
-    {
-        return match ($name) {
-            // DeviceNetworkSignals DTO fields
-            'device_risk', 'proxy', 'vpn', 'datacenter', 'tor', 'spoofed_ip',
-            'recent_fraud_ip', 'device_network_mismatch', 'location_spoofing' => SignalScope::DeviceNetwork,
-
-            // DocumentSignals DTO fields
-            'id_age', 'id_face_match_score', 'id_barcode_status', 'id_face_status',
-            'id_text_status', 'is_id_digital_spoof', 'is_full_id_captured', 'id_validity' => SignalScope::Document,
-
-            // ReferringSessionSignals DTO fields
-            'impossible_travel', 'ip_mismatch', 'user_agent_mismatch',
-            'device_timezone_mismatch', 'ip_timezone_mismatch' => SignalScope::ReferringSession,
-
-            // Account-level signals
-            'account_score', 'multi_accounting', 'bot' => SignalScope::Account,
-
-            // Session-level signals
-            'session_risk' => SignalScope::Session,
-
-            default => SignalScope::DeviceNetwork,
         };
     }
 }

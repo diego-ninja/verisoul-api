@@ -1,21 +1,20 @@
 <?php
 
-use Ninja\Verisoul\Support\CircuitBreaker;
-use Ninja\Verisoul\Contracts\CacheInterface;
-use Ninja\Verisoul\Support\InMemoryCache;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
+use Ninja\Verisoul\Support\CircuitBreaker;
+use Ninja\Verisoul\Support\InMemoryCache;
 
-describe('Cache Performance Tests', function () {
-    beforeEach(function () {
+describe('Cache Performance Tests', function (): void {
+    beforeEach(function (): void {
         // Reset any global state
         gc_collect_cycles();
     });
 
-    describe('In-memory cache performance', function () {
-        it('handles high-frequency cache operations efficiently', function () {
+    describe('In-memory cache performance', function (): void {
+        it('handles high-frequency cache operations efficiently', function (): void {
             $cache = new InMemoryCache();
             $operations = 10000;
-            
+
             $startTime = microtime(true);
             $startMemory = memory_get_usage(true);
 
@@ -26,20 +25,20 @@ describe('Cache Performance Tests', function () {
                     'id' => $i,
                     'data' => str_repeat("cache_data_{$i}", 10),
                     'timestamp' => microtime(true),
-                    'metadata' => array_fill(0, 20, "meta_{$i}")
+                    'metadata' => array_fill(0, 20, "meta_{$i}"),
                 ];
 
                 // Set operation
                 $cache->set($key, $value, 3600);
 
                 // Get operation (every other iteration)
-                if ($i % 2 === 0) {
+                if (0 === $i % 2) {
                     $retrieved = $cache->get($key);
                     expect($retrieved)->toBe($value);
                 }
 
                 // Delete operation (every 10th iteration)
-                if ($i % 10 === 0) {
+                if (0 === $i % 10) {
                     $cache->delete($key);
                 }
             }
@@ -56,7 +55,7 @@ describe('Cache Performance Tests', function () {
                 ->and($operationsPerSecond)->toBeGreaterThan(1000); // At least 1000 ops/sec
         });
 
-        it('maintains consistent performance under memory pressure', function () {
+        it('maintains consistent performance under memory pressure', function (): void {
             $cache = new InMemoryCache();
             $batchSizes = [100, 500, 1000, 2000, 5000];
             $performanceMetrics = [];
@@ -70,7 +69,7 @@ describe('Cache Performance Tests', function () {
                     $cache->set(
                         "batch_{$batchSize}_key_{$i}",
                         array_fill(0, 100, "data_chunk_{$i}"),
-                        3600
+                        3600,
                     );
                 }
 
@@ -87,7 +86,7 @@ describe('Cache Performance Tests', function () {
                     'batch_size' => $batchSize,
                     'time' => ($endTime - $startTime) * 1000,
                     'memory' => $endMemory - $startMemory,
-                    'ops_per_sec' => ($batchSize + $readOperations) / ($endTime - $startTime)
+                    'ops_per_sec' => ($batchSize + $readOperations) / ($endTime - $startTime),
                 ];
 
                 // Clear cache between batches
@@ -112,7 +111,7 @@ describe('Cache Performance Tests', function () {
             expect($performanceDegradation)->toBeLessThan(0.95); // Less than 95% degradation (more realistic)
         });
 
-        it('efficiently handles cache expiration and cleanup', function () {
+        it('efficiently handles cache expiration and cleanup', function (): void {
             $cache = new InMemoryCache();
             $itemsToCache = 1000;
             $expirationTimes = [1, 2, 3]; // Short expiration times for testing
@@ -125,7 +124,7 @@ describe('Cache Performance Tests', function () {
                 $cache->set(
                     "expiration_test_{$i}",
                     ['data' => "expiring_data_{$i}", 'size' => str_repeat('x', 1000)],
-                    $expiration
+                    $expiration,
                 );
             }
 
@@ -142,7 +141,7 @@ describe('Cache Performance Tests', function () {
             $accessStart = microtime(true);
             for ($i = 1; $i <= $itemsToCache; $i++) {
                 $result = $cache->get("expiration_test_{$i}");
-                if ($result !== null) {
+                if (null !== $result) {
                     $foundItems++;
                 } else {
                     $expiredItems++;
@@ -158,14 +157,14 @@ describe('Cache Performance Tests', function () {
         });
     });
 
-    describe('Circuit breaker cache integration performance', function () {
-        it('performs efficiently under circuit breaker load', function () {
+    describe('Circuit breaker cache integration performance', function (): void {
+        it('performs efficiently under circuit breaker load', function (): void {
             $cache = new InMemoryCache();
             $circuitBreaker = new CircuitBreaker(
                 service: 'performance-test',
                 cache: $cache,
                 failureThreshold: 5,
-                recoveryTime: 1000
+                recoveryTime: 1000,
             );
 
             $operations = 1000;
@@ -176,9 +175,9 @@ describe('Cache Performance Tests', function () {
 
             for ($i = 1; $i <= $operations; $i++) {
                 try {
-                    $result = $circuitBreaker->call(function() use ($i) {
+                    $result = $circuitBreaker->call(function () use ($i) {
                         // 90% success rate
-                        if ($i % 10 === 0) {
+                        if (0 === $i % 10) {
                             throw new VerisoulConnectionException("Simulated failure #{$i}");
                         }
                         return ['operation' => $i, 'success' => true];
@@ -187,7 +186,7 @@ describe('Cache Performance Tests', function () {
                     if ($result) {
                         $successfulOperations++;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $failedOperations++;
                 }
             }
@@ -202,7 +201,7 @@ describe('Cache Performance Tests', function () {
                 ->and($successfulOperations + $failedOperations)->toBe($operations);
         });
 
-        it('handles concurrent circuit breaker instances efficiently', function () {
+        it('handles concurrent circuit breaker instances efficiently', function (): void {
             $sharedCache = new InMemoryCache();
             $circuitBreakers = [];
 
@@ -212,7 +211,7 @@ describe('Cache Performance Tests', function () {
                     service: "concurrent-service-{$i}",
                     cache: $sharedCache,
                     failureThreshold: 3,
-                    recoveryTime: 500
+                    recoveryTime: 500,
                 );
             }
 
@@ -223,17 +222,17 @@ describe('Cache Performance Tests', function () {
             $operations = [];
             foreach ($circuitBreakers as $index => $cb) {
                 for ($j = 1; $j <= 100; $j++) {
-                    $operations[] = function() use ($cb, $index, $j, &$results) {
+                    $operations[] = function () use ($cb, $index, $j, &$results): void {
                         try {
-                            $result = $cb->call(function() use ($index, $j) {
+                            $result = $cb->call(function () use ($index, $j) {
                                 // Simulate different failure rates per service
-                                if ($j % (5 + $index) === 0) {
+                                if (0 === $j % (5 + $index)) {
                                     throw new VerisoulConnectionException("Service {$index} failure");
                                 }
                                 return ['service' => $index, 'operation' => $j];
                             });
                             $results[] = $result;
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             // Some operations will fail
                         }
                     };
@@ -256,8 +255,8 @@ describe('Cache Performance Tests', function () {
         });
     });
 
-    describe('Cache memory optimization', function () {
-        it('manages memory efficiently with large cached objects', function () {
+    describe('Cache memory optimization', function (): void {
+        it('manages memory efficiently with large cached objects', function (): void {
             $cache = new InMemoryCache();
             $largeObjectCount = 100;
 
@@ -272,9 +271,9 @@ describe('Cache Performance Tests', function () {
                     'nested' => [
                         'level1' => array_fill(0, 100, "nested_data_{$i}"),
                         'level2' => [
-                            'deep_data' => str_repeat("deep_{$i}", 500)
-                        ]
-                    ]
+                            'deep_data' => str_repeat("deep_{$i}", 500),
+                        ],
+                    ],
                 ];
 
                 $cache->set("large_object_{$i}", $largeObject, 3600);
@@ -289,7 +288,7 @@ describe('Cache Performance Tests', function () {
 
             for ($i = 1; $i <= $largeObjectCount; $i++) {
                 $retrieved = $cache->get("large_object_{$i}");
-                if ($retrieved !== null) {
+                if (null !== $retrieved) {
                     $retrievedObjects[] = $retrieved;
                 }
             }
@@ -312,7 +311,7 @@ describe('Cache Performance Tests', function () {
                 ->and($memoryRecovered)->toBeGreaterThan($cachingMemory * 0.3); // At least 30% memory recovered
         });
 
-        it('prevents memory leaks in long-running cache operations', function () {
+        it('prevents memory leaks in long-running cache operations', function (): void {
             $cache = new InMemoryCache();
             $iterations = 50;
             $memoryReadings = [];
@@ -326,11 +325,11 @@ describe('Cache Performance Tests', function () {
                     $value = [
                         'iteration' => $iteration,
                         'item' => $i,
-                        'data' => str_repeat("iter_data_{$iteration}_{$i}", 50)
+                        'data' => str_repeat("iter_data_{$iteration}_{$i}", 50),
                     ];
 
                     $cache->set($key, $value, 60);
-                    
+
                     // Read back immediately
                     $retrieved = $cache->get($key);
                     expect($retrieved)->toBe($value);
@@ -360,8 +359,8 @@ describe('Cache Performance Tests', function () {
         });
     });
 
-    describe('Cache performance under stress', function () {
-        it('maintains performance under high concurrency simulation', function () {
+    describe('Cache performance under stress', function (): void {
+        it('maintains performance under high concurrency simulation', function (): void {
             $cache = new InMemoryCache();
             $concurrentOperations = 2000;
             $results = [];
@@ -371,7 +370,7 @@ describe('Cache Performance Tests', function () {
             // Simulate concurrent operations
             $operations = [];
             for ($i = 1; $i <= $concurrentOperations; $i++) {
-                $operations[] = function() use ($cache, $i, &$results) {
+                $operations[] = function () use ($cache, $i, &$results): void {
                     $operationStart = microtime(true);
 
                     // Mix of operations
@@ -413,7 +412,7 @@ describe('Cache Performance Tests', function () {
                 ->and($operationsPerSecond)->toBeGreaterThan(200); // At least 200 ops/sec
         });
 
-        it('handles cache pressure and eviction efficiently', function () {
+        it('handles cache pressure and eviction efficiently', function (): void {
             $cache = new InMemoryCache();
             $itemsToCache = 5000; // Large number to trigger potential eviction
 
@@ -426,7 +425,7 @@ describe('Cache Performance Tests', function () {
                 $batchMemoryStart = memory_get_usage(true);
 
                 $itemsInBatch = $itemsToCache / 10;
-                
+
                 for ($i = 1; $i <= $itemsInBatch; $i++) {
                     $itemIndex = (($batch - 1) * $itemsInBatch) + $i;
                     $cache->set(
@@ -434,9 +433,9 @@ describe('Cache Performance Tests', function () {
                         [
                             'batch' => $batch,
                             'item' => $i,
-                            'data' => str_repeat("pressure_data_{$itemIndex}", 100)
+                            'data' => str_repeat("pressure_data_{$itemIndex}", 100),
                         ],
-                        3600
+                        3600,
                     );
                 }
 
@@ -453,7 +452,7 @@ describe('Cache Performance Tests', function () {
 
             for ($i = 1; $i <= $itemsToCache; $i += 10) { // Sample every 10th item
                 $result = $cache->get("pressure_test_{$i}");
-                if ($result !== null) {
+                if (null !== $result) {
                     $foundItems++;
                 }
             }

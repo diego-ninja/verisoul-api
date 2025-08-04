@@ -2,9 +2,9 @@
 
 namespace Ninja\Verisoul\Tests\Helpers;
 
+use InvalidArgumentException;
 use Mockery;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
-use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
 use Ninja\Verisoul\Support\RetryStrategy;
@@ -18,20 +18,20 @@ class MockFactory
     public static function createSuccessfulHttpClient(array $responses = []): HttpClientInterface
     {
         $mock = Mockery::mock(HttpClientInterface::class);
-        
+
         // Setup common method expectations
         $mock->shouldReceive('setTimeout')->andReturnSelf();
         $mock->shouldReceive('setConnectTimeout')->andReturnSelf();
         $mock->shouldReceive('setHeaders')->andReturnSelf();
-        
+
         // Default successful responses - Verisoul API returns direct data, not wrapped
         $defaultResponse = [];
-        
+
         foreach (['get', 'post', 'put', 'delete'] as $method) {
             $response = $responses[$method] ?? $defaultResponse;
             $mock->shouldReceive($method)->andReturn($response);
         }
-        
+
         return $mock;
     }
 
@@ -41,24 +41,24 @@ class MockFactory
     public static function createFailingHttpClient(string $exceptionClass = VerisoulConnectionException::class): HttpClientInterface
     {
         $mock = Mockery::mock(HttpClientInterface::class);
-        
+
         $mock->shouldReceive('setTimeout')->andReturnSelf();
         $mock->shouldReceive('setConnectTimeout')->andReturnSelf();
         $mock->shouldReceive('setHeaders')->andReturnSelf();
-        
+
         foreach (['get', 'post', 'put', 'delete'] as $method) {
             // Create proper exception based on class
-            if ($exceptionClass === VerisoulConnectionException::class) {
+            if (VerisoulConnectionException::class === $exceptionClass) {
                 $exception = VerisoulConnectionException::networkError('/test', 'Connection failed');
-            } elseif ($exceptionClass === VerisoulApiException::class) {
+            } elseif (VerisoulApiException::class === $exceptionClass) {
                 $exception = new VerisoulApiException('API error', 500, [], '/test');
             } else {
                 $exception = new $exceptionClass('Connection failed');
             }
-            
+
             $mock->shouldReceive($method)->andThrow($exception);
         }
-        
+
         return $mock;
     }
 
@@ -68,23 +68,23 @@ class MockFactory
     public static function createApiErrorHttpClient(int $errorCode = 400, string $errorMessage = 'Bad Request'): HttpClientInterface
     {
         $mock = Mockery::mock(HttpClientInterface::class);
-        
+
         $mock->shouldReceive('setTimeout')->andReturnSelf();
         $mock->shouldReceive('setConnectTimeout')->andReturnSelf();
         $mock->shouldReceive('setHeaders')->andReturnSelf();
-        
+
         // Verisoul API error responses are also direct, not wrapped
         $errorResponse = [
             'error' => [
                 'code' => $errorCode,
                 'message' => $errorMessage,
-            ]
+            ],
         ];
-        
+
         foreach (['get', 'post', 'put', 'delete'] as $method) {
             $mock->shouldReceive($method)->andReturn($errorResponse);
         }
-        
+
         return $mock;
     }
 
@@ -95,35 +95,35 @@ class MockFactory
     {
         $mock = Mockery::mock(CacheInterface::class);
         $storage = [];
-        
+
         $mock->shouldReceive('get')
             ->andReturnUsing(function ($key, $default = null) use (&$storage) {
                 return $storage[$key] ?? $default;
             });
-            
+
         $mock->shouldReceive('set')
             ->andReturnUsing(function ($key, $value, $ttl = null) use (&$storage) {
                 $storage[$key] = $value;
                 return true;
             });
-            
+
         $mock->shouldReceive('delete')
             ->andReturnUsing(function ($key) use (&$storage) {
                 unset($storage[$key]);
                 return true;
             });
-            
+
         $mock->shouldReceive('clear')
             ->andReturnUsing(function () use (&$storage) {
                 $storage = [];
                 return true;
             });
-            
+
         $mock->shouldReceive('has')
             ->andReturnUsing(function ($key) use (&$storage) {
                 return isset($storage[$key]);
             });
-        
+
         return $mock;
     }
 
@@ -133,13 +133,13 @@ class MockFactory
     public static function createFailingCache(): CacheInterface
     {
         $mock = Mockery::mock(CacheInterface::class);
-        
+
         $mock->shouldReceive('get')->andReturn(null);
         $mock->shouldReceive('set')->andReturn(false);
         $mock->shouldReceive('delete')->andReturn(false);
         $mock->shouldReceive('clear')->andReturn(false);
         $mock->shouldReceive('has')->andReturn(false);
-        
+
         return $mock;
     }
 
@@ -220,7 +220,7 @@ class MockFactory
                 'code' => $code,
                 'message' => $message,
                 'details' => [],
-            ]
+            ],
         ];
     }
 
@@ -231,7 +231,7 @@ class MockFactory
                 'code' => 422,
                 'message' => 'Validation failed',
                 'details' => $errors,
-            ]
+            ],
         ];
     }
 
@@ -244,7 +244,7 @@ class MockFactory
         $accountId = 'acc_' . bin2hex(random_bytes(12));
         $projectId = 'proj_' . bin2hex(random_bytes(8));
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'project_id' => $projectId,
             'session_id' => $sessionId,
@@ -267,7 +267,7 @@ class MockFactory
                 'network' => [
                     'ip_address' => '2600:1700:261:b810:8828:f0b6:3b95:667c',
                     'service_provider' => 'AT&T Enterprises, LLC',
-                    'connection_type' => 'isp'
+                    'connection_type' => 'isp',
                 ],
                 'location' => [
                     'continent' => 'NA',
@@ -277,14 +277,14 @@ class MockFactory
                     'zip_code' => '78729',
                     'timezone' => 'America/Chicago',
                     'latitude' => 30.4521,
-                    'longitude' => -97.7688
+                    'longitude' => -97.7688,
                 ],
                 'browser' => [
                     'type' => 'Chrome',
                     'version' => '137.0.0.0',
                     'language' => 'en-US',
                     'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                    'timezone' => 'America/Chicago'
+                    'timezone' => 'America/Chicago',
                 ],
                 'device' => [
                     'category' => 'desktop',
@@ -294,7 +294,7 @@ class MockFactory
                     'memory' => 8,
                     'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)',
                     'screen_height' => 1329,
-                    'screen_width' => 2056
+                    'screen_width' => 2056,
                 ],
                 'risk_signals' => [
                     'device_risk' => false,
@@ -305,22 +305,22 @@ class MockFactory
                     'datacenter' => false,
                     'recent_fraud_ip' => false,
                     'impossible_travel' => false,
-                    'device_network_mismatch' => false
+                    'device_network_mismatch' => false,
                 ],
                 'bot' => [
                     'mouse_num_events' => 84,
                     'click_num_events' => 2,
                     'keyboard_num_events' => 0,
                     'touch_num_events' => 0,
-                    'clipboard_num_events' => 1
-                ]
+                    'clipboard_num_events' => 1,
+                ],
             ],
             'account' => [
                 'account' => [
                     'id' => $accountId,
                     'email' => 'john.doe@example.com',
                     'metadata' => [],
-                    'group' => ''
+                    'group' => '',
                 ],
                 'num_sessions' => 1,
                 'first_seen' => '2025-06-10T16:47:29.661Z',
@@ -330,17 +330,17 @@ class MockFactory
                 'countries' => ['US'],
                 'unique_devices' => [
                     '1_day' => 1,
-                    '7_day' => 1
+                    '7_day' => 1,
                 ],
                 'unique_networks' => [
                     '1_day' => 1,
-                    '7_day' => 1
+                    '7_day' => 1,
                 ],
                 'email' => [
                     'email' => 'john.doe@example.com',
                     'disposable' => false,
                     'personal' => false,
-                    'valid' => true
+                    'valid' => true,
                 ],
                 'risk_signal_average' => [
                     'device_risk' => 0.3971,
@@ -351,10 +351,10 @@ class MockFactory
                     'datacenter' => 0,
                     'recent_fraud_ip' => 0,
                     'impossible_travel' => 0,
-                    'device_network_mismatch' => 0.0001
-                ]
+                    'device_network_mismatch' => 0.0001,
+                ],
             ],
-            'linked_accounts' => []
+            'linked_accounts' => [],
         ], $overrides);
     }
 
@@ -367,7 +367,7 @@ class MockFactory
         $sessionId = 'sess_' . bin2hex(random_bytes(12));
         $requestId = 'req_' . bin2hex(random_bytes(12));
         $projectId = 'proj_' . bin2hex(random_bytes(8));
-        
+
         return array_merge([
             'account_ids' => [$accountId],
             'request_id' => $requestId,
@@ -378,7 +378,7 @@ class MockFactory
             'network' => [
                 'ip_address' => '2600:1700:261:b810:8828:f0b6:3b95:667c',
                 'service_provider' => 'AT&T Enterprises, LLC',
-                'connection_type' => 'isp'
+                'connection_type' => 'isp',
             ],
             'location' => [
                 'continent' => 'NA',
@@ -388,14 +388,14 @@ class MockFactory
                 'zip_code' => '78729',
                 'timezone' => 'America/Chicago',
                 'latitude' => 30.4521,
-                'longitude' => -97.7688
+                'longitude' => -97.7688,
             ],
             'browser' => [
                 'type' => 'Chrome',
                 'version' => '137.0.0.0',
                 'language' => 'en-US',
                 'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                'timezone' => 'America/Chicago'
+                'timezone' => 'America/Chicago',
             ],
             'device' => [
                 'category' => 'desktop',
@@ -405,7 +405,7 @@ class MockFactory
                 'memory' => 8,
                 'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)',
                 'screen_height' => 1329,
-                'screen_width' => 2056
+                'screen_width' => 2056,
             ],
             'risk_signals' => [
                 'device_risk' => false,
@@ -416,15 +416,15 @@ class MockFactory
                 'datacenter' => false,
                 'recent_fraud_ip' => false,
                 'impossible_travel' => false,
-                'device_network_mismatch' => false
+                'device_network_mismatch' => false,
             ],
             'bot' => [
                 'mouse_num_events' => 84,
                 'click_num_events' => 2,
                 'keyboard_num_events' => 0,
                 'touch_num_events' => 0,
-                'clipboard_num_events' => 1
-            ]
+                'clipboard_num_events' => 1,
+            ],
         ], $overrides);
     }
 
@@ -437,7 +437,7 @@ class MockFactory
         $sessionId = 'sess_' . bin2hex(random_bytes(12));
         $projectId = 'proj_' . bin2hex(random_bytes(8));
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'project_id' => $projectId,
             'request_id' => $requestId,
@@ -445,7 +445,7 @@ class MockFactory
                 'id' => $accountId,
                 'email' => 'john.doe@example.com',
                 'metadata' => [],
-                'group' => ''
+                'group' => '',
             ],
             'num_sessions' => 1,
             'first_seen' => '2025-06-10T16:47:29.661Z',
@@ -462,17 +462,17 @@ class MockFactory
             'lists' => ['us_users'],
             'unique_devices' => [
                 '1_day' => 1,
-                '7_day' => 1
+                '7_day' => 1,
             ],
             'unique_networks' => [
                 '1_day' => 1,
-                '7_day' => 1
+                '7_day' => 1,
             ],
             'email' => [
                 'email' => 'john.doe@example.com',
                 'disposable' => false,
                 'personal' => false,
-                'valid' => true
+                'valid' => true,
             ],
             'risk_signal_average' => [
                 'device_risk' => 0.3971,
@@ -483,8 +483,8 @@ class MockFactory
                 'datacenter' => 0,
                 'recent_fraud_ip' => 0,
                 'impossible_travel' => 0,
-                'device_network_mismatch' => 0.0001
-            ]
+                'device_network_mismatch' => 0.0001,
+            ],
         ], $overrides);
     }
 
@@ -495,7 +495,7 @@ class MockFactory
     {
         $projectId = 'proj_' . bin2hex(random_bytes(8));
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'project_id' => $projectId,
             'request_id' => $requestId,
@@ -505,8 +505,8 @@ class MockFactory
                 'calling_country_code' => '1',
                 'country_code' => 'US',
                 'carrier_name' => 'Verizon Wireless',
-                'line_type' => 'mobile'
-            ]
+                'line_type' => 'mobile',
+            ],
         ], $overrides);
     }
 
@@ -520,7 +520,7 @@ class MockFactory
         $projectId = 'proj_' . bin2hex(random_bytes(8));
         $requestId = 'req_' . bin2hex(random_bytes(12));
         $referringSessionId = 'ref_sess_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'metadata' => [
                 'project_id' => $projectId,
@@ -528,7 +528,7 @@ class MockFactory
                 'account_id' => $accountId,
                 'referring_session_id' => $referringSessionId,
                 'request_id' => $requestId,
-                'timestamp' => '2025-05-04T22:11:51.645Z'
+                'timestamp' => '2025-05-04T22:11:51.645Z',
             ],
             'decision' => 'Real',
             'risk_score' => 0.2,
@@ -542,24 +542,24 @@ class MockFactory
                 'spoofed_ip' => 0,
                 'recent_fraud_ip' => 0,
                 'device_network_mismatch' => 0.0001,
-                'location_spoofing' => 0.0001
+                'location_spoofing' => 0.0001,
             ],
             'referring_session_signals' => [
                 'impossible_travel' => 0,
                 'ip_mismatch' => 0,
                 'user_agent_mismatch' => 0,
                 'device_timezone_mismatch' => 0.2501,
-                'ip_timezone_mismatch' => 0.0001
+                'ip_timezone_mismatch' => 0.0001,
             ],
             'photo_urls' => [
-                'face' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/face.jpg'
+                'face' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/face.jpg',
             ],
             'session_data' => [
                 'true_country_code' => 'US',
                 'network' => [
                     'ip_address' => '107.209.253.92',
                     'service_provider' => 'AT&T Internet',
-                    'connection_type' => 'isp'
+                    'connection_type' => 'isp',
                 ],
                 'location' => [
                     'continent' => 'NA',
@@ -569,14 +569,14 @@ class MockFactory
                     'zip_code' => '78758',
                     'timezone' => 'America/Chicago',
                     'latitude' => 30.3773,
-                    'longitude' => -97.71
+                    'longitude' => -97.71,
                 ],
                 'browser' => [
                     'type' => 'Chrome',
                     'version' => '135.0.0.0',
                     'language' => 'en-US',
                     'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-                    'timezone' => 'America/Chicago'
+                    'timezone' => 'America/Chicago',
                 ],
                 'device' => [
                     'category' => 'desktop',
@@ -584,13 +584,13 @@ class MockFactory
                     'os' => 'macOS 10.15.7',
                     'cpu_cores' => 16,
                     'memory' => 8,
-                    'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)'
-                ]
+                    'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)',
+                ],
             ],
             'matches' => [
                 'num_accounts_linked' => 0,
-                'accounts_linked' => []
-            ]
+                'accounts_linked' => [],
+            ],
         ], $overrides);
     }
 
@@ -604,7 +604,7 @@ class MockFactory
         $projectId = 'proj_' . bin2hex(random_bytes(8));
         $requestId = 'req_' . bin2hex(random_bytes(12));
         $referringSessionId = 'ref_sess_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'metadata' => [
                 'project_id' => $projectId,
@@ -612,7 +612,7 @@ class MockFactory
                 'account_id' => $accountId,
                 'referring_session_id' => $referringSessionId,
                 'request_id' => $requestId,
-                'timestamp' => '2025-05-04T22:11:51.645Z'
+                'timestamp' => '2025-05-04T22:11:51.645Z',
             ],
             'decision' => 'Real',
             'risk_score' => 0.1,
@@ -625,13 +625,13 @@ class MockFactory
                 'id_text_status' => 'likely_original_text',
                 'is_id_digital_spoof' => 'likely_physical_id',
                 'is_full_id_captured' => 'full_id_detected',
-                'id_validity' => 'likely_authentic_id'
+                'id_validity' => 'likely_authentic_id',
             ],
             'document_data' => [
                 'template_info' => [
                     'document_country_code' => 'US',
                     'document_state' => 'Texas',
-                    'template_type' => 'Driver License'
+                    'template_type' => 'Driver License',
                 ],
                 'user_data' => [
                     'first_name' => 'John',
@@ -646,9 +646,9 @@ class MockFactory
                         'country' => 'US',
                         'postal_code' => '78701',
                         'state' => 'TX',
-                        'street' => '123 Main St'
-                    ]
-                ]
+                        'street' => '123 Main St',
+                    ],
+                ],
             ],
             'device_network_signals' => [
                 'device_risk' => 0.2429,
@@ -659,26 +659,26 @@ class MockFactory
                 'spoofed_ip' => 0,
                 'recent_fraud_ip' => 0,
                 'device_network_mismatch' => 0.0001,
-                'location_spoofing' => 0.0001
+                'location_spoofing' => 0.0001,
             ],
             'referring_session_signals' => [
                 'impossible_travel' => 0,
                 'ip_mismatch' => 0,
                 'user_agent_mismatch' => 0,
                 'device_timezone_mismatch' => 0.2501,
-                'ip_timezone_mismatch' => 0.0001
+                'ip_timezone_mismatch' => 0.0001,
             ],
             'photo_urls' => [
                 'face' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/face.jpg',
                 'id_scan_back' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/id_scan_back.jpg',
-                'id_scan_front' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/id_scan_front.jpg'
+                'id_scan_front' => 'https://storage.googleapis.com/facematch-sandbox/' . $sessionId . '/id_scan_front.jpg',
             ],
             'session_data' => [
                 'true_country_code' => 'US',
                 'network' => [
                     'ip_address' => '107.209.253.92',
                     'service_provider' => 'AT&T Internet',
-                    'connection_type' => 'isp'
+                    'connection_type' => 'isp',
                 ],
                 'location' => [
                     'continent' => 'NA',
@@ -688,14 +688,14 @@ class MockFactory
                     'zip_code' => '78758',
                     'timezone' => 'America/Chicago',
                     'latitude' => 30.3773,
-                    'longitude' => -97.71
+                    'longitude' => -97.71,
                 ],
                 'browser' => [
                     'type' => 'Chrome',
                     'version' => '135.0.0.0',
                     'language' => 'en-US',
                     'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-                    'timezone' => 'America/Chicago'
+                    'timezone' => 'America/Chicago',
                 ],
                 'device' => [
                     'category' => 'desktop',
@@ -703,13 +703,13 @@ class MockFactory
                     'os' => 'macOS 10.15.7',
                     'cpu_cores' => 16,
                     'memory' => 8,
-                    'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)'
-                ]
+                    'gpu' => 'ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max, Unspecified Version)',
+                ],
             ],
             'matches' => [
                 'num_accounts_linked' => 0,
-                'accounts_linked' => []
-            ]
+                'accounts_linked' => [],
+            ],
         ], $overrides);
     }
 
@@ -719,13 +719,13 @@ class MockFactory
     public static function createLivenessSessionResponseData(array $overrides = []): array
     {
         $sessionId = 'liveness_sess_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'session_id' => $sessionId,
             'session_url' => 'https://liveness.verisoul.ai/session/' . $sessionId,
             'expires_at' => '2024-01-15T13:00:00Z',
             'type' => 'face_match',
-            'id_required' => false
+            'id_required' => false,
         ], $overrides);
     }
 
@@ -736,14 +736,14 @@ class MockFactory
     {
         $sessionId = 'enroll_sess_' . bin2hex(random_bytes(12));
         $accountId = 'acc_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'session_id' => $sessionId,
             'account_id' => $accountId,
             'enrolled' => true,
             'enrollment_status' => 'completed',
             'template_id' => 'template_' . bin2hex(random_bytes(8)),
-            'face_verified' => true
+            'face_verified' => true,
         ], $overrides);
     }
 
@@ -753,10 +753,10 @@ class MockFactory
     public static function createAccountSessionsResponseData(array $overrides = []): array
     {
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'request_id' => $requestId,
-            'sessions' => []
+            'sessions' => [],
         ], $overrides);
     }
 
@@ -766,10 +766,10 @@ class MockFactory
     public static function createLinkedAccountsResponseData(array $overrides = []): array
     {
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'request_id' => $requestId,
-            'accounts_linked' => []
+            'accounts_linked' => [],
         ], $overrides);
     }
 
@@ -780,11 +780,11 @@ class MockFactory
     {
         $accountId = 'acc_' . bin2hex(random_bytes(12));
         $requestId = 'req_' . bin2hex(random_bytes(12));
-        
+
         return array_merge([
             'request_id' => $requestId,
             'account_id' => $accountId,
-            'success' => true
+            'success' => true,
         ], $overrides);
     }
 
@@ -794,18 +794,18 @@ class MockFactory
     public static function loadFixtureData(string $fixtureName): array
     {
         $fixturePath = __DIR__ . '/../fixtures/api/responses/' . $fixtureName . '.json';
-        
-        if (!file_exists($fixturePath)) {
-            throw new \InvalidArgumentException("Fixture file not found: {$fixturePath}");
+
+        if ( ! file_exists($fixturePath)) {
+            throw new InvalidArgumentException("Fixture file not found: {$fixturePath}");
         }
-        
+
         $jsonContent = file_get_contents($fixturePath);
         $data = json_decode($jsonContent, true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException("Invalid JSON in fixture file: {$fixturePath}");
+
+        if (JSON_ERROR_NONE !== json_last_error()) {
+            throw new InvalidArgumentException("Invalid JSON in fixture file: {$fixturePath}");
         }
-        
+
         return $data;
     }
 
@@ -815,12 +815,12 @@ class MockFactory
     public static function createHttpClientWithFixtures(array $fixtureMap = []): HttpClientInterface
     {
         $mock = Mockery::mock(HttpClientInterface::class);
-        
+
         // Setup common method expectations
         $mock->shouldReceive('setTimeout')->andReturnSelf();
         $mock->shouldReceive('setConnectTimeout')->andReturnSelf();
         $mock->shouldReceive('setHeaders')->andReturnSelf();
-        
+
         foreach (['get', 'post', 'put', 'delete'] as $method) {
             if (isset($fixtureMap[$method])) {
                 $response = self::loadFixtureData($fixtureMap[$method]);
@@ -829,7 +829,7 @@ class MockFactory
                 $mock->shouldReceive($method)->andReturn([]);
             }
         }
-        
+
         return $mock;
     }
 
@@ -911,7 +911,7 @@ class MockFactory
             maxAttempts: 1, // No retries in tests
             baseDelayMs: 0,
             backoffMultiplier: 1.0,
-            maxDelayMs: 0
+            maxDelayMs: 0,
         );
     }
 
@@ -922,7 +922,7 @@ class MockFactory
     {
         return array_merge([
             'retryAttempts' => 1,
-            'retryDelay' => 0
+            'retryDelay' => 0,
         ], $overrides);
     }
 }
