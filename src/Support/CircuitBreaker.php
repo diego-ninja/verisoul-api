@@ -100,7 +100,8 @@ final readonly class CircuitBreaker
     private function getState(): string
     {
         try {
-            return $this->cache->get($this->getStateKey(), self::STATE_CLOSED);
+            $state = $this->cache->get($this->getStateKey(), self::STATE_CLOSED);
+            return is_string($state) ? $state : self::STATE_CLOSED;
         } catch (Exception $e) {
             return self::STATE_CLOSED;
         }
@@ -118,7 +119,8 @@ final readonly class CircuitBreaker
     private function getFailureCount(): int
     {
         try {
-            return (int) $this->cache->get($this->getFailureCountKey(), 0);
+            $count = $this->cache->get($this->getFailureCountKey(), 0);
+            return is_numeric($count) ? (int) $count : 0;
         } catch (Exception $e) {
             return 0;
         }
@@ -165,7 +167,7 @@ final readonly class CircuitBreaker
         try {
             $lastFailure = $this->cache->get($this->getLastFailureKey());
             return null === $lastFailure ||
-                (time() - (int) $lastFailure) >= $this->recoveryTime;
+                (time() - (is_numeric($lastFailure) ? (int) $lastFailure : 0)) >= $this->recoveryTime;
         } catch (Exception $e) {
             return true; // Allow recovery if cache fails
         }

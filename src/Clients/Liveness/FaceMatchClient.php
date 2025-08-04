@@ -16,7 +16,7 @@ final class FaceMatchClient extends LivenessApiClient implements FaceMatchInterf
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function session(?string $referringSessionId = null): ?LivenessSessionResponse
+    public function session(?string $referringSessionId = null): LivenessSessionResponse
     {
         $params = null !== $referringSessionId ?
             ['referring_session_id' => $referringSessionId] :

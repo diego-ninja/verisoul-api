@@ -34,7 +34,13 @@ final class ListClient extends Client implements ListInterface
     public function getAllLists(): AccountListCollection
     {
         $response = $this->call(VerisoulApiEndpoint::ListGetAll);
-        return new AccountListCollection($response['lists']);
+        $lists = $response['lists'] ?? [];
+        
+        if (!is_iterable($lists)) {
+            throw new VerisoulApiException('Expected iterable lists in API response');
+        }
+        
+        return new AccountListCollection(is_array($lists) ? $lists : iterator_to_array($lists));
     }
 
     /**

@@ -15,7 +15,7 @@ final class IDCheckClient extends LivenessApiClient implements IDCheckInterface
      * @throws VerisoulApiException
      * @throws VerisoulConnectionException
      */
-    public function session(?string $referringSessionId = null): ?LivenessSessionResponse
+    public function session(?string $referringSessionId = null): LivenessSessionResponse
     {
         $params = null !== $referringSessionId ?
             ['referring_session_id' => $referringSessionId] :

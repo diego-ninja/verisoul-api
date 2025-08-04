@@ -18,7 +18,7 @@ final readonly class Score extends GraniteVO
     public static function rules(): array
     {
         return [
-            'value' => 'required|numeric|min:0|max:1',
+            'value' => ['required', 'numeric', 'min:0', 'max:1'],
         ];
     }
 

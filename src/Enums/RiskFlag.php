@@ -58,7 +58,7 @@ enum RiskFlag: string
         foreach (self::cases() as $flag) {
             $categories = $flag->getCategories();
             foreach ($categories as $riskCategory) {
-                if ($riskCategory->value === $category) {
+                if (is_object($riskCategory) && property_exists($riskCategory, 'value') && $riskCategory->value === $category) {
                     $flags[] = $flag;
                     break;
                 }

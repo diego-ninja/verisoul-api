@@ -19,7 +19,13 @@ final class LinkedAccountCollection extends Collection implements GraniteObject
     {
         $linkedAccountCollection = new self();
 
-        foreach ($args[0] as $account) {
+        $data = $args[0] ?? [];
+        
+        if (!is_iterable($data)) {
+            throw new ReflectionException('Expected iterable data for LinkedAccountCollection', 'invalid_data_type');
+        }
+        
+        foreach ($data as $account) {
             $linkedAccountCollection->push(LinkedAccount::from($account));
         }
 
@@ -28,7 +34,12 @@ final class LinkedAccountCollection extends Collection implements GraniteObject
 
     public function array(): array
     {
-        return $this->map(fn(LinkedAccount $account) => $account->array())->toArray();
+        return $this->map(function ($account) {
+            if (!$account instanceof LinkedAccount) {
+                throw new \InvalidArgumentException('Expected LinkedAccount instance');
+            }
+            return $account->array();
+        })->toArray();
     }
 
     /**

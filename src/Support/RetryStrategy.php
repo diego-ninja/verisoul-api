@@ -53,6 +53,10 @@ final readonly class RetryStrategy
             }
         }
 
+        if ($lastException === null) {
+            throw new Exception('Operation failed without specific exception');
+        }
+        
         throw $lastException;
     }
 
@@ -85,6 +89,6 @@ final readonly class RetryStrategy
         $jitter = mt_rand(0, (int) ($delay * 0.1));
         $delay += $jitter;
 
-        return min($delay, $this->maxDelayMs);
+        return (int) min($delay, $this->maxDelayMs);
     }
 }

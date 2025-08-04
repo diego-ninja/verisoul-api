@@ -217,7 +217,8 @@ class GuzzleHttpClient implements HttpClientInterface
         $statusCode = $response->getStatusCode();
 
         try {
-            $responseData = json_decode($response->getBody()->getContents(), true) ?? [];
+            $decoded = json_decode($response->getBody()->getContents(), true);
+            $responseData = is_array($decoded) ? $decoded : [];
         } catch (Exception $e) {
             $responseData = [];
         }
@@ -232,7 +233,7 @@ class GuzzleHttpClient implements HttpClientInterface
                 endpoint: $url,
             ),
             422 => new VerisoulApiException(
-                message: $responseData['message'] ?? 'Validation failed',
+                message: is_array($responseData) && isset($responseData['message']) && is_string($responseData['message']) ? $responseData['message'] : 'Validation failed',
                 statusCode: 422,
                 response: $responseData,
                 endpoint: $url,

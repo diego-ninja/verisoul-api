@@ -44,8 +44,17 @@ final readonly class VerifyIdResponse extends ApiResponse
     {
         $categories = [];
         foreach ($this->riskFlags as $flag) {
+            if (!$flag instanceof RiskFlag) {
+                continue;
+            }
             $flagCategories = $flag->getCategories();
+            if (!is_iterable($flagCategories)) {
+                continue;
+            }
             foreach ($flagCategories as $category) {
+                if (!is_object($category) || !property_exists($category, 'value')) {
+                    continue;
+                }
                 $categoryValue = $category->value;
                 if ( ! isset($categories[$categoryValue])) {
                     $categories[$categoryValue] = [];
@@ -63,7 +72,10 @@ final readonly class VerifyIdResponse extends ApiResponse
     public function getRiskFlagsByLevel(): array
     {
         $levels = [];
-        $this->riskFlags->each(function (RiskFlag $flag) use (&$levels): void {
+        $this->riskFlags->each(function ($flag) use (&$levels): void {
+            if (!$flag instanceof RiskFlag) {
+                return;
+            }
             $level = $flag->getRiskLevel();
             if ( ! isset($levels[$level->value])) {
                 $levels[$level->value] = [];
@@ -87,7 +99,12 @@ final readonly class VerifyIdResponse extends ApiResponse
      */
     public function getRiskFlagsAsStrings(): array
     {
-        return $this->riskFlags->map(fn(RiskFlag $flag) => $flag->value)->toArray();
+        return $this->riskFlags->map(function ($flag) {
+            if (!$flag instanceof RiskFlag) {
+                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            }
+            return $flag->value;
+        })->toArray();
     }
 
     /**
