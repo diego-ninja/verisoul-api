@@ -4,6 +4,7 @@ namespace Ninja\Verisoul\Collections;
 
 use DateMalformedStringException;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use JsonException;
 use Ninja\Granite\Contracts\GraniteObject;
 use Ninja\Granite\Exceptions\ReflectionException;
@@ -20,11 +21,11 @@ final class LinkedAccountCollection extends Collection implements GraniteObject
         $linkedAccountCollection = new self();
 
         $data = $args[0] ?? [];
-        
-        if (!is_iterable($data)) {
+
+        if ( ! is_iterable($data)) {
             throw new ReflectionException('Expected iterable data for LinkedAccountCollection', 'invalid_data_type');
         }
-        
+
         foreach ($data as $account) {
             $linkedAccountCollection->push(LinkedAccount::from($account));
         }
@@ -35,8 +36,8 @@ final class LinkedAccountCollection extends Collection implements GraniteObject
     public function array(): array
     {
         return $this->map(function ($account) {
-            if (!$account instanceof LinkedAccount) {
-                throw new \InvalidArgumentException('Expected LinkedAccount instance');
+            if ( ! $account instanceof LinkedAccount) {
+                throw new InvalidArgumentException('Expected LinkedAccount instance');
             }
             return $account->array();
         })->toArray();

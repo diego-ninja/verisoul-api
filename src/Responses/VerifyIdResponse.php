@@ -3,6 +3,7 @@
 namespace Ninja\Verisoul\Responses;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
 use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 use Ninja\Verisoul\Collections\RiskFlagCollection;
@@ -44,15 +45,15 @@ final readonly class VerifyIdResponse extends ApiResponse
     {
         $categories = [];
         foreach ($this->riskFlags as $flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 continue;
             }
             $flagCategories = $flag->getCategories();
-            if (!is_iterable($flagCategories)) {
+            if ( ! is_iterable($flagCategories)) {
                 continue;
             }
             foreach ($flagCategories as $category) {
-                if (!is_object($category) || !property_exists($category, 'value')) {
+                if ( ! is_object($category) || ! property_exists($category, 'value')) {
                     continue;
                 }
                 $categoryValue = $category->value;
@@ -73,7 +74,7 @@ final readonly class VerifyIdResponse extends ApiResponse
     {
         $levels = [];
         $this->riskFlags->each(function ($flag) use (&$levels): void {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return;
             }
             $level = $flag->getRiskLevel();
@@ -100,8 +101,8 @@ final readonly class VerifyIdResponse extends ApiResponse
     public function getRiskFlagsAsStrings(): array
     {
         return $this->riskFlags->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return $flag->value;
         })->toArray();

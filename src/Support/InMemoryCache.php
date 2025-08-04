@@ -4,6 +4,7 @@ namespace Ninja\Verisoul\Support;
 
 use DateInterval;
 use DateTime;
+use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 
 final class InMemoryCache implements CacheInterface
@@ -61,8 +62,8 @@ final class InMemoryCache implements CacheInterface
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
-            if (!is_string($key)) {
-                throw new \InvalidArgumentException('Cache key must be a string');
+            if ( ! is_string($key)) {
+                throw new InvalidArgumentException('Cache key must be a string');
             }
             if ( ! $this->set($key, $value, $ttl)) {
                 return false;

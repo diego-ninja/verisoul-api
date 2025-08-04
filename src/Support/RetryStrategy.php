@@ -53,10 +53,10 @@ final readonly class RetryStrategy
             }
         }
 
-        if ($lastException === null) {
+        if (null === $lastException) {
             throw new Exception('Operation failed without specific exception');
         }
-        
+
         throw $lastException;
     }
 

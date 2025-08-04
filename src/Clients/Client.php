@@ -10,11 +10,9 @@ use Ninja\Verisoul\Enums\VerisoulApiEndpoint;
 use Ninja\Verisoul\Enums\VerisoulEnvironment;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
 use Ninja\Verisoul\Exceptions\VerisoulConnectionException;
-use Ninja\Verisoul\Exceptions\VerisoulValidationException;
 use Ninja\Verisoul\Http\GuzzleHttpClient;
 use Ninja\Verisoul\Support\CircuitBreaker;
 use Ninja\Verisoul\Support\InMemoryCache;
-use Ninja\Verisoul\Support\Logger;
 use Ninja\Verisoul\Support\RetryStrategy;
 use Psr\SimpleCache\CacheInterface;
 
@@ -97,11 +95,11 @@ abstract class Client implements VerisoulApi
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->get($url, $query, $headers);
         });
-        
-        if (!is_array($result)) {
+
+        if ( ! is_array($result)) {
             throw new VerisoulApiException('Expected array response from API');
         }
-        
+
         return $result;
     }
 
@@ -116,11 +114,11 @@ abstract class Client implements VerisoulApi
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->post($url, $data, $headers);
         });
-        
-        if (!is_array($result)) {
+
+        if ( ! is_array($result)) {
             throw new VerisoulApiException('Expected array response from API');
         }
-        
+
         return $result;
     }
 
@@ -135,11 +133,11 @@ abstract class Client implements VerisoulApi
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->put($url, $data, $headers);
         });
-        
-        if (!is_array($result)) {
+
+        if ( ! is_array($result)) {
             throw new VerisoulApiException('Expected array response from API');
         }
-        
+
         return $result;
     }
 
@@ -154,11 +152,11 @@ abstract class Client implements VerisoulApi
             $url = $this->getBaseUrl() . $endpoint;
             return $this->httpClient->delete($url, $data, $headers);
         });
-        
-        if (!is_array($result)) {
+
+        if ( ! is_array($result)) {
             throw new VerisoulApiException('Expected array response from API');
         }
-        
+
         return $result;
     }
 
@@ -211,11 +209,11 @@ abstract class Client implements VerisoulApi
         };
 
         $result = $this->circuitBreaker->call($operation);
-        
-        if (!is_array($result)) {
+
+        if ( ! is_array($result)) {
             throw new VerisoulApiException('Expected array response from API');
         }
-        
+
         return $result;
     }
 

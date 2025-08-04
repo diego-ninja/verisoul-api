@@ -3,6 +3,7 @@
 namespace Ninja\Verisoul\Collections;
 
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use JsonException;
 use Ninja\Granite\Contracts\GraniteObject;
 use Ninja\Verisoul\Enums\RiskCategory;
@@ -26,10 +27,10 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $collection = new self();
         $flags = $args[0] ?? [];
 
-        if (!is_iterable($flags)) {
-            throw new \InvalidArgumentException('Expected iterable flags data');
+        if ( ! is_iterable($flags)) {
+            throw new InvalidArgumentException('Expected iterable flags data');
         }
-        
+
         foreach ($flags as $flag) {
             if (is_string($flag)) {
                 $riskFlag = RiskFlag::tryFrom($flag);
@@ -52,7 +53,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $collection = new self();
 
         foreach ($values as $value) {
-            if (!is_string($value) && !is_int($value)) {
+            if ( ! is_string($value) && ! is_int($value)) {
                 continue;
             }
             $flag = RiskFlag::tryFrom($value);
@@ -91,7 +92,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $categoryValue = $category instanceof RiskCategory ? $category->value : $category;
 
         return $this->filter(function ($flag) use ($categoryValue) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             $categories = $flag->getCategories();
@@ -110,7 +111,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function byCategories(array $categories): self
     {
         return $this->filter(function ($flag) use ($categories) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             $flagCategories = $flag->getCategories();
@@ -129,7 +130,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function byRiskLevel(RiskLevel $level): self
     {
         return $this->filter(function ($flag) use ($level) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return $flag->getRiskLevel() === $level;
@@ -142,7 +143,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function byRiskLevels(array $levels): self
     {
         return $this->filter(function ($flag) use ($levels) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return in_array($flag->getRiskLevel(), $levels);
@@ -155,7 +156,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function blocking(): self
     {
         return $this->filter(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return $flag->shouldBlock();
@@ -168,7 +169,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function nonBlocking(): self
     {
         return $this->filter(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return ! $flag->shouldBlock();
@@ -181,7 +182,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function byDisplayNamePattern(string $pattern): self
     {
         return $this->filter(function ($flag) use ($pattern) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return (bool) preg_match("/{$pattern}/i", $flag->getDisplayName());
@@ -196,15 +197,15 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $grouped = [];
 
         foreach ($this as $flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 continue;
             }
             $categories = $flag->getCategories();
-            if (!is_iterable($categories)) {
+            if ( ! is_iterable($categories)) {
                 continue;
             }
             foreach ($categories as $category) {
-                if (!is_object($category) || !property_exists($category, 'value')) {
+                if ( ! is_object($category) || ! property_exists($category, 'value')) {
                     continue;
                 }
                 $categoryValue = $category->value;
@@ -224,7 +225,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function groupByRiskLevel(): array
     {
         return $this->groupBy(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return 'unknown';
             }
             return $flag->getRiskLevel()->value;
@@ -245,7 +246,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         ];
 
         foreach ($this as $flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 continue;
             }
             $level = $flag->getRiskLevel()->value;
@@ -263,15 +264,15 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $distribution = [];
 
         foreach ($this as $flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 continue;
             }
             $categories = $flag->getCategories();
-            if (!is_iterable($categories)) {
+            if ( ! is_iterable($categories)) {
                 continue;
             }
             foreach ($categories as $category) {
-                if (!is_object($category) || !property_exists($category, 'value')) {
+                if ( ! is_object($category) || ! property_exists($category, 'value')) {
                     continue;
                 }
                 $categoryValue = $category->value;
@@ -306,11 +307,15 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     {
         return $this->sortBy([
             function ($flag) {
-                if (!$flag instanceof RiskFlag) return 2;
+                if ( ! $flag instanceof RiskFlag) {
+                    return 2;
+                }
                 return $flag->shouldBlock() ? 0 : 1;
             },
             function ($flag) {
-                if (!$flag instanceof RiskFlag) return 5;
+                if ( ! $flag instanceof RiskFlag) {
+                    return 5;
+                }
                 return match ($flag->getRiskLevel()) {
                     RiskLevel::Critical => 0,
                     RiskLevel::High => 1,
@@ -354,11 +359,11 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         $categories = collect();
 
         foreach ($this as $flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 continue;
             }
             $flagCategories = $flag->getCategories();
-            if (!is_iterable($flagCategories)) {
+            if ( ! is_iterable($flagCategories)) {
                 continue;
             }
             foreach ($flagCategories as $category) {
@@ -377,8 +382,8 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function getUniqueRiskLevels(): Collection
     {
         return $this->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return $flag->getRiskLevel();
         })->unique();
@@ -402,7 +407,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function removeFlag(RiskFlag $flag): self
     {
         return $this->reject(function ($item) use ($flag) {
-            if (!$item instanceof RiskFlag) {
+            if ( ! $item instanceof RiskFlag) {
                 return false;
             }
             return $item === $flag;
@@ -415,8 +420,8 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function toValues(): array
     {
         return $this->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return $flag->value;
         })->toArray();
@@ -428,8 +433,8 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function toNames(): array
     {
         return $this->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return $flag->name;
         })->toArray();
@@ -441,8 +446,8 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function toDisplayNames(): array
     {
         return $this->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return $flag->getDisplayName();
         })->toArray();
@@ -454,8 +459,8 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function toDetailedArray(): array
     {
         return $this->map(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
-                throw new \InvalidArgumentException('Expected RiskFlag instance');
+            if ( ! $flag instanceof RiskFlag) {
+                throw new InvalidArgumentException('Expected RiskFlag instance');
             }
             return [
                 'name' => $flag->name,
@@ -464,7 +469,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
                 'description' => $flag->getDescription(),
                 'risk_level' => $flag->getRiskLevel()->value,
                 'categories' => array_map(function ($cat) {
-                    if (!$cat instanceof RiskCategory) {
+                    if ( ! $cat instanceof RiskCategory) {
                         return 'unknown';
                     }
                     return $cat->value;
@@ -514,7 +519,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function intersectFlags(RiskFlagCollection $other): self
     {
         return $this->filter(function ($flag) use ($other) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return $other->contains($flag);
@@ -527,7 +532,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function diffFlags(RiskFlagCollection $other): self
     {
         return $this->filter(function ($flag) use ($other) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return ! $other->contains($flag);
@@ -552,7 +557,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
         }
 
         return $this->every(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return RiskLevel::Low === $flag->getRiskLevel() ||
@@ -566,7 +571,7 @@ final class RiskFlagCollection extends Collection implements GraniteObject
     public function isHighRisk(): bool
     {
         return $this->contains(function ($flag) {
-            if (!$flag instanceof RiskFlag) {
+            if ( ! $flag instanceof RiskFlag) {
                 return false;
             }
             return RiskLevel::High === $flag->getRiskLevel() ||
