@@ -7,8 +7,10 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/diego-ninja/verisoul-api?color=blue)
 [![wakatime](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b.svg)](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b)
 
-[![pest](https://img.shields.io/badge/pest-✓%20passing-green.svg?style=flat)](https://phpunit.de/)
-[![Tests](https://img.shields.io/badge/tests-1195%20passed-green.svg?style=flat)](https://phpunit.de/)
+
+[![Tests](https://github.com/diego-ninja/verisoul-api/actions/workflows/tests.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/tests.yml)
+[![Static Analysis](https://github.com/diego-ninja/verisoul-api/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/static-analysis.yml)
+[![Code Style](https://github.com/diego-ninja/verisoul-api/actions/workflows/code-style.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/code-style.yml)
 
 ## Description
 
