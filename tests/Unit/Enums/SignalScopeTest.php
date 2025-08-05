@@ -3,6 +3,122 @@
 use Ninja\Verisoul\Enums\SignalScope;
 
 describe('SignalScope Enum', function (): void {
+    describe('static methods', function (): void {
+        it('returns all values', function (): void {
+            $values = SignalScope::values();
+            expect($values)->toBeArray()
+                ->and($values)->toHaveCount(5)
+                ->and($values)->toContain('device_network')
+                ->and($values)->toContain('document')
+                ->and($values)->toContain('referring_session')
+                ->and($values)->toContain('account')
+                ->and($values)->toContain('session');
+        });
+
+        it('returns all names', function (): void {
+            $names = SignalScope::names();
+            expect($names)->toBeArray()
+                ->and($names)->toHaveCount(5)
+                ->and($names)->toContain('DeviceNetwork')
+                ->and($names)->toContain('Document')
+                ->and($names)->toContain('ReferringSession')
+                ->and($names)->toContain('Account')
+                ->and($names)->toContain('Session');
+        });
+
+        describe('getScopeForSignal', function (): void {
+            it('returns correct scope for device network signals', function (): void {
+                $deviceNetworkSignals = [
+                    'device_risk', 'proxy', 'vpn', 'datacenter', 'tor', 'spoofed_ip',
+                    'recent_fraud_ip', 'device_network_mismatch', 'location_spoofing'
+                ];
+
+                foreach ($deviceNetworkSignals as $signal) {
+                    expect(SignalScope::getScopeForSignal($signal))->toBe(SignalScope::DeviceNetwork);
+                }
+            });
+
+            it('returns correct scope for document signals', function (): void {
+                $documentSignals = [
+                    'id_age', 'id_face_match_score', 'id_barcode_status', 'id_face_status',
+                    'id_text_status', 'is_id_digital_spoof', 'is_full_id_captured', 'id_validity'
+                ];
+
+                foreach ($documentSignals as $signal) {
+                    expect(SignalScope::getScopeForSignal($signal))->toBe(SignalScope::Document);
+                }
+            });
+
+            it('returns correct scope for referring session signals', function (): void {
+                $referringSessionSignals = [
+                    'impossible_travel', 'ip_mismatch', 'user_agent_mismatch',
+                    'device_timezone_mismatch', 'ip_timezone_mismatch'
+                ];
+
+                foreach ($referringSessionSignals as $signal) {
+                    expect(SignalScope::getScopeForSignal($signal))->toBe(SignalScope::ReferringSession);
+                }
+            });
+
+            it('returns correct scope for account signals', function (): void {
+                $accountSignals = ['account_score', 'multi_accounting', 'bot'];
+
+                foreach ($accountSignals as $signal) {
+                    expect(SignalScope::getScopeForSignal($signal))->toBe(SignalScope::Account);
+                }
+            });
+
+            it('returns correct scope for session signals', function (): void {
+                expect(SignalScope::getScopeForSignal('session_risk'))->toBe(SignalScope::Session);
+            });
+
+            it('returns default scope for unknown signals', function (): void {
+                $unknownSignals = ['unknown_signal', 'invalid_signal', 'random_name'];
+
+                foreach ($unknownSignals as $signal) {
+                    expect(SignalScope::getScopeForSignal($signal))->toBe(SignalScope::DeviceNetwork);
+                }
+            });
+        });
+    });
+
+    describe('instance methods', function (): void {
+        describe('getDisplayName', function (): void {
+            it('returns correct display names', function (): void {
+                expect(SignalScope::DeviceNetwork->getDisplayName())->toBe('Device & Network Signals');
+                expect(SignalScope::Document->getDisplayName())->toBe('Document Signals');
+                expect(SignalScope::ReferringSession->getDisplayName())->toBe('Referring Session Signals');
+                expect(SignalScope::Account->getDisplayName())->toBe('Account Signals');
+                expect(SignalScope::Session->getDisplayName())->toBe('Session Signals');
+            });
+        });
+
+        describe('getDescription', function (): void {
+            it('returns correct descriptions', function (): void {
+                expect(SignalScope::DeviceNetwork->getDescription())
+                    ->toBe('Device fingerprinting, network risk, proxy/VPN detection, and location spoofing');
+                expect(SignalScope::Document->getDescription())
+                    ->toBe('ID document authenticity, validity, face matching, and document-specific signals');
+                expect(SignalScope::ReferringSession->getDescription())
+                    ->toBe('Cross-session analysis including impossible travel and session mismatches');
+                expect(SignalScope::Account->getDescription())
+                    ->toBe('Account-level risk assessment and persistent identity signals');
+                expect(SignalScope::Session->getDescription())
+                    ->toBe('Session-level risk assessment and temporary interaction signals');
+            });
+        });
+
+        describe('getColor', function (): void {
+            it('returns correct colors', function (): void {
+                expect(SignalScope::DeviceNetwork->getColor())->toBe('red');
+                expect(SignalScope::Document->getColor())->toBe('blue');
+                expect(SignalScope::ReferringSession->getColor())->toBe('orange');
+                expect(SignalScope::Account->getColor())->toBe('green');
+                expect(SignalScope::Session->getColor())->toBe('purple');
+            });
+        });
+    });
+
     describe('enum cases', function (): void {
         it('has all expected cases', function (): void {
             $cases = SignalScope::cases();

@@ -257,6 +257,90 @@ describe('LinkedAccountCollection', function (): void {
         });
     });
 
+    describe('error handling and validation', function (): void {
+        it('throws exception for non-iterable data', function (): void {
+            expect(fn() => LinkedAccountCollection::from('not iterable'))
+                ->toThrow(\Ninja\Granite\Exceptions\ReflectionException::class, 'Expected iterable data');
+        });
+
+        it('throws exception for invalid LinkedAccount in array conversion', function (): void {
+            $collection = new LinkedAccountCollection();
+            $collection->push('not a LinkedAccount object');
+
+            expect(fn() => $collection->array())
+                ->toThrow(\InvalidArgumentException::class, 'Expected LinkedAccount instance');
+        });
+
+        it('handles edge case data types', function (): void {
+            $edgeCaseData = [
+                [
+                    'account_id' => '',
+                    'score' => 0,
+                    'email' => '',
+                    'match_type' => [],
+                    'lists' => [],
+                    'metadata' => []
+                ]
+            ];
+
+            $collection = LinkedAccountCollection::from($edgeCaseData);
+            expect($collection->count())->toBe(1);
+            
+            $arrayResult = $collection->array();
+            expect($arrayResult)->toBeArray();
+        });
+    });
+
+    describe('JSON and serialization edge cases', function (): void {
+        it('produces valid JSON for complex data', function (): void {
+            $complexData = [
+                [
+                    'account_id' => 'complex_123',
+                    'score' => 0.876543210,
+                    'email' => 'complex+test@example.com',
+                    'match_type' => ['email', 'device', 'phone'],
+                    'lists' => ['list1', 'list2', 'list3'],
+                    'metadata' => [
+                        'created_at' => '2023-01-01T00:00:00Z',
+                        'tags' => ['verified', 'premium', 'api'],
+                        'nested' => ['deep' => ['value' => true]]
+                    ]
+                ]
+            ];
+
+            $collection = LinkedAccountCollection::from($complexData);
+            $json = $collection->json();
+            
+            expect($json)->toBeString();
+            
+            $decoded = json_decode($json, true);
+            expect($decoded)->toBeArray()
+                ->and($decoded[0]['account_id'])->toBe('complex_123')
+                ->and($decoded[0]['score'])->toBe(0.876543210);
+        });
+
+        it('maintains data integrity through round-trip conversion', function (): void {
+            $originalData = [
+                [
+                    'account_id' => 'integrity_test',
+                    'score' => 0.123456789,
+                    'email' => 'integrity@test.com',
+                    'match_type' => ['email'],
+                    'lists' => ['test'],
+                    'metadata' => ['key' => 'value']
+                ]
+            ];
+
+            $collection = LinkedAccountCollection::from($originalData);
+            $jsonString = $collection->json();
+            $arrayFromJson = json_decode($jsonString, true);
+            $newCollection = LinkedAccountCollection::from($arrayFromJson);
+
+            expect($newCollection->count())->toBe(1);
+            expect($newCollection->first()->accountId)->toBe('integrity_test');
+        });
+    });
+
     describe('GraniteObject implementation', function (): void {
         it('implements GraniteObject interface', function (): void {
             $collection = new LinkedAccountCollection();
@@ -270,6 +354,23 @@ describe('LinkedAccountCollection', function (): void {
             expect(method_exists($collection, 'from'))->toBeTrue()
                 ->and(method_exists($collection, 'array'))->toBeTrue()
                 ->and(method_exists($collection, 'json'))->toBeTrue();
+        });
+
+        it('static from method works correctly', function (): void {
+            $data = [
+                [
+                    'account_id' => 'static_test',
+                    'score' => 0.8,
+                    'email' => 'static@test.com',
+                    'match_type' => ['email'],
+                    'lists' => [],
+                    'metadata' => []
+                ]
+            ];
+
+            $collection = LinkedAccountCollection::from($data);
+            expect($collection)->toBeInstanceOf(LinkedAccountCollection::class);
+            expect($collection->count())->toBe(1);
         });
     });
 });

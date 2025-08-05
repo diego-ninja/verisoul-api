@@ -259,6 +259,41 @@ describe('AuthenticateSessionResponse', function (): void {
             expect($riskSignals)->toBeArray();
         });
 
+        it('getRiskSignals delegates to session riskSignals collection', function (): void {
+            $sessionData = MockFactory::createSessionResponseData([
+                'risk_signals' => [
+                    'device_risk' => true,
+                    'proxy' => false,
+                    'vpn' => true,
+                ],
+            ]);
+
+            $fixtureData = MockFactory::createAuthenticateSessionResponseFromFixture([
+                'session' => $sessionData,
+            ]);
+            $response = AuthenticateSessionResponse::from($fixtureData);
+
+            $riskSignals = $response->getRiskSignals();
+
+            expect($riskSignals)->toBeArray();
+            expect($response->session)->toHaveProperty('riskSignals');
+        });
+
+        it('getRiskSignals returns empty array when no risk signals', function (): void {
+            $sessionData = MockFactory::createSessionResponseData([
+                'risk_signals' => [],
+            ]);
+
+            $fixtureData = MockFactory::createAuthenticateSessionResponseFromFixture([
+                'session' => $sessionData,
+            ]);
+            $response = AuthenticateSessionResponse::from($fixtureData);
+
+            $riskSignals = $response->getRiskSignals();
+
+            expect($riskSignals)->toBeArray();
+        });
+
         it('handles session with various risk signals', function (): void {
             $sessionWithRisks = MockFactory::createSessionResponseData([
                 'risk_signals' => [

@@ -100,6 +100,7 @@ describe('RiskFlag Enum', function (): void {
         });
     });
 
+
     describe('getByCategory method', function (): void {
         it('returns flags for device category', function (): void {
             $deviceFlags = RiskFlag::getByCategory('device');

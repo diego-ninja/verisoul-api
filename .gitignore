@@ -17,3 +17,4 @@ tester.php
 coverage.txt
 coverage.xml
 /.claude
+/coverage/
