@@ -172,7 +172,7 @@ describe('AccountListCollection', function (): void {
     describe('error handling and validation', function (): void {
         it('throws exception for non-iterable data', function (): void {
             expect(fn() => AccountListCollection::from('not iterable'))
-                ->toThrow(\Ninja\Granite\Exceptions\ReflectionException::class, 'Expected iterable data');
+                ->toThrow(Ninja\Granite\Exceptions\ReflectionException::class, 'Expected iterable data');
         });
 
         it('throws exception for invalid AccountList in array conversion', function (): void {
@@ -180,7 +180,7 @@ describe('AccountListCollection', function (): void {
             $collection->push('not an AccountList object');
 
             expect(fn() => $collection->array())
-                ->toThrow(\InvalidArgumentException::class, 'Expected AccountList instance');
+                ->toThrow(InvalidArgumentException::class, 'Expected AccountList instance');
         });
 
         it('handles malformed account list data', function (): void {
@@ -189,13 +189,13 @@ describe('AccountListCollection', function (): void {
                     'request_id' => '',
                     'name' => '',
                     'description' => '',
-                    'accounts' => []
-                ]
+                    'accounts' => [],
+                ],
             ];
 
             $collection = AccountListCollection::from($edgeCaseData);
             expect($collection->count())->toBe(1);
-            
+
             $arrayResult = $collection->array();
             expect($arrayResult)->toBeArray();
         });
@@ -208,15 +208,15 @@ describe('AccountListCollection', function (): void {
                     'request_id' => 'complex_req_123',
                     'name' => 'Complex List with Special Characters: áéíóú @#$%',
                     'description' => 'A list with "quotes" and \backslashes and unicode: 中文',
-                    'accounts' => ['acc_1', 'acc_2', 'acc_3']
-                ]
+                    'accounts' => ['acc_1', 'acc_2', 'acc_3'],
+                ],
             ];
 
             $collection = AccountListCollection::from($complexData);
             $json = $collection->json();
-            
+
             expect($json)->toBeString();
-            
+
             $decoded = json_decode($json, true);
             expect($decoded)->toBeArray()
                 ->and($decoded[0]['request_id'])->toBe('complex_req_123');
@@ -228,8 +228,8 @@ describe('AccountListCollection', function (): void {
                     'request_id' => 'integrity_test',
                     'name' => 'Integrity Test List',
                     'description' => 'Testing data integrity',
-                    'accounts' => ['test_acc_1', 'test_acc_2']
-                ]
+                    'accounts' => ['test_acc_1', 'test_acc_2'],
+                ],
             ];
 
             $collection = AccountListCollection::from($originalData);
@@ -246,7 +246,7 @@ describe('AccountListCollection', function (): void {
     describe('Collection inheritance and advanced operations', function (): void {
         it('inherits from Illuminate Collection', function (): void {
             $collection = AccountListCollection::from([]);
-            expect($collection)->toBeInstanceOf(\Illuminate\Support\Collection::class);
+            expect($collection)->toBeInstanceOf(Illuminate\Support\Collection::class);
         });
 
         it('supports advanced Collection methods', function (): void {
@@ -255,14 +255,14 @@ describe('AccountListCollection', function (): void {
                     'request_id' => 'adv_123',
                     'name' => 'Advanced Test 1',
                     'description' => 'First advanced test',
-                    'accounts' => ['acc_1', 'acc_2']
+                    'accounts' => ['acc_1', 'acc_2'],
                 ],
                 [
                     'request_id' => 'adv_456',
                     'name' => 'Advanced Test 2',
                     'description' => 'Second advanced test',
-                    'accounts' => ['acc_3', 'acc_4', 'acc_5']
-                ]
+                    'accounts' => ['acc_3', 'acc_4', 'acc_5'],
+                ],
             ];
 
             $collection = AccountListCollection::from($accountData);
@@ -272,15 +272,13 @@ describe('AccountListCollection', function (): void {
             expect($collection->first())->toBeInstanceOf(AccountList::class);
             expect($collection->last())->toBeInstanceOf(AccountList::class);
             expect($collection->isEmpty())->toBeFalse();
-            
+
             // Test pluck-like operation
             $names = $collection->map(fn($list) => $list->name);
             expect($names->toArray())->toContain('Advanced Test 1');
-            
+
             // Test filtering with complex conditions
-            $filtered = $collection->filter(function ($list) {
-                return count($list->accounts) > 2 && str_contains($list->name, 'Advanced');
-            });
+            $filtered = $collection->filter(fn($list) => count($list->accounts) > 2 && str_contains($list->name, 'Advanced'));
             expect($filtered->count())->toBe(1);
         });
 
@@ -291,7 +289,7 @@ describe('AccountListCollection', function (): void {
                     'request_id' => "chain_req_{$i}",
                     'name' => "Chain Test {$i}",
                     'description' => "Chain test description {$i}",
-                    'accounts' => array_fill(0, $i, "acc_{$i}")
+                    'accounts' => array_fill(0, $i, "acc_{$i}"),
                 ];
             }
 
@@ -315,7 +313,7 @@ describe('AccountListCollection', function (): void {
                     'request_id' => "large_req_{$i}",
                     'name' => "Large Test List {$i}",
                     'description' => "Generated test list {$i}",
-                    'accounts' => array_fill(0, rand(1, 10), "acc_{$i}")
+                    'accounts' => array_fill(0, rand(1, 10), "acc_{$i}"),
                 ];
             }
 
@@ -333,17 +331,17 @@ describe('AccountListCollection', function (): void {
                     'request_id' => '',
                     'name' => '',
                     'description' => '',
-                    'accounts' => []
-                ]
+                    'accounts' => [],
+                ],
             ];
 
             $collection = AccountListCollection::from($minimalData);
             expect($collection->count())->toBe(1);
-            
+
             $arrayResult = $collection->array();
             expect($arrayResult)->toBeArray();
             expect($arrayResult)->toHaveCount(1);
-            
+
             $jsonResult = $collection->json();
             expect($jsonResult)->toBeString();
         });
@@ -370,8 +368,8 @@ describe('AccountListCollection', function (): void {
                     'request_id' => 'static_test_req',
                     'name' => 'Static Test',
                     'description' => 'Test static from method',
-                    'accounts' => ['static_acc_1']
-                ]
+                    'accounts' => ['static_acc_1'],
+                ],
             ];
 
             $collection = AccountListCollection::from($data);

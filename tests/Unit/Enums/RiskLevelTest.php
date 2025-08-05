@@ -64,11 +64,11 @@ describe('RiskLevel Enum', function (): void {
 
     describe('withScore method', function (): void {
         it('works with Score objects', function (): void {
-            $lowScore = new \Ninja\Verisoul\ValueObjects\Score(0.3);
-            $moderateScore = new \Ninja\Verisoul\ValueObjects\Score(0.5);
-            $highScore = new \Ninja\Verisoul\ValueObjects\Score(0.8);
-            $criticalScore = new \Ninja\Verisoul\ValueObjects\Score(0.95);
-            $unknownScore = new \Ninja\Verisoul\ValueObjects\Score(0.0);
+            $lowScore = new Ninja\Verisoul\ValueObjects\Score(0.3);
+            $moderateScore = new Ninja\Verisoul\ValueObjects\Score(0.5);
+            $highScore = new Ninja\Verisoul\ValueObjects\Score(0.8);
+            $criticalScore = new Ninja\Verisoul\ValueObjects\Score(0.95);
+            $unknownScore = new Ninja\Verisoul\ValueObjects\Score(0.0);
 
             expect(RiskLevel::withScore($lowScore))->toBe(RiskLevel::Low)
                 ->and(RiskLevel::withScore($moderateScore))->toBe(RiskLevel::Moderate)

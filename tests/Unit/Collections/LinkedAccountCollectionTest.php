@@ -260,7 +260,7 @@ describe('LinkedAccountCollection', function (): void {
     describe('error handling and validation', function (): void {
         it('throws exception for non-iterable data', function (): void {
             expect(fn() => LinkedAccountCollection::from('not iterable'))
-                ->toThrow(\Ninja\Granite\Exceptions\ReflectionException::class, 'Expected iterable data');
+                ->toThrow(Ninja\Granite\Exceptions\ReflectionException::class, 'Expected iterable data');
         });
 
         it('throws exception for invalid LinkedAccount in array conversion', function (): void {
@@ -268,7 +268,7 @@ describe('LinkedAccountCollection', function (): void {
             $collection->push('not a LinkedAccount object');
 
             expect(fn() => $collection->array())
-                ->toThrow(\InvalidArgumentException::class, 'Expected LinkedAccount instance');
+                ->toThrow(InvalidArgumentException::class, 'Expected LinkedAccount instance');
         });
 
         it('handles edge case data types', function (): void {
@@ -279,13 +279,13 @@ describe('LinkedAccountCollection', function (): void {
                     'email' => '',
                     'match_type' => [],
                     'lists' => [],
-                    'metadata' => []
-                ]
+                    'metadata' => [],
+                ],
             ];
 
             $collection = LinkedAccountCollection::from($edgeCaseData);
             expect($collection->count())->toBe(1);
-            
+
             $arrayResult = $collection->array();
             expect($arrayResult)->toBeArray();
         });
@@ -303,16 +303,16 @@ describe('LinkedAccountCollection', function (): void {
                     'metadata' => [
                         'created_at' => '2023-01-01T00:00:00Z',
                         'tags' => ['verified', 'premium', 'api'],
-                        'nested' => ['deep' => ['value' => true]]
-                    ]
-                ]
+                        'nested' => ['deep' => ['value' => true]],
+                    ],
+                ],
             ];
 
             $collection = LinkedAccountCollection::from($complexData);
             $json = $collection->json();
-            
+
             expect($json)->toBeString();
-            
+
             $decoded = json_decode($json, true);
             expect($decoded)->toBeArray()
                 ->and($decoded[0]['account_id'])->toBe('complex_123')
@@ -327,8 +327,8 @@ describe('LinkedAccountCollection', function (): void {
                     'email' => 'integrity@test.com',
                     'match_type' => ['email'],
                     'lists' => ['test'],
-                    'metadata' => ['key' => 'value']
-                ]
+                    'metadata' => ['key' => 'value'],
+                ],
             ];
 
             $collection = LinkedAccountCollection::from($originalData);
@@ -364,8 +364,8 @@ describe('LinkedAccountCollection', function (): void {
                     'email' => 'static@test.com',
                     'match_type' => ['email'],
                     'lists' => [],
-                    'metadata' => []
-                ]
+                    'metadata' => [],
+                ],
             ];
 
             $collection = LinkedAccountCollection::from($data);

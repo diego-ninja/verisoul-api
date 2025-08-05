@@ -529,8 +529,8 @@ describe('RiskFlagCollection', function (): void {
             // The ordering prioritizes blocking flags first
             $severeFlagsArray = $severe->toArray();
             $blockingFlags = array_filter($severeFlagsArray, fn($flag) => $flag->shouldBlock());
-            $nonBlockingFlags = array_filter($severeFlagsArray, fn($flag) => !$flag->shouldBlock());
-            
+            $nonBlockingFlags = array_filter($severeFlagsArray, fn($flag) => ! $flag->shouldBlock());
+
             expect(count($blockingFlags))->toBe(2);
             expect(count($nonBlockingFlags))->toBe(3);
         });
@@ -584,7 +584,7 @@ describe('RiskFlagCollection', function (): void {
             $categories = $this->complexCollection->getUniqueCategories();
 
             expect($categories->count())->toBeGreaterThan(0);
-            $categories->each(function ($category) {
+            $categories->each(function ($category): void {
                 expect($category)->toBeInstanceOf(RiskCategory::class);
             });
         });

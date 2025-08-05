@@ -30,7 +30,7 @@ describe('SignalScope Enum', function (): void {
             it('returns correct scope for device network signals', function (): void {
                 $deviceNetworkSignals = [
                     'device_risk', 'proxy', 'vpn', 'datacenter', 'tor', 'spoofed_ip',
-                    'recent_fraud_ip', 'device_network_mismatch', 'location_spoofing'
+                    'recent_fraud_ip', 'device_network_mismatch', 'location_spoofing',
                 ];
 
                 foreach ($deviceNetworkSignals as $signal) {
@@ -41,7 +41,7 @@ describe('SignalScope Enum', function (): void {
             it('returns correct scope for document signals', function (): void {
                 $documentSignals = [
                     'id_age', 'id_face_match_score', 'id_barcode_status', 'id_face_status',
-                    'id_text_status', 'is_id_digital_spoof', 'is_full_id_captured', 'id_validity'
+                    'id_text_status', 'is_id_digital_spoof', 'is_full_id_captured', 'id_validity',
                 ];
 
                 foreach ($documentSignals as $signal) {
@@ -52,7 +52,7 @@ describe('SignalScope Enum', function (): void {
             it('returns correct scope for referring session signals', function (): void {
                 $referringSessionSignals = [
                     'impossible_travel', 'ip_mismatch', 'user_agent_mismatch',
-                    'device_timezone_mismatch', 'ip_timezone_mismatch'
+                    'device_timezone_mismatch', 'ip_timezone_mismatch',
                 ];
 
                 foreach ($referringSessionSignals as $signal) {

@@ -4,26 +4,25 @@ namespace Tests\Unit\Exceptions;
 
 use Exception;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
-use Tests\TestCase;
 
-describe('VerisoulApiException', function () {
-    beforeEach(function () {
+describe('VerisoulApiException', function (): void {
+    beforeEach(function (): void {
         $this->endpoint = 'https://api.verisoul.com/test';
         $this->statusCode = 400;
         $this->response = ['error' => 'Test error'];
         $this->message = 'Test exception message';
     });
 
-    describe('construction', function () {
-        it('can be created with all parameters', function () {
+    describe('construction', function (): void {
+        it('can be created with all parameters', function (): void {
             $previous = new Exception('Previous exception');
-            
+
             $exception = new VerisoulApiException(
                 message: $this->message,
                 statusCode: $this->statusCode,
                 response: $this->response,
                 endpoint: $this->endpoint,
-                previous: $previous
+                previous: $previous,
             );
 
             expect($exception->getMessage())->toBe($this->message);
@@ -33,7 +32,7 @@ describe('VerisoulApiException', function () {
             expect($exception->getPrevious())->toBe($previous);
         });
 
-        it('can be created with minimal parameters', function () {
+        it('can be created with minimal parameters', function (): void {
             $exception = new VerisoulApiException($this->message);
 
             expect($exception->getMessage())->toBe($this->message);
@@ -43,10 +42,10 @@ describe('VerisoulApiException', function () {
             expect($exception->getPrevious())->toBeNull();
         });
 
-        it('can be created with custom status code', function () {
+        it('can be created with custom status code', function (): void {
             $exception = new VerisoulApiException(
                 message: $this->message,
-                statusCode: 404
+                statusCode: 404,
             );
 
             expect($exception->statusCode)->toBe(404);
@@ -54,9 +53,9 @@ describe('VerisoulApiException', function () {
         });
     });
 
-    describe('static factory methods', function () {
-        describe('connectionFailed', function () {
-            it('creates connection failed exception', function () {
+    describe('static factory methods', function (): void {
+        describe('connectionFailed', function (): void {
+            it('creates connection failed exception', function (): void {
                 $previous = new Exception('Network error');
                 $exception = VerisoulApiException::connectionFailed($this->endpoint, $previous);
 
@@ -68,8 +67,8 @@ describe('VerisoulApiException', function () {
             });
         });
 
-        describe('authenticationFailed', function () {
-            it('creates authentication failed exception', function () {
+        describe('authenticationFailed', function (): void {
+            it('creates authentication failed exception', function (): void {
                 $exception = VerisoulApiException::authenticationFailed($this->endpoint);
 
                 expect($exception->getMessage())->toBe('Authentication failed for Verisoul API');
@@ -79,8 +78,8 @@ describe('VerisoulApiException', function () {
             });
         });
 
-        describe('badRequest', function () {
-            it('creates bad request exception with error message from response', function () {
+        describe('badRequest', function (): void {
+            it('creates bad request exception with error message from response', function (): void {
                 $response = ['error' => ['message' => 'Invalid input data']];
                 $exception = VerisoulApiException::badRequest($this->endpoint, $response);
 
@@ -90,7 +89,7 @@ describe('VerisoulApiException', function () {
                 expect($exception->response)->toBe($response);
             });
 
-            it('creates bad request exception with default message when no error message', function () {
+            it('creates bad request exception with default message when no error message', function (): void {
                 $response = ['data' => 'some data'];
                 $exception = VerisoulApiException::badRequest($this->endpoint, $response);
 
@@ -100,7 +99,7 @@ describe('VerisoulApiException', function () {
                 expect($exception->response)->toBe($response);
             });
 
-            it('creates bad request exception with default message when error message is not string', function () {
+            it('creates bad request exception with default message when error message is not string', function (): void {
                 $response = ['error' => ['message' => 123]];
                 $exception = VerisoulApiException::badRequest($this->endpoint, $response);
 
@@ -111,8 +110,8 @@ describe('VerisoulApiException', function () {
             });
         });
 
-        describe('serverError', function () {
-            it('creates server error exception', function () {
+        describe('serverError', function (): void {
+            it('creates server error exception', function (): void {
                 $statusCode = 500;
                 $response = ['error' => 'Internal server error'];
                 $exception = VerisoulApiException::serverError($this->endpoint, $statusCode, $response);
@@ -123,9 +122,9 @@ describe('VerisoulApiException', function () {
                 expect($exception->response)->toBe($response);
             });
 
-            it('creates server error exception with different status codes', function () {
+            it('creates server error exception with different status codes', function (): void {
                 $statusCodes = [500, 502, 503, 504];
-                
+
                 foreach ($statusCodes as $statusCode) {
                     $exception = VerisoulApiException::serverError($this->endpoint, $statusCode, []);
                     expect($exception->statusCode)->toBe($statusCode);
@@ -134,8 +133,8 @@ describe('VerisoulApiException', function () {
             });
         });
 
-        describe('rateLimitExceeded', function () {
-            it('creates rate limit exceeded exception', function () {
+        describe('rateLimitExceeded', function (): void {
+            it('creates rate limit exceeded exception', function (): void {
                 $response = ['error' => 'Rate limit exceeded'];
                 $exception = VerisoulApiException::rateLimitExceeded($this->endpoint, $response);
 
@@ -146,8 +145,8 @@ describe('VerisoulApiException', function () {
             });
         });
 
-        describe('invalidResponse', function () {
-            it('creates invalid response exception', function () {
+        describe('invalidResponse', function (): void {
+            it('creates invalid response exception', function (): void {
                 $reason = 'Invalid JSON format';
                 $exception = VerisoulApiException::invalidResponse($this->endpoint, $reason);
 
@@ -157,12 +156,12 @@ describe('VerisoulApiException', function () {
                 expect($exception->response)->toBe([]);
             });
 
-            it('creates invalid response exception with different reasons', function () {
+            it('creates invalid response exception with different reasons', function (): void {
                 $reasons = [
                     'Expected JSON response, got HTML',
                     'Malformed JSON',
                     'Missing required fields',
-                    'Unexpected response format'
+                    'Unexpected response format',
                 ];
 
                 foreach ($reasons as $reason) {
@@ -174,13 +173,13 @@ describe('VerisoulApiException', function () {
         });
     });
 
-    describe('getErrorDetails method', function () {
-        it('returns complete error details', function () {
+    describe('getErrorDetails method', function (): void {
+        it('returns complete error details', function (): void {
             $exception = new VerisoulApiException(
                 message: $this->message,
                 statusCode: $this->statusCode,
                 response: $this->response,
-                endpoint: $this->endpoint
+                endpoint: $this->endpoint,
             );
 
             $details = $exception->getErrorDetails();
@@ -193,7 +192,7 @@ describe('VerisoulApiException', function () {
             ]);
         });
 
-        it('returns error details with default values', function () {
+        it('returns error details with default values', function (): void {
             $exception = new VerisoulApiException($this->message);
             $details = $exception->getErrorDetails();
 
@@ -205,7 +204,7 @@ describe('VerisoulApiException', function () {
             ]);
         });
 
-        it('returns error details for different factory methods', function () {
+        it('returns error details for different factory methods', function (): void {
             $previous = new Exception('Network error');
             $exception = VerisoulApiException::connectionFailed($this->endpoint, $previous);
             $details = $exception->getErrorDetails();
@@ -217,13 +216,13 @@ describe('VerisoulApiException', function () {
         });
     });
 
-    describe('inheritance behavior', function () {
-        it('extends Exception class', function () {
+    describe('inheritance behavior', function (): void {
+        it('extends Exception class', function (): void {
             $exception = new VerisoulApiException($this->message);
             expect($exception)->toBeInstanceOf(Exception::class);
         });
 
-        it('preserves Exception methods', function () {
+        it('preserves Exception methods', function (): void {
             $line = __LINE__ + 1;
             $exception = new VerisoulApiException($this->message, $this->statusCode);
 
@@ -233,7 +232,7 @@ describe('VerisoulApiException', function () {
             expect($exception->getLine())->toBe($line);
         });
 
-        it('can be caught as Exception', function () {
+        it('can be caught as Exception', function (): void {
             try {
                 throw new VerisoulApiException($this->message);
             } catch (Exception $e) {
@@ -243,31 +242,31 @@ describe('VerisoulApiException', function () {
         });
     });
 
-    describe('edge cases', function () {
-        it('handles empty endpoint', function () {
+    describe('edge cases', function (): void {
+        it('handles empty endpoint', function (): void {
             $exception = VerisoulApiException::connectionFailed('', new Exception());
             expect($exception->endpoint)->toBe('');
             expect($exception->getMessage())->toContain('Failed to connect to Verisoul API at endpoint:');
         });
 
-        it('handles empty response array', function () {
+        it('handles empty response array', function (): void {
             $exception = VerisoulApiException::badRequest($this->endpoint, []);
             expect($exception->response)->toBe([]);
             expect($exception->getMessage())->toBe('Bad request to Verisoul API');
         });
 
-        it('handles complex response data', function () {
+        it('handles complex response data', function (): void {
             $complexResponse = [
                 'error' => [
                     'code' => 'VALIDATION_ERROR',
                     'message' => 'Invalid field',
                     'details' => [
                         'field' => 'email',
-                        'reason' => 'Invalid format'
-                    ]
+                        'reason' => 'Invalid format',
+                    ],
                 ],
                 'timestamp' => '2023-01-01T00:00:00Z',
-                'request_id' => 'req_12345'
+                'request_id' => 'req_12345',
             ];
 
             $exception = VerisoulApiException::badRequest($this->endpoint, $complexResponse);
@@ -275,12 +274,12 @@ describe('VerisoulApiException', function () {
             expect($exception->getMessage())->toBe('Invalid field');
         });
 
-        it('handles null values gracefully', function () {
+        it('handles null values gracefully', function (): void {
             $exception = new VerisoulApiException(
                 message: $this->message,
                 statusCode: $this->statusCode,
                 response: [],
-                endpoint: null
+                endpoint: null,
             );
 
             expect($exception->endpoint)->toBeNull();

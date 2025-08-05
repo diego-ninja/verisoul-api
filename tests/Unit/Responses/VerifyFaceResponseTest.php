@@ -413,7 +413,7 @@ describe('VerifyFaceResponse', function (): void {
             $manyFlags = [
                 'high_device_risk', 'proxy_detected', 'vpn_detected', 'datacenter_detected',
                 'likely_fake_id', 'id_expired', 'repeat_face', 'repeat_id', 'repeat_device',
-                'known_fraud_face', 'known_fraud_id'
+                'known_fraud_face', 'known_fraud_id',
             ];
 
             $fixtureData = MockFactory::createVerifyFaceResponseFromFixture([

@@ -388,7 +388,7 @@ describe('VerifyIdResponse', function (): void {
             $response = VerifyIdResponse::from($authenticData);
 
             expect($response)->toBeInstanceOf(VerifyIdResponse::class);
-            
+
             $categories = $response->getRiskFlagsByCategory();
             $levels = $response->getRiskFlagsByLevel();
             expect($categories)->toBeEmpty();
@@ -404,7 +404,7 @@ describe('VerifyIdResponse', function (): void {
             $response = VerifyIdResponse::from($suspiciousData);
 
             expect($response)->toBeInstanceOf(VerifyIdResponse::class);
-            
+
             $flagStrings = $response->getRiskFlagsAsStrings();
             expect($flagStrings)->toContain('likely_fake_id');
             expect($flagStrings)->toContain('low_id_face_match_score');
@@ -457,7 +457,7 @@ describe('VerifyIdResponse', function (): void {
             $manyFlags = [
                 'high_device_risk', 'proxy_detected', 'vpn_detected', 'datacenter_detected',
                 'likely_fake_id', 'id_expired', 'repeat_id', 'repeat_device',
-                'known_fraud_id', 'cannot_confirm_id_is_authentic', 'low_id_face_match_score'
+                'known_fraud_id', 'cannot_confirm_id_is_authentic', 'low_id_face_match_score',
             ];
 
             $fixtureData = MockFactory::createVerifyIdResponseFromFixture([

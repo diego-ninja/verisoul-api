@@ -465,9 +465,9 @@ describe('RiskSignalCollection', function (): void {
         it('updates signal with zero score removes it effectively', function (): void {
             $collection = new RiskSignalCollection();
             $collection->addSignal('test_signal', 0.8, SignalScope::DeviceNetwork);
-            
+
             expect($collection)->toHaveCount(1);
-            
+
             $collection->updateSignal('test_signal', 0.0); // Should not update to zero
             $existing = $collection->byName('test_signal');
             expect($existing)->not->toBeNull(); // Still exists with original score
@@ -522,9 +522,9 @@ describe('RiskSignalCollection', function (): void {
         it('handles signals with invalid properties in legacy conversion', function (): void {
             $collection = new RiskSignalCollection();
             $collection->addSignal('test_signal', 0.5, SignalScope::DeviceNetwork);
-            
+
             // Add mock signal with invalid properties
-            $mockSignal = new class {
+            $mockSignal = new class () {
                 public $name = null; // invalid name
                 public $score = null; // invalid score
             };
@@ -571,7 +571,7 @@ describe('RiskSignalCollection', function (): void {
 
             // Add many signals
             for ($i = 0; $i < 100; $i++) {
-                $largeCollection->addSignal("signal_$i", ($i % 10) / 10, SignalScope::DeviceNetwork);
+                $largeCollection->addSignal("signal_{$i}", ($i % 10) / 10, SignalScope::DeviceNetwork);
             }
 
             expect($largeCollection)->toHaveCount(90); // 10 signals with score 0.0 are ignored
@@ -585,11 +585,11 @@ describe('RiskSignalCollection', function (): void {
 
         it('maintains performance with complex operations', function (): void {
             $collection = new RiskSignalCollection();
-            
+
             // Add signals across all scopes
             foreach (SignalScope::cases() as $scope) {
                 for ($i = 0; $i < 10; $i++) {
-                    $collection->addSignal("{$scope->value}_signal_$i", ($i + 1) / 10, $scope);
+                    $collection->addSignal("{$scope->value}_signal_{$i}", ($i + 1) / 10, $scope);
                 }
             }
 
@@ -618,7 +618,7 @@ describe('RiskSignalCollection', function (): void {
 
         it('validates score ranges correctly', function (): void {
             $collection = new RiskSignalCollection();
-            
+
             // Test boundary values - Score validation may reject negative values
             $collection->addSignal('min_score', 0.001, SignalScope::DeviceNetwork);
             $collection->addSignal('max_score', 1.0, SignalScope::DeviceNetwork);

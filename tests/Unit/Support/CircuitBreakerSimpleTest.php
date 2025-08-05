@@ -3,13 +3,13 @@
 namespace Tests\Unit\Support;
 
 use Exception;
+use InvalidArgumentException;
 use Ninja\Verisoul\Exceptions\CircuitBreakerOpenException;
 use Ninja\Verisoul\Support\CircuitBreaker;
 use Ninja\Verisoul\Support\InMemoryCache;
-use Tests\TestCase;
 
-describe('CircuitBreaker Simple Tests', function () {
-    beforeEach(function () {
+describe('CircuitBreaker Simple Tests', function (): void {
+    beforeEach(function (): void {
         $this->cache = new InMemoryCache();
         $this->service = 'test-service';
         $this->circuitBreaker = new CircuitBreaker(
@@ -17,49 +17,53 @@ describe('CircuitBreaker Simple Tests', function () {
             cache: $this->cache,
             failureThreshold: 2,
             timeoutSeconds: 1,
-            recoveryTime: 1
+            recoveryTime: 1,
         );
     });
 
-    describe('basic functionality', function () {
-        it('executes successful callbacks', function () {
+    describe('basic functionality', function (): void {
+        it('executes successful callbacks', function (): void {
             $result = $this->circuitBreaker->call(fn() => 'success');
             expect($result)->toBe('success');
         });
 
-        it('opens circuit after threshold failures', function () {
+        it('opens circuit after threshold failures', function (): void {
             // First failure
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 1');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Second failure - should open circuit
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 2');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Third call should be blocked by open circuit
             expect(fn() => $this->circuitBreaker->call(fn() => 'should be blocked'))
                 ->toThrow(CircuitBreakerOpenException::class);
         });
 
-        it('allows recovery after timeout', function () {
+        it('allows recovery after timeout', function (): void {
             // Open the circuit
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 1');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 2');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Should be blocked initially
             expect(fn() => $this->circuitBreaker->call(fn() => 'blocked'))
@@ -73,17 +77,19 @@ describe('CircuitBreaker Simple Tests', function () {
             expect($result)->toBe('recovered');
         });
 
-        it('handles different service names', function () {
+        it('handles different service names', function (): void {
             $circuit1 = new CircuitBreaker('service1', $this->cache, failureThreshold: 2);
             $circuit2 = new CircuitBreaker('service2', $this->cache, failureThreshold: 2);
 
             // Open circuit1
             try {
-                $circuit1->call(function () { throw new Exception('fail'); });
-            } catch (Exception $e) {}
+                $circuit1->call(function (): void { throw new Exception('fail'); });
+            } catch (Exception $e) {
+            }
             try {
-                $circuit1->call(function () { throw new Exception('fail'); });
-            } catch (Exception $e) {}
+                $circuit1->call(function (): void { throw new Exception('fail'); });
+            } catch (Exception $e) {
+            }
 
             // circuit1 should be blocked
             expect(fn() => $circuit1->call(fn() => 'blocked'))
@@ -94,23 +100,25 @@ describe('CircuitBreaker Simple Tests', function () {
             expect($result)->toBe('working');
         });
 
-        it('reduces failure count on success', function () {
+        it('reduces failure count on success', function (): void {
             // First failure
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 1');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Success should reduce count
             $this->circuitBreaker->call(fn() => 'success');
 
             // Should need 2 more failures to open circuit
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 2');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Should still be closed (only 1 effective failure)
             $result = $this->circuitBreaker->call(fn() => 'still open');
@@ -118,40 +126,42 @@ describe('CircuitBreaker Simple Tests', function () {
         });
     });
 
-    describe('constructor parameters', function () {
-        it('respects custom failure threshold', function () {
+    describe('constructor parameters', function (): void {
+        it('respects custom failure threshold', function (): void {
             $circuit = new CircuitBreaker(
                 service: 'threshold-test',
                 cache: $this->cache,
-                failureThreshold: 1 // Very low threshold
+                failureThreshold: 1, // Very low threshold
             );
 
             // First failure should open circuit
             try {
-                $circuit->call(function () {
+                $circuit->call(function (): void {
                     throw new Exception('single failure');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Should be blocked immediately
             expect(fn() => $circuit->call(fn() => 'blocked'))
                 ->toThrow(CircuitBreakerOpenException::class);
         });
 
-        it('respects custom recovery time', function () {
+        it('respects custom recovery time', function (): void {
             $circuit = new CircuitBreaker(
                 service: 'recovery-test',
                 cache: $this->cache,
                 failureThreshold: 1,
-                recoveryTime: 3 // 3 seconds
+                recoveryTime: 3, // 3 seconds
             );
 
             // Open circuit
             try {
-                $circuit->call(function () {
+                $circuit->call(function (): void {
                     throw new Exception('failure');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Should be blocked initially
             expect(fn() => $circuit->call(fn() => 'blocked'))
@@ -164,46 +174,48 @@ describe('CircuitBreaker Simple Tests', function () {
         });
     });
 
-    describe('data types and edge cases', function () {
-        it('handles null return values', function () {
+    describe('data types and edge cases', function (): void {
+        it('handles null return values', function (): void {
             $result = $this->circuitBreaker->call(fn() => null);
             expect($result)->toBeNull();
         });
 
-        it('handles complex return values', function () {
+        it('handles complex return values', function (): void {
             $complexData = [
                 'array' => [1, 2, 3],
                 'object' => (object) ['prop' => 'value'],
-                'nested' => ['deep' => ['data' => true]]
+                'nested' => ['deep' => ['data' => true]],
             ];
 
             $result = $this->circuitBreaker->call(fn() => $complexData);
             expect($result)->toBe($complexData);
         });
 
-        it('propagates exception types correctly', function () {
-            $customException = new \InvalidArgumentException('Custom error');
+        it('propagates exception types correctly', function (): void {
+            $customException = new InvalidArgumentException('Custom error');
 
-            expect(fn() => $this->circuitBreaker->call(function () use ($customException) {
+            expect(fn() => $this->circuitBreaker->call(function () use ($customException): void {
                 throw $customException;
-            }))->toThrow(\InvalidArgumentException::class, 'Custom error');
+            }))->toThrow(InvalidArgumentException::class, 'Custom error');
         });
     });
 
-    describe('circuit states', function () {
-        it('handles half-open state correctly', function () {
+    describe('circuit states', function (): void {
+        it('handles half-open state correctly', function (): void {
             // Open the circuit
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 1');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 2');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Wait for recovery
             sleep(2);
@@ -217,29 +229,32 @@ describe('CircuitBreaker Simple Tests', function () {
             expect($result2)->toBe('second call');
         });
 
-        it('returns to open state on half-open failure', function () {
+        it('returns to open state on half-open failure', function (): void {
             // Open the circuit
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 1');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('fail 2');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Wait for recovery
             sleep(2);
 
             // Fail during half-open state
             try {
-                $this->circuitBreaker->call(function () {
+                $this->circuitBreaker->call(function (): void {
                     throw new Exception('half-open failure');
                 });
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // Should be open again
             expect(fn() => $this->circuitBreaker->call(fn() => 'should be blocked'))
