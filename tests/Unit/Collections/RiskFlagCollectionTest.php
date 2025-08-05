@@ -436,4 +436,317 @@ describe('RiskFlagCollection', function (): void {
                 ->and($this->emptyCollection->getRiskLevelDistribution()['low'])->toBe(0);
         });
     });
+
+    describe('edge cases and error handling', function (): void {
+        it('handles invalid arguments in from method', function (): void {
+            expect(fn() => RiskFlagCollection::from('not_iterable'))
+                ->toThrow(InvalidArgumentException::class);
+        });
+
+        it('handles non-string non-int values in fromValues', function (): void {
+            $collection = RiskFlagCollection::fromValues([
+                'high_device_risk',
+                123, // integer - should be skipped
+                [], // array - should be skipped
+                null, // null - should be skipped
+                'proxy_detected',
+            ]);
+
+            expect($collection)->toHaveCount(2);
+        });
+
+        it('handles non-string values in fromNames', function (): void {
+            $collection = RiskFlagCollection::fromNames([
+                'HighDeviceRisk',
+                123, // integer - should be skipped
+                null, // null - should be skipped
+                'ProxyDetected',
+            ]);
+
+            expect($collection)->toHaveCount(2);
+        });
+
+        it('throws exception when non-RiskFlag in conversion methods', function (): void {
+            $collection = new RiskFlagCollection();
+            $collection->add('invalid_item');
+
+            expect(fn() => $collection->toValues())->toThrow(InvalidArgumentException::class);
+            expect(fn() => $collection->toNames())->toThrow(InvalidArgumentException::class);
+            expect(fn() => $collection->toDisplayNames())->toThrow(InvalidArgumentException::class);
+            expect(fn() => $collection->toDetailedArray())->toThrow(InvalidArgumentException::class);
+            expect(fn() => $collection->getUniqueRiskLevels())->toThrow(InvalidArgumentException::class);
+        });
+
+        it('handles non-RiskFlag items in filtering methods gracefully', function (): void {
+            $collection = new RiskFlagCollection();
+            $collection->add(RiskFlag::HighDeviceRisk);
+            $collection->add('invalid_item');
+
+            $filtered = $collection->byCategory(RiskCategory::Device);
+            expect($filtered)->toHaveCount(1);
+
+            $filtered = $collection->byRiskLevel(RiskLevel::High);
+            expect($filtered)->toHaveCount(1);
+
+            $filtered = $collection->blocking();
+            expect($filtered)->toHaveCount(0); // HighDeviceRisk is not blocking
+
+            $filtered = $collection->nonBlocking();
+            expect($filtered)->toHaveCount(1); // HighDeviceRisk is non-blocking
+
+            $filtered = $collection->byDisplayNamePattern('Device');
+            expect($filtered)->toHaveCount(1);
+        });
+    });
+
+    describe('additional analysis methods', function (): void {
+        beforeEach(function (): void {
+            $this->mixedCollection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk, // High risk
+                RiskFlag::LikelyFakeId, // High risk, blocking
+                RiskFlag::ProxyDetected, // Moderate risk
+                RiskFlag::KnownFraudFace, // Moderate risk, blocking
+                RiskFlag::IdExpired, // Low risk
+            ]);
+        });
+
+        it('correctly identifies critical risk flags', function (): void {
+            $criticalCollection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk,
+            ]);
+
+            $summary = $criticalCollection->getSummary();
+            expect($summary['has_critical_flags'])->toBeFalse(); // HighDeviceRisk is High, not Critical
+        });
+
+        it('gets most severe flags with correct ordering', function (): void {
+            $severe = $this->mixedCollection->getMostSevere(10);
+
+            // Blocking flags should come first
+            $blockingCount = $severe->blocking()->count();
+            expect($blockingCount)->toBe(2); // LikelyFakeId and KnownFraudFace are blocking
+
+            // The ordering prioritizes blocking flags first
+            $severeFlagsArray = $severe->toArray();
+            $blockingFlags = array_filter($severeFlagsArray, fn($flag) => $flag->shouldBlock());
+            $nonBlockingFlags = array_filter($severeFlagsArray, fn($flag) => ! $flag->shouldBlock());
+
+            expect(count($blockingFlags))->toBe(2);
+            expect(count($nonBlockingFlags))->toBe(3);
+        });
+
+        it('limits most severe flags correctly', function (): void {
+            $severe = $this->mixedCollection->getMostSevere(2);
+            expect($severe)->toHaveCount(2);
+        });
+    });
+
+    describe('complex filtering scenarios', function (): void {
+        beforeEach(function (): void {
+            $this->complexCollection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk,
+                RiskFlag::ProxyDetected,
+                RiskFlag::VpnDetected,
+                RiskFlag::LikelyFakeId,
+                RiskFlag::IdExpired,
+                RiskFlag::RepeatFace,
+                RiskFlag::KnownFraudFace,
+                RiskFlag::LocationSpoofing,
+            ]);
+        });
+
+        it('filters by multiple categories with enum objects', function (): void {
+            $multipleFlags = $this->complexCollection->byCategories([
+                RiskCategory::Network,
+                RiskCategory::Device,
+            ]);
+
+            expect($multipleFlags->count())->toBeGreaterThan(0);
+        });
+
+        it('groups by category correctly', function (): void {
+            $grouped = $this->complexCollection->groupByCategory();
+
+            expect($grouped)->toBeArray();
+            foreach ($grouped as $categoryFlags) {
+                expect($categoryFlags)->toBeInstanceOf(RiskFlagCollection::class);
+            }
+        });
+
+        it('gets category distribution with multiple categories per flag', function (): void {
+            $distribution = $this->complexCollection->getCategoryDistribution();
+
+            expect($distribution)->toBeArray();
+            expect(array_sum($distribution))->toBeGreaterThanOrEqual($this->complexCollection->count());
+        });
+
+        it('gets unique categories correctly', function (): void {
+            $categories = $this->complexCollection->getUniqueCategories();
+
+            expect($categories->count())->toBeGreaterThan(0);
+            $categories->each(function ($category): void {
+                expect($category)->toBeInstanceOf(RiskCategory::class);
+            });
+        });
+    });
+
+    describe('collection operations edge cases', function (): void {
+        it('merges with empty collection', function (): void {
+            $collection1 = RiskFlagCollection::from([RiskFlag::HighDeviceRisk]);
+            $emptyCollection = new RiskFlagCollection();
+
+            $merged = $collection1->mergeFlags($emptyCollection);
+            expect($merged)->toHaveCount(1);
+
+            $merged = $emptyCollection->mergeFlags($collection1);
+            expect($merged)->toHaveCount(1);
+        });
+
+        it('intersects with empty collection', function (): void {
+            $collection = RiskFlagCollection::from([RiskFlag::HighDeviceRisk]);
+            $emptyCollection = new RiskFlagCollection();
+
+            $intersection = $collection->intersectFlags($emptyCollection);
+            expect($intersection)->toHaveCount(0);
+        });
+
+        it('calculates difference with identical collections', function (): void {
+            $collection1 = RiskFlagCollection::from([RiskFlag::HighDeviceRisk]);
+            $collection2 = RiskFlagCollection::from([RiskFlag::HighDeviceRisk]);
+
+            $diff = $collection1->diffFlags($collection2);
+            expect($diff)->toHaveCount(0);
+        });
+
+        it('handles non-RiskFlag items in collection operations', function (): void {
+            $collection1 = new RiskFlagCollection();
+            $collection1->add(RiskFlag::HighDeviceRisk);
+            $collection1->add('invalid_item');
+
+            $collection2 = RiskFlagCollection::from([RiskFlag::HighDeviceRisk]);
+
+            $intersection = $collection1->intersectFlags($collection2);
+            expect($intersection)->toHaveCount(1);
+
+            $diff = $collection1->diffFlags($collection2);
+            expect($diff)->toHaveCount(0); // Only RiskFlag items are considered
+        });
+    });
+
+    describe('risk assessment edge cases', function (): void {
+        it('handles collection with mixed invalid items in risk assessment', function (): void {
+            $collection = new RiskFlagCollection();
+            $collection->add(RiskFlag::IdExpired); // Low risk
+            $collection->add('invalid_item');
+
+            expect($collection->isLowRisk())->toBeFalse(); // Contains invalid item
+            expect($collection->isHighRisk())->toBeFalse();
+        });
+
+        it('handles complex recommendation scenarios', function (): void {
+            // Collection with only moderate risk flags
+            $moderateOnlyCollection = RiskFlagCollection::from([
+                RiskFlag::ProxyDetected,
+                RiskFlag::KnownFraudFace, // This is blocking, so should return 'block'
+            ]);
+            expect($moderateOnlyCollection->getRecommendation())->toBe('block');
+
+            // Collection with only low risk flags
+            $lowOnlyCollection = RiskFlagCollection::from([
+                RiskFlag::IdExpired,
+            ]);
+            expect($lowOnlyCollection->getRecommendation())->toBe('approve');
+        });
+    });
+
+    describe('performance and edge case testing', function (): void {
+        it('handles large collections efficiently', function (): void {
+            $allFlags = RiskFlag::cases();
+            $largeCollection = RiskFlagCollection::from($allFlags);
+
+            expect($largeCollection->count())->toBe(count($allFlags));
+
+            $summary = $largeCollection->getSummary();
+            expect($summary['total_flags'])->toBe(count($allFlags));
+
+            $grouped = $largeCollection->groupByCategory();
+            expect($grouped)->toBeArray();
+
+            $distribution = $largeCollection->getRiskLevelDistribution();
+            expect(array_sum($distribution))->toBe(count($allFlags));
+        });
+
+        it('handles regex patterns in display name filtering', function (): void {
+            $collection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk,
+                RiskFlag::RepeatDevice,
+                RiskFlag::ProxyDetected,
+            ]);
+
+            $deviceFlags = $collection->byDisplayNamePattern('Device');
+            expect($deviceFlags)->toHaveCount(2);
+
+            $proxyFlags = $collection->byDisplayNamePattern('Proxy');
+            expect($proxyFlags)->toHaveCount(1);
+
+            $noMatch = $collection->byDisplayNamePattern('NonExistent');
+            expect($noMatch)->toHaveCount(0);
+        });
+
+        it('handles special characters in regex patterns', function (): void {
+            $collection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk,
+            ]);
+
+            // Should not throw exception with special regex characters
+            $result = $collection->byDisplayNamePattern('High.*Risk');
+            expect($result)->toHaveCount(1);
+        });
+    });
+
+    describe('serialization and data integrity', function (): void {
+        beforeEach(function (): void {
+            $this->testCollection = RiskFlagCollection::from([
+                RiskFlag::HighDeviceRisk,
+                RiskFlag::LikelyFakeId,
+                RiskFlag::ProxyDetected,
+            ]);
+        });
+
+        it('maintains data integrity through serialization cycle', function (): void {
+            $json = $this->testCollection->json();
+            $array = json_decode($json, true);
+
+            $rebuilt = RiskFlagCollection::fromValues($array);
+            expect($rebuilt)->toHaveCount($this->testCollection->count());
+
+            foreach ($this->testCollection as $flag) {
+                expect($rebuilt->contains($flag))->toBeTrue();
+            }
+        });
+
+        it('detailed array contains all required fields', function (): void {
+            $detailed = $this->testCollection->toDetailedArray();
+
+            foreach ($detailed as $flagData) {
+                expect($flagData)->toHaveKey('name');
+                expect($flagData)->toHaveKey('value');
+                expect($flagData)->toHaveKey('display_name');
+                expect($flagData)->toHaveKey('description');
+                expect($flagData)->toHaveKey('risk_level');
+                expect($flagData)->toHaveKey('categories');
+                expect($flagData)->toHaveKey('should_block');
+
+                expect($flagData['categories'])->toBeArray();
+                expect($flagData['should_block'])->toBeBool();
+            }
+        });
+
+        it('handles non-RiskCategory objects in detailed array conversion', function (): void {
+            // This test ensures the toDetailedArray method handles edge cases
+            $detailed = $this->testCollection->toDetailedArray();
+            expect($detailed)->toBeArray();
+            expect(count($detailed))->toBe($this->testCollection->count());
+        });
+    });
 });

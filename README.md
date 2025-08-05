@@ -1,20 +1,20 @@
 # Verisoul API Client for PHP
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/diego-ninja/verisoul-api.svg?style=flat&color=blue)](https://packagist.org/packages/diego-ninja/verisoul-api)
-[![Total Downloads](https://img.shields.io/packagist/dt/diego-ninja/verisoul-api.svg?style=flat&color=blue)](https://packagist.org/packages/diego-ninja/verisoul-api)
-![PHP Version](https://img.shields.io/packagist/php-v/diego-ninja/verisoul-api.svg?style=flat&color=blue)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![GitHub last commit](https://img.shields.io/github/last-commit/diego-ninja/verisoul-api?color=blue)
-[![wakatime](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b.svg)](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/diego-ninja/verisoul-api.svg?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)](https://packagist.org/packages/diego-ninja/verisoul-api)
+[![Total Downloads](https://img.shields.io/packagist/dt/diego-ninja/verisoul-api.svg?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)](https://packagist.org/packages/diego-ninja/verisoul-api)
+![PHP Version](https://img.shields.io/packagist/php-v/diego-ninja/verisoul-api.svg?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)](https://opensource.org/licenses/MIT)
+![GitHub last commit](https://img.shields.io/github/last-commit/diego-ninja/verisoul-api?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)
+[![wakatime](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b.svg?style=flat-square&color=blue&logoColor=%23949ca4&labelColor=%233f4750)](https://wakatime.com/badge/user/bd65f055-c9f3-4f73-92aa-3c9810f70cc3/project/3cc2ec60-a8b4-4ddc-aeac-ea78e37a094b)
 
-
-[![Tests](https://github.com/diego-ninja/verisoul-api/actions/workflows/tests.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/tests.yml)
-[![Static Analysis](https://github.com/diego-ninja/verisoul-api/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/static-analysis.yml)
-[![Code Style](https://github.com/diego-ninja/verisoul-api/actions/workflows/code-style.yml/badge.svg)](https://github.com/diego-ninja/verisoaul-api/actions/workflows/code-style.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/diego-ninja/granite/tests.yml?branch=main&style=flat-square&logo=github&label=Pest%20Tests&logoColor=%23949ca4&labelColor=%233f4750)]()
+[![Static Analysis](https://img.shields.io/github/actions/workflow/status/diego-ninja/granite/static-analysis.yml?branch=main&style=flat-square&logo=github&label=PHPStan%2010&logoColor=%23949ca4&labelColor=%233f4750)]()
+[![Code Style](https://img.shields.io/github/actions/workflow/status/diego-ninja/granite/code-style.yml?branch=main&style=flat-square&logo=github&label=Pint%3A%20PER&logoColor=%23949ca4&labelColor=%233f4750)]()
+[![Coveralls](https://img.shields.io/coverallsCoverage/github/diego-ninja/verisoul-api?branch=main&style=flat-square&logo=coveralls&logoColor=%23949ca4&labelColor=%233f4750&link=https%3A%2F%2Fcoveralls.io%2Fgithub%2Fdiego-ninja%2Fgranite)]()
 
 ## Description
 
-This is a PHP API client designed to interact with the Verisoul API. It provides a simple and effective way to access Verisoul's services, which include account management, session authentication, biometric identity verification, and list management.
+This is a PHP API client designed to interact with the [Verisoul API](https://docs.verisoul.ai/api-reference/introduction). It provides a simple and effective way to access Verisoul's services, which include account management, session authentication, biometric identity verification, and list management.
 
 The client is designed to be flexible and easy to use, with a focus on the immutability of Data Transfer Objects (DTOs) to ensure data integrity throughout your application.
 

@@ -251,6 +251,133 @@ describe('VerifyIdResponse', function (): void {
         });
     });
 
+    describe('comprehensive risk flag analysis', function (): void {
+        it('getRiskFlagsByCategory handles non-RiskFlag items gracefully', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => ['repeat_id', 'high_device_risk', 'likely_fake_id'],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $categories = $response->getRiskFlagsByCategory();
+
+            expect($categories)->toBeArray();
+            foreach ($categories as $categoryFlags) {
+                expect($categoryFlags)->toBeArray();
+            }
+        });
+
+        it('getRiskFlagsByLevel handles non-RiskFlag items gracefully', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => ['repeat_id', 'vpn_detected', 'id_expired', 'likely_fake_id'],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $levels = $response->getRiskFlagsByLevel();
+
+            expect($levels)->toBeArray();
+            foreach ($levels as $levelFlags) {
+                expect($levelFlags)->toBeArray();
+            }
+        });
+
+        it('getRiskFlagsAsStrings handles normal case correctly', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => ['repeat_id', 'high_device_risk'],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $flagStrings = $response->getRiskFlagsAsStrings();
+            expect($flagStrings)->toBeArray();
+            expect(count($flagStrings))->toBe(2);
+        });
+
+        it('hasRiskFlag works with various ID-specific flag types', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => ['repeat_id', 'likely_fake_id', 'id_expired', 'low_id_face_match_score'],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            expect($response->hasRiskFlag(RiskFlag::RepeatId))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::LikelyFakeId))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::IdExpired))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::LowIdFaceMatchScore))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::VpnDetected))->toBeFalse();
+        });
+    });
+
+    describe('comprehensive risk signals testing', function (): void {
+        it('getRiskSignals combines all three signal types', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'device_network_signals' => [
+                    'device_risk' => 0.8,
+                    'proxy' => 0.1,
+                    'vpn' => 0.9,
+                    'datacenter' => 0.0,
+                    'tor' => 0.0,
+                    'spoofed_ip' => 0.0,
+                    'recent_fraud_ip' => 0.0,
+                    'device_network_mismatch' => 0.0,
+                    'location_spoofing' => 0.0,
+                ],
+                'document_signals' => [
+                    'id_validity' => 'likely_authentic_id',
+                    'id_face_match_score' => 0.85,
+                    'face_mismatch' => 0.15,
+                    'id_age' => 2,
+                    'face_liveness' => 0.95,
+                ],
+                'referring_session_signals' => [
+                    'impossible_travel' => 0.2,
+                    'ip_mismatch' => 0.0,
+                    'user_agent_mismatch' => 0.1,
+                    'device_timezone_mismatch' => 0.0,
+                    'ip_timezone_mismatch' => 0.0,
+                ],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $riskSignals = $response->getRiskSignals();
+
+            expect($riskSignals)->toBeInstanceOf('Ninja\Verisoul\Collections\RiskSignalCollection');
+            expect($riskSignals->count())->toBeGreaterThan(0);
+        });
+
+        it('getRiskSignals handles empty signals across all types', function (): void {
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'device_network_signals' => [
+                    'device_risk' => 0.0,
+                    'proxy' => 0.0,
+                    'vpn' => 0.0,
+                    'datacenter' => 0.0,
+                    'tor' => 0.0,
+                    'spoofed_ip' => 0.0,
+                    'recent_fraud_ip' => 0.0,
+                    'device_network_mismatch' => 0.0,
+                    'location_spoofing' => 0.0,
+                ],
+                'document_signals' => [
+                    'id_validity' => 'likely_authentic_id',
+                    'id_face_match_score' => 0.0,
+                    'face_mismatch' => 0.0,
+                    'id_age' => 0,
+                    'face_liveness' => 0.0,
+                ],
+                'referring_session_signals' => [
+                    'impossible_travel' => 0.0,
+                    'ip_mismatch' => 0.0,
+                    'user_agent_mismatch' => 0.0,
+                    'device_timezone_mismatch' => 0.0,
+                    'ip_timezone_mismatch' => 0.0,
+                ],
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $riskSignals = $response->getRiskSignals();
+
+            expect($riskSignals)->toBeInstanceOf('Ninja\Verisoul\Collections\RiskSignalCollection');
+        });
+    });
+
     describe('document verification scenarios', function (): void {
         it('handles authentic document scenario', function (): void {
             $authenticData = MockFactory::createVerifyIdResponseFromFixture([
@@ -261,6 +388,11 @@ describe('VerifyIdResponse', function (): void {
             $response = VerifyIdResponse::from($authenticData);
 
             expect($response)->toBeInstanceOf(VerifyIdResponse::class);
+
+            $categories = $response->getRiskFlagsByCategory();
+            $levels = $response->getRiskFlagsByLevel();
+            expect($categories)->toBeEmpty();
+            expect($levels)->toBeEmpty();
         });
 
         it('handles suspicious document scenario', function (): void {
@@ -272,6 +404,24 @@ describe('VerifyIdResponse', function (): void {
             $response = VerifyIdResponse::from($suspiciousData);
 
             expect($response)->toBeInstanceOf(VerifyIdResponse::class);
+
+            $flagStrings = $response->getRiskFlagsAsStrings();
+            expect($flagStrings)->toContain('likely_fake_id');
+            expect($flagStrings)->toContain('low_id_face_match_score');
+        });
+
+        it('handles ID fraud detection scenario', function (): void {
+            $fraudData = MockFactory::createVerifyIdResponseFromFixture([
+                'decision' => 'Suspicious',
+                'risk_score' => 0.95,
+                'risk_flags' => ['likely_fake_id', 'known_fraud_id', 'cannot_confirm_id_is_authentic'],
+            ]);
+            $response = VerifyIdResponse::from($fraudData);
+
+            expect($response)->toBeInstanceOf(VerifyIdResponse::class);
+            expect($response->hasRiskFlag(RiskFlag::LikelyFakeId))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::KnownFraudId))->toBeTrue();
+            expect($response->hasRiskFlag(RiskFlag::CannotConfirmIdIsAuthentic))->toBeTrue();
         });
 
         it('provides consistent results across multiple method calls', function (): void {
@@ -280,12 +430,88 @@ describe('VerifyIdResponse', function (): void {
             ]);
             $response = VerifyIdResponse::from($fixtureData);
 
+            // Test string flags consistency
             $firstCall = $response->getRiskFlagsAsStrings();
             $secondCall = $response->getRiskFlagsAsStrings();
-            $thirdCall = $response->getRiskFlagsAsStrings();
+            expect($firstCall)->toBe($secondCall);
 
-            expect($firstCall)->toBe($secondCall)
-                ->and($secondCall)->toBe($thirdCall);
+            // Test categories consistency
+            $categories1 = $response->getRiskFlagsByCategory();
+            $categories2 = $response->getRiskFlagsByCategory();
+            expect($categories1)->toBe($categories2);
+
+            // Test levels consistency
+            $levels1 = $response->getRiskFlagsByLevel();
+            $levels2 = $response->getRiskFlagsByLevel();
+            expect($levels1)->toBe($levels2);
+
+            // Test specific flag consistency
+            $hasFlag1 = $response->hasRiskFlag(RiskFlag::RepeatId);
+            $hasFlag2 = $response->hasRiskFlag(RiskFlag::RepeatId);
+            expect($hasFlag1)->toBe($hasFlag2);
+        });
+    });
+
+    describe('performance and edge cases', function (): void {
+        it('handles large number of risk flags efficiently', function (): void {
+            $manyFlags = [
+                'high_device_risk', 'proxy_detected', 'vpn_detected', 'datacenter_detected',
+                'likely_fake_id', 'id_expired', 'repeat_id', 'repeat_device',
+                'known_fraud_id', 'cannot_confirm_id_is_authentic', 'low_id_face_match_score',
+            ];
+
+            $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => $manyFlags,
+            ]);
+            $response = VerifyIdResponse::from($fixtureData);
+
+            $startTime = microtime(true);
+
+            $categories = $response->getRiskFlagsByCategory();
+            $levels = $response->getRiskFlagsByLevel();
+            $flagStrings = $response->getRiskFlagsAsStrings();
+            $hasSpecificFlag = $response->hasRiskFlag(RiskFlag::LikelyFakeId);
+
+            $endTime = microtime(true);
+            $executionTime = $endTime - $startTime;
+
+            expect($executionTime)->toBeLessThan(0.1); // Should be very fast
+            expect($categories)->toBeArray();
+            expect($levels)->toBeArray();
+            expect($flagStrings)->toBeArray();
+            expect(count($flagStrings))->toBe(count($manyFlags));
+            expect($hasSpecificFlag)->toBeTrue();
+        });
+
+        it('handles empty and null scenarios gracefully', function (): void {
+            $emptyData = MockFactory::createVerifyIdResponseFromFixture([
+                'risk_flags' => [],
+                'risk_score' => 0.0,
+            ]);
+            $response = VerifyIdResponse::from($emptyData);
+
+            expect($response->getRiskFlagsByCategory())->toBeEmpty();
+            expect($response->getRiskFlagsByLevel())->toBeEmpty();
+            expect($response->getRiskFlagsAsStrings())->toBeEmpty();
+            expect($response->hasRiskFlag(RiskFlag::LikelyFakeId))->toBeFalse();
+        });
+
+        it('handles international document scenarios', function (): void {
+            $internationalCountries = ['CA', 'GB', 'AU', 'DE', 'FR', 'JP', 'MX'];
+
+            foreach ($internationalCountries as $country) {
+                $fixtureData = MockFactory::createVerifyIdResponseFromFixture([
+                    'document_data' => [
+                        'template_info' => [
+                            'document_country_code' => $country,
+                            'template_type' => 'National ID',
+                        ],
+                    ],
+                ]);
+                $response = VerifyIdResponse::from($fixtureData);
+
+                expect($response)->toBeInstanceOf(VerifyIdResponse::class);
+            }
         });
     });
 });

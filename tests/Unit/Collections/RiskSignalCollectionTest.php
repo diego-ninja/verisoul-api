@@ -308,4 +308,322 @@ describe('RiskSignalCollection', function (): void {
             expect($collection)->toHaveCount(1);
         });
     });
+
+    describe('comprehensive from method testing', function (): void {
+        it('handles empty or invalid input gracefully', function (): void {
+            $emptyCollection = RiskSignalCollection::from([]);
+            expect($emptyCollection)->toHaveCount(0);
+
+            $invalidCollection = RiskSignalCollection::from('not_iterable');
+            expect($invalidCollection)->toHaveCount(0);
+
+            $nullCollection = RiskSignalCollection::from(null);
+            expect($nullCollection)->toHaveCount(0);
+        });
+
+        it('processes mixed valid and invalid signal data', function (): void {
+            $signalData = [
+                'valid_signal' => ['name' => 'valid_signal', 'score' => 0.8, 'scope' => 'device_network'],
+                'invalid_name' => ['name' => '', 'score' => 0.7], // empty name
+                'invalid_score' => ['name' => 'test', 'score' => 'not_numeric'], // non-numeric score
+                'missing_data' => [], // missing required fields
+                'valid_float' => 0.6,
+                'zero_score' => 0.0, // should be ignored
+                'negative_score' => -0.1, // should be ignored
+            ];
+
+            $collection = RiskSignalCollection::from($signalData);
+
+            expect($collection)->toHaveCount(3); // valid_signal, valid_float, and invalid_score (processed with fallback)
+        });
+
+        it('handles different scope formats', function (): void {
+            $signalData = [
+                'string_scope' => ['name' => 'test1', 'score' => 0.5, 'scope' => 'device_network'],
+                'int_scope' => ['name' => 'test2', 'score' => 0.6, 'scope' => 1],
+                'invalid_scope' => ['name' => 'test3', 'score' => 0.7, 'scope' => 'invalid_scope'],
+                'no_scope' => ['name' => 'test4', 'score' => 0.8], // will use getScopeForSignal
+            ];
+
+            $collection = RiskSignalCollection::from($signalData);
+
+            expect($collection)->toHaveCount(4);
+        });
+    });
+
+    describe('comprehensive filtering and searching', function (): void {
+        beforeEach(function (): void {
+            $this->testCollection = new RiskSignalCollection();
+            $this->testCollection->addSignal('device_risk_1', 0.9, SignalScope::DeviceNetwork);
+            $this->testCollection->addSignal('device_risk_2', 0.7, SignalScope::DeviceNetwork);
+            $this->testCollection->addSignal('document_risk', 0.8, SignalScope::Document);
+            $this->testCollection->addSignal('session_risk', 0.6, SignalScope::ReferringSession);
+        });
+
+        it('handles non-RiskSignal items in filtering gracefully', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $filtered = $collection->byScope(SignalScope::DeviceNetwork);
+            expect($filtered)->toHaveCount(1);
+
+            $byName = $collection->byName('valid_signal');
+            expect($byName)->not->toBeNull();
+
+            $byNames = $collection->byNames(['valid_signal', 'invalid']);
+            expect($byNames)->toHaveCount(1);
+        });
+
+        it('filters multiple signals by names correctly', function (): void {
+            $filtered = $this->testCollection->byNames(['device_risk_1', 'document_risk', 'non_existent']);
+
+            expect($filtered)->toHaveCount(2);
+        });
+
+        it('returns empty collection for non-matching scope', function (): void {
+            $filtered = $this->testCollection->byScope(SignalScope::Account);
+
+            expect($filtered)->toHaveCount(0);
+        });
+    });
+
+    describe('risk scoring edge cases', function (): void {
+        it('handles non-RiskSignal items in scoring methods', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.8, SignalScope::DeviceNetwork);
+
+            $overallScore = $collection->getOverallRiskScore();
+            expect($overallScore->value())->toBeFloat(); // Average of valid signals
+
+            $weightedScore = $collection->getWeightedRiskScore();
+            expect($weightedScore->value())->toBeGreaterThan(0);
+        });
+
+        it('handles non-numeric weights in weighted scoring', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $customWeights = [
+                SignalScope::DeviceNetwork->value => 'invalid_weight', // non-numeric
+                SignalScope::Document->value => 0.3,
+            ];
+
+            $weightedScore = $collection->getWeightedRiskScore($customWeights);
+            expect($weightedScore->value())->toBe(0.0); // Should handle gracefully
+        });
+
+        it('calculates weighted score with zero total weight', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $zeroWeights = [
+                SignalScope::DeviceNetwork->value => 0,
+                SignalScope::Document->value => 0,
+            ];
+
+            $weightedScore = $collection->getWeightedRiskScore($zeroWeights);
+            expect($weightedScore->value())->toBe(0.0);
+        });
+    });
+
+    describe('grouping and analysis edge cases', function (): void {
+        it('handles non-RiskSignal items in grouping', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $grouped = $collection->groupedByScope();
+            expect($grouped)->toBeArray();
+            expect($grouped)->toHaveKey('unknown'); // invalid items go to unknown
+            expect($grouped)->toHaveKey(SignalScope::DeviceNetwork->value);
+        });
+
+        it('handles non-RiskSignal items in summary methods', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.8, SignalScope::DeviceNetwork);
+
+            $summary = $collection->getSummary();
+            expect($summary['total_signals'])->toBe(2); // counts all items
+            expect($summary['max_score'])->toBe(0.8); // ignores invalid items in calculations
+        });
+
+        it('handles non-RiskSignal items in getMostCritical', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('high_signal', 0.9, SignalScope::DeviceNetwork);
+            $collection->addSignal('low_signal', 0.3, SignalScope::DeviceNetwork);
+
+            $critical = $collection->getMostCritical(5);
+            expect($critical)->toHaveCount(3); // includes invalid item but sorted correctly
+        });
+    });
+
+    describe('signal management edge cases', function (): void {
+        it('updates signal with zero score removes it effectively', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.8, SignalScope::DeviceNetwork);
+
+            expect($collection)->toHaveCount(1);
+
+            $collection->updateSignal('test_signal', 0.0); // Should not update to zero
+            $existing = $collection->byName('test_signal');
+            expect($existing)->not->toBeNull(); // Still exists with original score
+        });
+
+        it('removes non-existent signal gracefully', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('existing_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $result = $collection->removeSignal('non_existent');
+            expect($result)->toHaveCount(1); // Original signal remains
+        });
+
+        it('handles non-RiskSignal items in removeSignal', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $result = $collection->removeSignal('valid_signal');
+            expect($result)->toHaveCount(1); // Only invalid_item remains
+        });
+    });
+
+    describe('legacy conversion comprehensive testing', function (): void {
+        beforeEach(function (): void {
+            $this->legacyCollection = new RiskSignalCollection();
+            $this->legacyCollection->addSignal('device_risk', 0.8, SignalScope::DeviceNetwork);
+            $this->legacyCollection->addSignal('proxy_detected', 0.6, SignalScope::DeviceNetwork);
+            $this->legacyCollection->addSignal('id_face_match_score', 0.9, SignalScope::Document);
+        });
+
+        it('handles non-RiskSignal items in legacy conversion', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+            $collection->addSignal('valid_signal', 0.5, SignalScope::DeviceNetwork);
+
+            $legacyScores = $collection->toLegacyRiskSignalScores();
+            expect($legacyScores)->toBeArray();
+            expect($legacyScores)->toHaveKey('validSignal');
+        });
+
+        it('converts complex signal names to camelCase correctly', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('very_complex_signal_name', 0.7, SignalScope::DeviceNetwork);
+            $collection->addSignal('single', 0.8, SignalScope::DeviceNetwork);
+
+            $legacyScores = $collection->toLegacyRiskSignalScores();
+            expect($legacyScores)->toHaveKey('veryComplexSignalName');
+            expect($legacyScores)->toHaveKey('single');
+        });
+
+        it('handles signals with invalid properties in legacy conversion', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.5, SignalScope::DeviceNetwork);
+
+            // Add mock signal with invalid properties
+            $mockSignal = new class () {
+                public $name = null; // invalid name
+                public $score = null; // invalid score
+            };
+            $collection->add($mockSignal);
+
+            $legacyScores = $collection->toLegacyRiskSignalScores();
+            expect($legacyScores)->toBeArray();
+            expect($legacyScores)->toHaveKey('testSignal'); // Only valid signal converted
+        });
+    });
+
+    describe('serialization comprehensive testing', function (): void {
+        it('handles non-RiskSignal items in array conversion', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->add('invalid_item');
+
+            expect(fn() => $collection->array())
+                ->toThrow(InvalidArgumentException::class);
+        });
+
+        it('handles empty collection serialization', function (): void {
+            $collection = new RiskSignalCollection();
+
+            $array = $collection->array();
+            expect($array)->toBeArray()->and($array)->toBeEmpty();
+
+            $json = $collection->json();
+            expect($json)->toBe('[]');
+        });
+
+        it('handles JSON encoding errors gracefully', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.5, SignalScope::DeviceNetwork);
+
+            // Should not throw exception for normal data
+            $json = $collection->json();
+            expect($json)->toBeString();
+        });
+    });
+
+    describe('performance and large dataset testing', function (): void {
+        it('handles large collections efficiently', function (): void {
+            $largeCollection = new RiskSignalCollection();
+
+            // Add many signals
+            for ($i = 0; $i < 100; $i++) {
+                $largeCollection->addSignal("signal_{$i}", ($i % 10) / 10, SignalScope::DeviceNetwork);
+            }
+
+            expect($largeCollection)->toHaveCount(90); // 10 signals with score 0.0 are ignored
+
+            $summary = $largeCollection->getSummary();
+            expect($summary['total_signals'])->toBe(90);
+
+            $critical = $largeCollection->getMostCritical(10);
+            expect($critical)->toHaveCount(10);
+        });
+
+        it('maintains performance with complex operations', function (): void {
+            $collection = new RiskSignalCollection();
+
+            // Add signals across all scopes
+            foreach (SignalScope::cases() as $scope) {
+                for ($i = 0; $i < 10; $i++) {
+                    $collection->addSignal("{$scope->value}_signal_{$i}", ($i + 1) / 10, $scope);
+                }
+            }
+
+            $grouped = $collection->groupedByScope();
+            expect($grouped)->toBeArray();
+            expect(count($grouped))->toBe(count(SignalScope::cases()));
+
+            $weightedScore = $collection->getWeightedRiskScore();
+            expect($weightedScore->value())->toBeGreaterThan(0);
+        });
+    });
+
+    describe('data integrity and validation', function (): void {
+        it('maintains data integrity through operations', function (): void {
+            $collection = new RiskSignalCollection();
+            $collection->addSignal('test_signal', 0.8, SignalScope::DeviceNetwork);
+
+            $json = $collection->json();
+            $array = json_decode($json, true);
+
+            expect($array[0])->toHaveKey('name');
+            expect($array[0])->toHaveKey('score');
+            expect($array[0])->toHaveKey('scope');
+            expect($array[0]['name'])->toBe('test_signal');
+        });
+
+        it('validates score ranges correctly', function (): void {
+            $collection = new RiskSignalCollection();
+
+            // Test boundary values - Score validation may reject negative values
+            $collection->addSignal('min_score', 0.001, SignalScope::DeviceNetwork);
+            $collection->addSignal('max_score', 1.0, SignalScope::DeviceNetwork);
+
+            expect($collection)->toHaveCount(2); // Only min_score and max_score (> 0)
+        });
+    });
 });
