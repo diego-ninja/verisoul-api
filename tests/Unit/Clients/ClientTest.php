@@ -57,7 +57,7 @@ describe('Client Abstract Class', function (): void {
             );
 
             expect($client->getEnvironment())->toBe(VerisoulEnvironment::Production)
-                ->and($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+                ->and($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('validates API key is required', function (): void {
@@ -193,7 +193,7 @@ describe('Client Abstract Class', function (): void {
 
             expect($result)->toBe($this->client)
                 ->and($this->client->getEnvironment())->toBe(VerisoulEnvironment::Production)
-                ->and($this->client->getBaseUrl())->toBe('https://api.verisoul.ai');
+                ->and($this->client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('provides environment-specific base URLs', function (): void {
@@ -201,7 +201,7 @@ describe('Client Abstract Class', function (): void {
             $prodClient = new TestableClient('key', VerisoulEnvironment::Production);
 
             expect($sandboxClient->getBaseUrl())->toBe('https://api.sandbox.verisoul.ai')
-                ->and($prodClient->getBaseUrl())->toBe('https://api.verisoul.ai');
+                ->and($prodClient->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
     });
 
@@ -274,7 +274,7 @@ describe('Client Abstract Class', function (): void {
 
             $client->setEnvironment(VerisoulEnvironment::Production);
 
-            expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+            expect($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
 
             $client->setEnvironment(VerisoulEnvironment::Sandbox);
 

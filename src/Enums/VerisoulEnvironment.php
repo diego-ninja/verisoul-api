@@ -11,7 +11,7 @@ enum VerisoulEnvironment: string
     {
         return match ($this) {
             self::Sandbox => 'https://api.sandbox.verisoul.ai',
-            self::Production => 'https://api.verisoul.ai',
+            self::Production => 'https://api.prod.verisoul.ai',
         };
     }
 }

@@ -42,7 +42,7 @@ describe('VerisoulEnvironment Enum', function (): void {
         it('returns correct production URL', function (): void {
             $url = VerisoulEnvironment::Production->getBaseUrl();
 
-            expect($url)->toBe('https://api.verisoul.ai')
+            expect($url)->toBe('https://api.prod.verisoul.ai')
                 ->and($url)->toStartWith('https://')
                 ->and($url)->not->toContain('sandbox');
         });
@@ -114,7 +114,7 @@ describe('VerisoulEnvironment Enum', function (): void {
 
             expect($unserialized)->toBe(VerisoulEnvironment::Production)
                 ->and($unserialized->value)->toBe('production')
-                ->and($unserialized->getBaseUrl())->toBe('https://api.verisoul.ai');
+                ->and($unserialized->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
     });
 
@@ -122,7 +122,7 @@ describe('VerisoulEnvironment Enum', function (): void {
         it('provides correct URLs for API client configuration', function (): void {
             $configurations = [
                 [VerisoulEnvironment::Sandbox, 'https://api.sandbox.verisoul.ai'],
-                [VerisoulEnvironment::Production, 'https://api.verisoul.ai'],
+                [VerisoulEnvironment::Production, 'https://api.prod.verisoul.ai'],
             ];
 
             foreach ($configurations as [$env, $expectedUrl]) {
