@@ -207,7 +207,7 @@ describe('PhoneClient', function (): void {
         it('uses production URLs in production environment', function (): void {
             $client = new PhoneClient('prod_key', VerisoulEnvironment::Production);
 
-            expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+            expect($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('makes requests to correct environment', function (): void {
@@ -218,7 +218,7 @@ describe('PhoneClient', function (): void {
 
             $mockHttpClient->shouldReceive('post')
                 ->once()
-                ->withArgs(fn($url, $data) => str_contains($url, 'https://api.verisoul.ai'))
+                ->withArgs(fn($url, $data) => str_contains($url, 'https://api.prod.verisoul.ai'))
                 ->andReturn([
                     'phone_number' => '+1234567890',
                     'is_valid' => true,

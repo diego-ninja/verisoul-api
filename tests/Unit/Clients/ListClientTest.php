@@ -545,7 +545,7 @@ describe('ListClient', function (): void {
         it('uses production URLs in production environment', function (): void {
             $client = new ListClient('prod_key', VerisoulEnvironment::Production);
 
-            expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+            expect($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('makes requests to correct environment', function (): void {
@@ -556,7 +556,7 @@ describe('ListClient', function (): void {
 
             $mockHttpClient->shouldReceive('post')
                 ->once()
-                ->withArgs(fn($url, $data) => str_contains($url, 'https://api.verisoul.ai'))
+                ->withArgs(fn($url, $data) => str_contains($url, 'https://api.prod.verisoul.ai'))
                 ->andReturn(['list_name' => 'prod_list', 'created' => true]);
 
             $prodClient = new ListClient(

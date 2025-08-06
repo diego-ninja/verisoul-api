@@ -381,7 +381,7 @@ describe('IDCheckClient', function (): void {
         it('uses production URLs in production environment', function (): void {
             $client = new IDCheckClient('prod_key', VerisoulEnvironment::Production);
 
-            expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+            expect($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('makes requests to correct environment', function (): void {
@@ -392,7 +392,7 @@ describe('IDCheckClient', function (): void {
 
             $mockHttpClient->shouldReceive('get')
                 ->once()
-                ->withArgs(fn($url, $params) => str_contains($url, 'https://api.verisoul.ai'))
+                ->withArgs(fn($url, $params) => str_contains($url, 'https://api.prod.verisoul.ai'))
                 ->andReturn(['session_id' => 'prod_id_session', 'type' => 'id_check']);
 
             $prodClient = new IDCheckClient(

@@ -359,7 +359,7 @@ describe('AccountClient', function (): void {
         it('uses production URLs in production environment', function (): void {
             $client = new AccountClient('prod_key', VerisoulEnvironment::Production);
 
-            expect($client->getBaseUrl())->toBe('https://api.verisoul.ai');
+            expect($client->getBaseUrl())->toBe('https://api.prod.verisoul.ai');
         });
 
         it('makes requests to correct environment', function (): void {
@@ -370,7 +370,7 @@ describe('AccountClient', function (): void {
 
             $mockHttpClient->shouldReceive('get')
                 ->once()
-                ->withArgs(fn($url, $params) => str_contains($url, 'https://api.verisoul.ai'))
+                ->withArgs(fn($url, $params) => str_contains($url, 'https://api.prod.verisoul.ai'))
                 ->andReturn(['account_id' => 'prod_account', 'status' => 'active']);
 
             $prodClient = new AccountClient(

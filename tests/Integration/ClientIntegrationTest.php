@@ -135,7 +135,7 @@ describe('Client Integration Tests', function (): void {
             // Then expect production URL after environment switch
             $mockHttpClient->shouldReceive('get')
                 ->once()
-                ->withArgs(fn($url) => str_contains($url, 'api.verisoul.ai') && ! str_contains($url, 'sandbox'))
+                ->withArgs(fn($url) => str_contains($url, 'api.prod.verisoul.ai') && ! str_contains($url, 'sandbox'))
                 ->andReturn(MockFactory::createAccountResponseFromFixture(['account' => ['id' => 'env_test']]));
 
             $accountClient = new AccountClient($this->testApiKey, VerisoulEnvironment::Sandbox, httpClient: $mockHttpClient);
