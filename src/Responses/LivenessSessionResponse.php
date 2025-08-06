@@ -17,8 +17,8 @@ final readonly class LivenessSessionResponse extends ApiResponse
     public function redirectUrl(VerisoulEnvironment $environment = VerisoulEnvironment::Sandbox, ?string $redirectUrl = null): string
     {
         $url = sprintf(
-            'https://app.%s.verisoul.ai/?session_id=%s',
-            $environment->value,
+            '%s/?session_id=%s',
+            $environment->getBaseUrl('app'),
             $this->sessionId,
         );
 

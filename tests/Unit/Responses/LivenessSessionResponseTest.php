@@ -209,7 +209,7 @@ describe('LivenessSessionResponse', function (): void {
 
             $redirectUrl = $response->redirectUrl(VerisoulEnvironment::Production);
 
-            expect($redirectUrl)->toBe("https://app.production.verisoul.ai/?session_id={$sessionId}");
+            expect($redirectUrl)->toBe("https://app.prod.verisoul.ai/?session_id={$sessionId}");
         });
 
         it('generates correct redirect URL with custom redirect parameter', function (): void {
@@ -419,7 +419,7 @@ describe('LivenessSessionResponse', function (): void {
             expect($response)->toBeInstanceOf(LivenessSessionResponse::class);
 
             $redirectUrl = $response->redirectUrl(VerisoulEnvironment::Production);
-            expect($redirectUrl)->toContain('app.production.verisoul.ai');
+            expect($redirectUrl)->toContain('app.prod.verisoul.ai');
         });
 
         it('handles liveness session with return URL', function (): void {
@@ -459,7 +459,7 @@ describe('LivenessSessionResponse', function (): void {
             $redirectUrl = $response->redirectUrl(VerisoulEnvironment::Production, $webAppReturn);
 
             expect($response)->toBeInstanceOf(LivenessSessionResponse::class);
-            expect($redirectUrl)->toContain('app.production.verisoul.ai');
+            expect($redirectUrl)->toContain('app.prod.verisoul.ai');
         });
 
         it('handles enterprise integration scenario', function (): void {
@@ -554,21 +554,6 @@ describe('LivenessSessionResponse', function (): void {
             }
         });
 
-        it('handles various environment values', function (): void {
-            $sessionId = 'env_test_session';
-            $data = [
-                'request_id' => 'env_test',
-                'session_id' => $sessionId,
-            ];
-            $response = LivenessSessionResponse::from($data);
-
-            $environments = [VerisoulEnvironment::Sandbox, VerisoulEnvironment::Production];
-
-            foreach ($environments as $env) {
-                $redirectUrl = $response->redirectUrl($env);
-                expect($redirectUrl)->toContain('app.' . $env->value . '.verisoul.ai');
-            }
-        });
     });
 
     describe('performance and memory', function (): void {
