@@ -2,6 +2,6 @@
 
 namespace Ninja\Verisoul\Responses;
 
-use Ninja\Granite\GraniteDTO;
+use Ninja\Granite\Granite;
 
-abstract readonly class ApiResponse extends GraniteDTO {}
+abstract readonly class ApiResponse extends Granite {}
