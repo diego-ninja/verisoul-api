@@ -3,12 +3,12 @@
 namespace Ninja\Verisoul\DTO;
 
 use Carbon\Carbon;
-use Ninja\Granite\GraniteDTO;
+use Ninja\Granite\Granite;
 use Ninja\Granite\Mapping\Conventions\SnakeCaseConvention;
 use Ninja\Granite\Serialization\Attributes\SerializationConvention;
 
 #[SerializationConvention(SnakeCaseConvention::class)]
-final readonly class Metadata extends GraniteDTO
+final readonly class Metadata extends Granite
 {
     public function __construct(
         public string $projectId,

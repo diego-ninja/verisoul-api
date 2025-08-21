@@ -4,7 +4,7 @@ namespace Ninja\Verisoul\Enums;
 
 enum LivenessSession: string
 {
-    case FaceMatch = 'face-match';
+    case FaceMatch = 'facematch';
     case IDCheck = 'id-check';
 
     public function getVerificationType(): VerificationType
