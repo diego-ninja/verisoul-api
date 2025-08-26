@@ -7,6 +7,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Query;
+use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\RequestOptions;
 use Ninja\Verisoul\Contracts\HttpClientInterface;
 use Ninja\Verisoul\Exceptions\VerisoulApiException;
@@ -33,7 +35,7 @@ class GuzzleHttpClient implements HttpClientInterface
     public function get(string $url, array $query = [], array $headers = []): array
     {
         return $this->makeRequest('GET', $url, [
-            RequestOptions::QUERY => $query,
+            RequestOptions::QUERY => $this->mergeQueryParams($url, $query),
             RequestOptions::HEADERS => array_merge($this->headers, $headers),
         ]);
     }
@@ -241,5 +243,17 @@ class GuzzleHttpClient implements HttpClientInterface
             429 => VerisoulApiException::rateLimitExceeded($url, $responseData),
             default => VerisoulApiException::serverError($url, $statusCode, $responseData),
         };
+    }
+
+    private function mergeQueryParams(string $url, array $queryParams): array
+    {
+        $uri = new Uri($url);
+
+        $existingQuery = [];
+        if ('' !== $uri->getQuery()) {
+            $existingQuery = Query::parse($uri->getQuery());
+        }
+
+        return array_merge($queryParams, $existingQuery);
     }
 }
