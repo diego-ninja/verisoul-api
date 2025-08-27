@@ -19,7 +19,7 @@ final readonly class DocumentSignals extends Granite
     public function __construct(
         public int $idAge,
         public float $idFaceMatchScore,
-        public IDBarcodeStatus $idBarcodeStatus = IDBarcodeStatus::NotFound,
+        public IDBarcodeStatus $idBarcodeStatus = IDBarcodeStatus::Unknown,
         public IDFaceStatus $idFaceStatus = IDFaceStatus::Unknown,
         public IDTextStatus $idTextStatus = IDTextStatus::Unknown,
         public IDDigitalSpoof $isIdDigitalSpoof = IDDigitalSpoof::Unknown,
