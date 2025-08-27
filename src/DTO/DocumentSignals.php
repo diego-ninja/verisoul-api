@@ -11,6 +11,7 @@ use Ninja\Verisoul\Enums\IDFaceStatus;
 use Ninja\Verisoul\Enums\IDStatus;
 use Ninja\Verisoul\Enums\IDTextStatus;
 use Ninja\Verisoul\Enums\IDValidity;
+use Ninja\Verisoul\Support\EnumLogger;
 
 #[SerializationConvention(SnakeCaseConvention::class)]
 final readonly class DocumentSignals extends Granite
@@ -18,11 +19,25 @@ final readonly class DocumentSignals extends Granite
     public function __construct(
         public int $idAge,
         public float $idFaceMatchScore,
-        public IDBarcodeStatus $idBarcodeStatus,
-        public IDFaceStatus $idFaceStatus,
-        public IDTextStatus $idTextStatus,
-        public IDDigitalSpoof $isIdDigitalSpoof,
-        public IDStatus $isFullIdCaptured,
-        public IDValidity $idValidity,
+        public IDBarcodeStatus $idBarcodeStatus = IDBarcodeStatus::NotFound,
+        public IDFaceStatus $idFaceStatus = IDFaceStatus::Unknown,
+        public IDTextStatus $idTextStatus = IDTextStatus::Unknown,
+        public IDDigitalSpoof $isIdDigitalSpoof = IDDigitalSpoof::Unknown,
+        public IDStatus $isFullIdCaptured = IDStatus::Unknown,
+        public IDValidity $idValidity = IDValidity::Unknown,
     ) {}
+
+    protected static function rules(): array
+    {
+        return [
+            'idBarcodeStatus' => [EnumLogger::logOnFail(self::class, 'idBarcodeStatus')],
+            'idFaceStatus' => [EnumLogger::logOnFail(self::class, 'idFaceStatus')],
+            'idTextStatus' => [EnumLogger::logOnFail(self::class, 'idTextStatus')],
+            'isIdDigitalSpoof' => [EnumLogger::logOnFail(self::class, 'isIdDigitalSpoof')],
+            'isFullIdCaptured' => [EnumLogger::logOnFail(self::class, 'isFullIdCaptured')],
+            'idValidity' => [EnumLogger::logOnFail(self::class, 'idValidity')],
+
+
+        ];
+    }
 }

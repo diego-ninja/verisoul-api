@@ -18,6 +18,7 @@ use Ninja\Verisoul\DTO\ReferringSessionSignals;
 use Ninja\Verisoul\DTO\SessionData;
 use Ninja\Verisoul\Enums\RiskFlag;
 use Ninja\Verisoul\Enums\VerisoulDecision;
+use Ninja\Verisoul\Support\EnumLogger;
 use Ninja\Verisoul\ValueObjects\Score;
 
 #[SerializationConvention(SnakeCaseConvention::class)]
@@ -118,5 +119,12 @@ final readonly class VerifyIdResponse extends ApiResponse
             documentSignals: $this->documentSignals,
             referringSessionSignals: $this->referringSessionSignals,
         );
+    }
+
+    protected static function rules(): array
+    {
+        return [
+            'decision' => [EnumLogger::logOnFail(self::class, 'decision')],
+        ];
     }
 }
