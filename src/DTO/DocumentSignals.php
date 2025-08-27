@@ -30,12 +30,12 @@ final readonly class DocumentSignals extends Granite
     protected static function rules(): array
     {
         return [
-            'idBarcodeStatus' => [EnumLogger::logOnFail(self::class, 'idBarcodeStatus')],
-            'idFaceStatus' => [EnumLogger::logOnFail(self::class, 'idFaceStatus')],
-            'idTextStatus' => [EnumLogger::logOnFail(self::class, 'idTextStatus')],
-            'isIdDigitalSpoof' => [EnumLogger::logOnFail(self::class, 'isIdDigitalSpoof')],
-            'isFullIdCaptured' => [EnumLogger::logOnFail(self::class, 'isFullIdCaptured')],
-            'idValidity' => [EnumLogger::logOnFail(self::class, 'idValidity')],
+            'id_barcode_status' => [EnumLogger::logOnFail(IDBarcodeStatus::class, 'idBarcodeStatus')],
+            'id_face_status' => [EnumLogger::logOnFail(IDFaceStatus::class, 'idFaceStatus')],
+            'id_text_status' => [EnumLogger::logOnFail(IDTextStatus::class, 'idTextStatus')],
+            'is_id_digital_spoof' => [EnumLogger::logOnFail(IDDigitalSpoof::class, 'isIdDigitalSpoof')],
+            'is_full_id_captured' => [EnumLogger::logOnFail(IDStatus::class, 'isFullIdCaptured')],
+            'id_validity' => [EnumLogger::logOnFail(IDValidity::class, 'idValidity')],
 
 
         ];

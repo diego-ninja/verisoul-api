@@ -42,7 +42,7 @@ final readonly class AccountResponse extends ApiResponse
     protected static function rules(): array
     {
         return [
-            'decision' => [EnumLogger::logOnFail(self::class, 'decision')],
+            'decision' => [EnumLogger::logOnFail(VerisoulDecision::class, 'decision')],
         ];
     }
 }
