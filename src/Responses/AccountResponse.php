@@ -10,6 +10,7 @@ use Ninja\Verisoul\DTO\Email;
 use Ninja\Verisoul\DTO\UniqueValues;
 use Ninja\Verisoul\DTO\UserAccount;
 use Ninja\Verisoul\Enums\VerisoulDecision;
+use Ninja\Verisoul\Support\EnumLogger;
 use Ninja\Verisoul\ValueObjects\Score;
 
 #[SerializationConvention(SnakeCaseConvention::class)]
@@ -23,7 +24,6 @@ final readonly class AccountResponse extends ApiResponse
         public Carbon $firstSeen,
         public Carbon $lastSeen,
         public string $lastSession,
-        public VerisoulDecision $decision,
         public Score $accountScore,
         public float $bot,
         public float $multipleAccounts,
@@ -36,5 +36,13 @@ final readonly class AccountResponse extends ApiResponse
         public UniqueValues $uniqueNetworks,
         public Email $email,
         public RiskSignalCollection $riskSignalAverage,
+        public VerisoulDecision $decision = VerisoulDecision::Unknown,
     ) {}
+
+    protected static function rules(): array
+    {
+        return [
+            'decision' => [EnumLogger::logOnFail(VerisoulDecision::class, 'decision')],
+        ];
+    }
 }

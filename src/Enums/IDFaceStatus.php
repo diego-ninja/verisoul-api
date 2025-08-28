@@ -8,4 +8,5 @@ enum IDFaceStatus: string
     case LikeOriginal = 'likely_original_face';
     case Unconfirmed = 'cannot_confirm_id_is_authentic';
     case Unsupported = 'ocr_template_does_not_support_detection';
+    case Unknown = 'unknown_expected_value';
 }

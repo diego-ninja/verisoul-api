@@ -8,6 +8,7 @@ use Ninja\Verisoul\Collections\LinkedAccountCollection;
 use Ninja\Verisoul\DTO\Account;
 use Ninja\Verisoul\DTO\Session;
 use Ninja\Verisoul\Enums\VerisoulDecision;
+use Ninja\Verisoul\Support\EnumLogger;
 use Ninja\Verisoul\ValueObjects\Score;
 
 #[SerializationConvention(SnakeCaseConvention::class)]
@@ -18,7 +19,6 @@ final readonly class AuthenticateSessionResponse extends ApiResponse
         public string $sessionId,
         public string $accountId,
         public string $requestId,
-        public VerisoulDecision $decision,
         public Score $accountScore,
         public float $bot,
         public float $multipleAccounts,
@@ -28,10 +28,18 @@ final readonly class AuthenticateSessionResponse extends ApiResponse
         public Session $session,
         public Account $account,
         public ?LinkedAccountCollection $linkedAccounts,
+        public VerisoulDecision $decision = VerisoulDecision::Unknown,
     ) {}
 
     public function getRiskSignals(): array
     {
         return $this->session->riskSignals->toArray();
+    }
+
+    protected static function rules(): array
+    {
+        return [
+            'decision' => [EnumLogger::logOnFail(VerisoulDecision::class, 'decision')],
+        ];
     }
 }
